@@ -94,14 +94,14 @@ def make_contract(contract_json):
 
 def pick_task_names(flavor, count):
     taskname_pool = [
-        "sprint planning"
+        "sprint planning",
         "sprint review",
-        "development tasks estimation"
+        "development tasks estimation",
         "defects investigation",
         "code reviews",
         "refactoring old-code",
         "SDK architecture updates",
-        "release notes"
+        "release notes",
         "{flavor} generic mock setup",
         "{flavor} state manager",
         "{flavor} components architecture",
@@ -115,7 +115,7 @@ def pick_task_names(flavor, count):
         "{flavor} component design",
         "{flavor} data modeling",
         "{flavor} defects verification",
-        "{flavor} code coverage testing"
+        "{flavor} code coverage testing",
         "Low level {flavor} event handling",
     ]
     tasks = [name.format(flavor=flavor) for name in random.sample(taskname_pool, k=count)]
@@ -232,12 +232,16 @@ def main():
         pass
 
     if args.list:
+        print_stage(f'Registry of {db.register.get("seller").get("name")}')
         print(db.register)
+
+        print('Contracts:')
         for i, c in enumerate(db.contracts):
             print(f"{i} : {c.get('buyer').get('name')}")
 
-    a = make_random_activity(9, 120, 'aroma', '2.5')
-    print(a)
+    a = make_random_activity(contract_id=9, hours=120, flavor='aroma', project_id='2.5')
+    for t in a.tasks:
+        print(t)
 
 if __name__ == '__main__':
     duration = timeit.timeit(main, number=1)
