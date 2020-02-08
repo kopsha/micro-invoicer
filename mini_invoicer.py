@@ -86,6 +86,9 @@ class TimeInvoice:
     def value(self):
         return self.unit_price * self.activity.duration
 
+    def __repr__(self):
+        return f'{self.series_number:>11} : {self.buyer.name:32} : {self.activity.duration:7.0f} ore : {self.value:11.02f} lei'
+
 
 @dataclass
 class InvoiceRegister:
@@ -211,8 +214,8 @@ def make_random_activity(contract_id, hours, flavor, project_id):
     return activity
 
 
-def make_time_invoice(db, activity, xchg_rate):
-    contract = db.contracts[activity.contract_id]
+def make_time_invoice(db, contract_id, hours, flavor, project_id, xchg_rate):
+    contract = db.contracts[contract_id]
     invoice_fields = {
         'status': InvoiceStatus.DRAFT,
         'seller': db.register.seller,
@@ -220,7 +223,7 @@ def make_time_invoice(db, activity, xchg_rate):
         'number': db.register.next_number,
         'buyer': contract.buyer,
         'hourly_rate': contract.hourly_rate,
-        'activity': activity,
+        'activity': make_random_activity(contract_id, hours, flavor, project_id),
         'conversion_rate': xchg_rate,
     }
     return TimeInvoice(**invoice_fields)
@@ -248,6 +251,12 @@ def cls_from_dict(pairs):
     if 'contracts' in obj:
         obj['contracts'] = [ServiceContract(**contract_obj) for contract_obj in obj['contracts']]
 
+    if 'tasks' in obj:
+        obj['tasks'] = [Task(**task_obj) for task_obj in obj['tasks']]
+
+    if 'activity' in obj:
+        obj['activity'] = ActivityReport(**obj['activity'])
+
     if 'invoices' in obj:
         obj['invoices'] = [TimeInvoice(**invoice_obj) for invoice_obj in obj['invoices']]
 
@@ -268,17 +277,23 @@ def load_database():
 
     return db
 
-def save_database(db):
+def save_database(db, commit_changes):
     def date_serializer(obj):
         if isinstance(obj, date):
             return obj.isoformat()
 
         raise TypeError(f'Type {type(obj)} is not JSON serializable')
 
-    with open('local_database.json', 'wt') as file:
-        file.write(json.dumps(asdict(db), indent=4, default=date_serializer))
+    if commit_changes:
+        with open('local_database.json', 'wt') as file:
+            file.write(json.dumps(asdict(db), indent=4, default=date_serializer))
+            print('Local database updated successfully.')
+    else:
+        dummy_buffer = json.dumps(asdict(db), indent=4, default=date_serializer)
+        print(f'Skipped writing {len(dummy_buffer)} bytes to local database.')
 
-def clean_data_files():
+
+def clean_data_files(commit_changes):
     known_data_files = [
         'active_registry.json',
         'local_database.json'
@@ -286,62 +301,73 @@ def clean_data_files():
 
     for fname in known_data_files:
         with suppress(OSError):
-            os.remove(fname)
-            print(f'Deleted {fname}')
+            if commit_changes:
+                os.remove(fname)
+                print(f'Deleted {fname}')
+            else:
+                print(f'Should delete {fname}')
 
-def setup(seller_json, buyer_json):
+
+def setup(seller_json, buyer_json, commit_changes):
     print_stage(f'Installing new invoice register')
-    clean_data_files()
+
+    clean_data_files(commit_changes)
+
     registry = make_registry(seller_json)
     contract = make_contract(buyer_json)
     db = LocalStorage(registry)
     db.contracts.append(contract)
-    save_database(db)
+
+    save_database(db, commit_changes)
 
 
 def main():
     print_stage('Mini Invoicer')
     parser = argparse.ArgumentParser()
+    parser.add_argument('--commit', action='store_true', help='write changes to the db, without this it will print only')
     parser.add_argument('-i', '--install', help='setup a new local registry using provided json as seller')
     parser.add_argument('-c', '--contract', help='create a new contract using provided json as buyer')
-    parser.add_argument('-l', '--list', action='store_true', help='show all contracts')
     parser.add_argument('-q', '--quickie', help='issue a new time invoice based on last one')
-    parser.add_argument('-n', '--invoice', help='issue a new time invoice contract_id:hours:rate:flavor:project')
+    parser.add_argument('-n', '--invoice', help='issue a new time invoice using json file')
     args = parser.parse_args()
+
+    if args.commit:
+        print('All changes will be written to local database.')
+    else:
+        print('Performing a dry run, local database will not be touched.')
 
     if (args.install):
         if not args.contract:
             parser.error('Installation requires a contract too.')
-        setup(args.install, args.contract)
+        setup(args.install, args.contract, args.commit)
 
     db = load_database()
     if not db:
         print('Local database was not found, please run with --install first.')
         return
 
+    print_stage(f'{db.register.seller.name} registry quick view')
+    print('Contracts:')
+    for i, c in enumerate(db.contracts):
+        print(f'{i:>3} : {c.buyer.name}')
+    if db.register.invoices:
+        print('Last 5 invoices in registry:')
+        for i in db.register.invoices[-5:]:
+            print(i)
+    else:
+        print('No invoices found in registry.')
+
     if args.invoice:
-        if args.invoice.count(':') != 4:
-            parser.error('Please specify all parameters')
-        pass
+        if not os.path.isfile(args.invoice):
+            print(f'Error: Provided invoice data is not a file.')
 
-    if args.list:
-        print_stage(f'Registry of {db.register.seller.name}')
-        print(db.register)
+        with open(args.invoice) as file:
+            data = json.loads(file.read())
 
-        print('Contracts:')
-        for i, c in enumerate(db.contracts):
-            print(f'{i} : {c.buyer.name}, {c.hourly_rate} EUR/hour')
-
-    a = make_random_activity(contract_id=0, hours=120, flavor='aroma', project_id='2.5')
-    print(f'Created an activity for contract {a.contract_id} and {a.duration} hours')
-    for t in a.tasks:
-        print(t)
-
-    ti = make_time_invoice(db, a, xchg_rate=4.7642)
-    print(f'{ti.series_number}, {ti.buyer.name}, {ti.activity.duration} ore, {ti.value:.02f} lei')
-    issue_draft_invoice(db, ti)
-
-    save_database(db)
+        invoice = make_time_invoice(db, **data)
+        issue_draft_invoice(db, invoice)
+        print(f'New invoice:\n{invoice!r}')
+        save_database(db, args.commit)
 
 if __name__ == '__main__':
     duration = timeit.timeit(main, number=1)
