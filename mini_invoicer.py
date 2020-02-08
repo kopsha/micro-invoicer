@@ -201,7 +201,8 @@ def setup(seller_json, buyer_json):
     clean_data_files()
     registry = make_registry(seller_json)
     contract = make_contract(buyer_json)
-    db = LocalStorage(registry, contract)
+    db = LocalStorage(registry)
+    db.contracts.append(contract)
     save_database(db)
 
 
@@ -209,7 +210,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--install', help='setup a new local registry using provided json as seller')
     parser.add_argument('-c', '--contract', help='create a new contract using provided json as buyer')
-    parser.add_argument('-q', '--quickie', help='create a new time invoice based on last one')
+    parser.add_argument('-l', '--list', action='store_true', help='show all contracts')
+    parser.add_argument('-q', '--quickie', help='issue a new time invoice based on last one')
+    parser.add_argument('-n', '--invoice', help='issue a new time invoice contract_id:hours:rate:flavor:project')
     args = parser.parse_args()
 
     if (args.install):
@@ -219,8 +222,19 @@ def main():
 
     db = load_database()
     if not db:
-        print('Local database was not found, please run setup first.')
+        print('Local database was not found, please run with --install first.')
         return
+
+    if args.invoice:
+        if args.invoice.count(':') != 4:
+            parser.error('Please specify all parameters')
+
+        pass
+
+    if args.list:
+        print(db.register)
+        for i, c in enumerate(db.contracts):
+            print(f"{i} : {c.get('buyer').get('name')}")
 
     a = make_random_activity(9, 120, 'aroma', '2.5')
     print(a)
