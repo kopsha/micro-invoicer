@@ -59,7 +59,7 @@ class ActivityReport:
 @enum.unique
 class InvoiceStatus(enum.IntEnum):
     DRAFT = enum.auto()
-    REGISTERED = enum.auto()
+    PUBLISHED = enum.auto()
     STORNO = enum.auto()
 
 
@@ -225,8 +225,12 @@ def make_time_invoice(db, activity, xchg_rate):
     }
     return TimeInvoice(**invoice_fields)
 
-def issue_invoice(db, invoice):
+def issue_draft_invoice(db, invoice):
+    if invoice.status != InvoiceStatus.DRAFT:
+        raise ValueError(f'Only invoices with {InvoiceStatus.DRAFT!r} status can be registered, got {invoice.status!r}.')
+
     db.register.next_number += 1
+    invoice.status = InvoiceStatus.PUBLISHED
     db.register.invoices.append(invoice)
 
 def cls_from_dict(pairs):
@@ -335,6 +339,7 @@ def main():
 
     ti = make_time_invoice(db, a, xchg_rate=4.7642)
     print(f'{ti.series_number}, {ti.buyer.name}, {ti.activity.duration} ore, {ti.value:.02f} lei')
+    issue_draft_invoice(db, ti)
 
     save_database(db)
 
