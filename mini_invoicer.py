@@ -14,9 +14,9 @@ from typing import List
 def print_stage(text, row_size=80):
     """Pretty banner stage printing helper"""
     filler=' '*(row_size-4-len(text))
-    print(f"{'*'*row_size}");
+    print(f"{'*'*row_size}")
     print(f"* {text}{filler} *")
-    print(f"{'*'*row_size}");
+    print(f"{'*'*row_size}")
 
 
 @dataclass
