@@ -1,6 +1,6 @@
 import fpdf
 import copy
-def render_pdf_activity_report(invoice):
+def render_activity_report(invoice):
     pdf = fpdf.FPDF(orientation='P', unit='mm', format='A4')
     pdf.add_page()
     pdf.set_font("Arial")
