@@ -7,7 +7,7 @@ verify_ssl = true
 
 [packages]
 pytest = "*"
-django = "*"
+fpdf = "*"
 
 [requires]
 python_version = "3.7"
