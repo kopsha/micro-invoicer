@@ -4,7 +4,7 @@ import json
 import os
 import random
 import timeit
-import pdf_generator as pg
+import render_activity_report as pdfrap
 
 from contextlib import suppress
 from dataclasses import dataclass, asdict, field
@@ -236,8 +236,7 @@ def issue_draft_invoice(db, invoice):
     db.register.next_number += 1
     invoice.status = InvoiceStatus.PUBLISHED
     db.register.invoices.append(invoice)
-    generator = pg.PdfGenerator(invoice)
-    generator.generatePdf()
+    pdfrap.render_pdf_activity_report(invoice)
 
 def cls_from_dict(pairs):
     obj = {k:v for k,v in pairs}
