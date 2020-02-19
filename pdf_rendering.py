@@ -1,9 +1,13 @@
 import fpdf
 import copy
+
+# TODO: replace camel case with underscore
+
+
 def render_activity_report(invoice):
     pdf = fpdf.FPDF(orientation='P', unit='mm', format='A4')
     pdf.add_page()
-    pdf.set_font("Arial")
+    pdf.set_font('Arial')
     initialX = pdf.get_x()
     initialY = pdf.get_y()
     tableColumnDateWidth = 25
@@ -11,11 +15,8 @@ def render_activity_report(invoice):
     tableColumnDescriptionWidth = 80
     tableColumnHoursWidth = 10
 
-    create_seller_info(pdf,invoice)
-    create_buyer_info(pdf,invoice,
-                    initialX,
-                    initialY
-                    )
+    create_seller_info(pdf, invoice)    # TODO: rename to render_seller_info (replace create* with render*)
+    create_buyer_info(pdf, invoice, initialX, initialY)  # TODO: use local variables instead of parameters
     create_title(pdf,invoice)
     create_headtypes(pdf,invoice,
                     tableColumnDateWidth, 
@@ -24,8 +25,8 @@ def render_activity_report(invoice):
                     tableColumnHoursWidth,
                     initialX,
                     initialY
-                    )
-    create_invoice_with_data(pdf,invoice,
+                    )   # TODO: use ..._headings instead
+    create_invoice_with_data(pdf,invoice,   # TODO: render_tasks
                     tableColumnDateWidth, 
                     tableColumnClientCodeWidth,
                     tableColumnDescriptionWidth,
@@ -54,7 +55,7 @@ def render_activity_report(invoice):
                     initialY)
     writeToPage(pdf)
 
-def create_seller_info(pdf,invoice):
+def create_seller_info(pdf, invoice):
     pdf.set_font_size(9)
     pdf.cell(w=0,h=5,txt=f'Beneficiar: {invoice.seller.name}',align='L', ln=1)
     pdf.cell(w=0,h=5,txt=f'Nr. ORC: {invoice.seller.registration_id}',align='L',ln=1)
@@ -70,8 +71,8 @@ def create_buyer_info(pdf,
                     ):
     pdf.set_font_size(9)
     pdf.set_xy(initialX,initialY-1)
-    pdf.cell(w=0,h=5,txt=f'Beneficiar: {invoice.buyer.name}',align='R', ln=1)
-    pdf.cell(w=0,h=5,txt=f'Nr. ORC: {invoice.buyer.registration_id}',align='R',ln=1)
+    pdf.cell(w=0, h=5, txt=f'Beneficiar: {invoice.buyer.name}', align='R', ln=1)
+    pdf.cell(w=0,h=5, txt=f'Nr. ORC: {invoice.buyer.registration_id}',align='R',ln=1)
     pdf.cell(w=0,h=5,txt=f'CIF: {invoice.buyer.fiscal_code}',align='R', ln=1)
     pdf.cell(w=0,h=5,txt=f'Sediul: {invoice.buyer.address}',align='R',ln=1)
     pdf.cell(w=0,h=5,txt=f'Cont IBAN: {invoice.buyer.bank_account}',align='R',ln=1)
@@ -91,14 +92,14 @@ def create_headtypes(pdf,
                     initialX,
                     initialY):
     pdf.set_font_size(12)
-    pdf.set_font('Arial','B')
-    pdf.set_y(pdf.get_y()+20)
+    pdf.set_font('Arial', 'B')
+    pdf.set_y(pdf.get_y() + 20)
         
-    pdf.set_x(initialX+8)
+    pdf.set_x(initialX + 8)
     pdf.cell(w=tableColumnDateWidth,txt=f'Data',align='C')
         
-    pdf.set_x(pdf.get_x()+5)
-    pdf.cell(w=tableColumnClientCodeWidth,txt=f'Cod client',align = 'C')
+    pdf.set_x(pdf.get_x() + 5)
+    pdf.cell(w=tableColumnClientCodeWidth,txt=f'Cod client', align='C')
 
     pdf.set_x(pdf.get_x()+5)
     pdf.cell(w=tableColumnDescriptionWidth,txt=f'Descriere', align = 'C')
@@ -106,15 +107,16 @@ def create_headtypes(pdf,
     pdf.set_x(pdf.get_x()+7)
     pdf.cell(w=tableColumnHoursWidth,txt=f'Ore',align = 'C')
 
-def create_invoice_with_data(pdf,
-                            invoice,
+def create_invoice_with_data(
+        pdf,
+        invoice,
                             tableColumnDateWidth, 
                             tableColumnClientCodeWidth,
                             tableColumnDescriptionWidth,
                             tableColumnHoursWidth,
                             initialX,
                             initialY
-                            ):
+    ):
     length = tableColumnDateWidth + tableColumnClientCodeWidth + tableColumnDescriptionWidth + tableColumnHoursWidth + 38
     pdf.line(initialX+10,pdf.get_y()+5,length,pdf.get_y()+5)
 
@@ -122,8 +124,8 @@ def create_invoice_with_data(pdf,
     pdf.set_font('Arial')
     pdf.set_font_size(12)
     for task in invoice.activity.tasks:
-        date = task.date
-        project_id = task.project_id
+        # TODO: remove local copies use fully qualified properties
+        date, project_id = task.date, task.project_id
         desc = task.name
         duration = task.duration
 
@@ -150,25 +152,19 @@ def create_invoice_with_data(pdf,
 
     pdf.line(initialX+10,pdf.get_y()-3,length,pdf.get_y()-3)
     
-def process_description(pdf,text):
+def process_description(pdf, text):
     words = str(text).split()
     rows = []
     row = ''
+
     for word in words:
         next_row = ' '.join([row, word])
-        isLast = False
-        isFitting = False
-
-        if  pdf.get_string_width(next_row) <= 83.50:
-            isFitting = True
-        if word == words[-1]:
-            isLast = True
-
-        if isFitting:
-            row = next_row
-        if isLast or not isFitting:
+        if pdf.get_string_width(next_row) > 83.50:
+            # start a new row
             rows.append(row)
-            row = ''
+            row = next_row
+    rows.append(row)
+
     return rows
 
 def create_total(pdf,
@@ -183,6 +179,7 @@ def create_total(pdf,
     pdf.set_font(family='Arial',style='B')
     pdf.cell(w=20, txt=f'Total',align='C')
 
+    # TODO: replace with activity.duration
     totalhours = 0
     for task in invoice.activity.tasks:
         totalhours += int(task.duration)
