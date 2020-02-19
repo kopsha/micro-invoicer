@@ -8,6 +8,8 @@ def render_activity_report(invoice):
     pdf = fpdf.FPDF(orientation='P', unit='mm', format='A4')
     pdf.add_page()
     pdf.set_font('Arial')
+
+    document_name = "demo_pdf_activity_report"
     initialX = pdf.get_x()
     initialY = pdf.get_y()
     tableColumnDateWidth = 25
@@ -158,8 +160,31 @@ def render_activity_report(invoice):
     render_total()
     render_seller_signature()
     render_buyer_signature()
-    writeToPage(pdf)
+    writeToPage(pdf,document_name)
 
+def render_invoice(invoice):
+    pdf = fpdf.FPDF(orientation='P', unit='mm', format='A4')
+    pdf.add_page()
+    pdf.set_font("Arial")
 
-def writeToPage(pdf):
-    pdf.output("demo_pdf.pdf")
+    document_name = "demo_pdf_invoice"
+    initialX = pdf.get_x()
+    initialY = pdf.get_y()
+
+    def create_seller_info():
+        pass
+    def create_buyer_info():
+        pass
+    def create_title():
+        pass
+    def create_table_headings():
+        pass
+    def create_table_data():
+        pass
+    def create_vertical_lines():
+        pass
+
+    
+    
+def writeToPage(pdf, document_name):
+    pdf.output(document_name)
