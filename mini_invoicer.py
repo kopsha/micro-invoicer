@@ -3,8 +3,9 @@ import enum
 import json
 import os
 import random
-import timeit
 import pdf_rendering as pdf
+import timeit
+
 
 from contextlib import suppress
 from dataclasses import dataclass, asdict, field
@@ -111,6 +112,7 @@ def previous_month():
     return last_month
 
 def make_registry(install_json):
+    print(install_json)
     if not os.path.isfile(install_json):
         raise ValueError(f'The provided path {install_json} is not a valid file.')
 
@@ -237,6 +239,7 @@ def issue_draft_invoice(db, invoice):
     invoice.status = InvoiceStatus.PUBLISHED
     db.register.invoices.append(invoice)
     pdf.render_activity_report(invoice)
+    pdf.render_invoice(invoice)
 
 def cls_from_dict(pairs):
     obj = {k:v for k,v in pairs}
