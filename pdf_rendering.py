@@ -94,13 +94,8 @@ def render_activity_report(invoice):
         pdf.set_font(family='Arial', style='B')
         pdf.cell(w=20, txt=f'Total', align='C')
 
-        # TODO: replace with activity.duration
-        totalhours = 0
-        for task in invoice.activity.tasks:
-            totalhours += int(task.duration)
-        
         pdf.set_x(pdf.get_x() + 5)
-        pdf.cell(w=table_column_hours_width, txt=f'{totalhours}')
+        pdf.cell(w=table_column_hours_width, txt=f'{invoice.activity.duration}')
         
         pdf.set_font(family='Arial')
     
@@ -221,47 +216,100 @@ def render_invoice(invoice):
         pdf.set_font('Arial', style='')
         pdf.set_xy(local_offset + rendered_buyer_length + 2, initialY)
         pdf.cell(w=0, h=5, txt=f'{invoice.buyer.name}', ln=1)
+
         pdf.set_x(local_offset + rendered_registration_id_length + 2)
         pdf.cell(w=0, h=5, txt=f'{invoice.seller.registration_id}', ln=1)
+
         pdf.set_x(local_offset + rendered_fiscal_code_length + 2)
         pdf.cell(w=0, h=5, txt=f'{invoice.buyer.fiscal_code}', ln=1)
+
         pdf.set_x(local_offset + rendered_address_length + 2)
         pdf.cell(w=0, h=5, txt=f'{invoice.buyer.address}', ln=1)
+
         pdf.set_x(local_offset + rendered_bank_account_length + 2)
         pdf.cell(w=0, h=5, txt=f'{invoice.buyer.bank_account}', ln=1)
+
         pdf.set_x(local_offset + rendered_bank_name_length + 2)
         pdf.cell(w=0, h=5, txt=f'{invoice.buyer.bank_name}', ln=1)
+    
     def render_title():
         local_offset = initialX + 105
-        pdf.set_font('Arial', style='', size=14)
-        pdf.set_xy(initialX,initialY+40)
-        pdf.cell(w=0,h=7,txt='FACTURA FISCALA', align='C', ln=1)
+        pdf.set_font('Arial', style='', size = 14)
+        pdf.set_xy(initialX, initialY + 40)
+        pdf.cell(w=0, h=7, txt='FACTURA FISCALA', align='C', ln=1)
+
         pdf.set_font('Arial', style='', size=9)
-        pdf.set_x(local_offset - pdf.get_string_width(f'Seria: {invoice.series} {invoice.number}                            din {invoice.activity.start_date}')/2)
-        pdf.cell(w=0,h=5,txt=f'Seria: {invoice.series} {invoice.number}                            din {invoice.activity.start_date}')
-
-    def render_horizontal_lines():
-        pdf.set_xy(initialX, pdf.get_y()+20)
-        pdf.line(initialX,pdf.get_y(),initialX+190,pdf.get_y())
-
-        pdf.set_y(pdf.get_y()+8)
-        pdf.line(initialX,pdf.get_y(),initialX+190,pdf.get_y())
-
-        pdf.set_y(pdf.get_y()+1.1)
-        pdf.line(initialX,pdf.get_y(),initialX+190,pdf.get_y())
+        pdf.set_x(local_offset - pdf.get_string_width(f'Seria: {invoice.series} {invoice.number}                            din {invoice.activity.start_date}') / 2)
+        pdf.cell(w=0, h=5, txt=f'Seria: {invoice.series} {invoice.number}                            din {invoice.activity.start_date}')
+ 
     def render_vertical_lines():
         pass
-    
+
     def render_table_headings():
-        pass
+        local_vertical_offset = initialY + 61
+
+        pdf.set_xy(initialX + 5, local_vertical_offset)
+        pdf.multi_cell(w=10, h=4, txt='Nr.\nCrt.',align='C')
+
+        pdf.set_xy(initialX + 20, local_vertical_offset + 4)
+        pdf.cell(w=50, txt='Denumirea produsului / serviciului', align='C')
+
+        pdf.set_xy(initialX + 85, local_vertical_offset + 4)
+        pdf.cell(w=10, txt='UM', align='C')
+
+        pdf.set_xy(initialX + 110, local_vertical_offset + 4)
+        pdf.cell(w=10, txt='Cantitate', align='C')
+
+        pdf.set_xy(initialX + 135, local_vertical_offset)
+        pdf.multi_cell(w=20, h=4, txt='Pret unitar\n- lei -\n',align='C')
+
+        pdf.set_xy(initialX + 165, local_vertical_offset)
+        pdf.multi_cell(w=20, h=4, txt='Valoarea\n- lei -\n',align='C')
 
     def render_table_data():
-        pass
-    
+        local_vertical_offset = initialY + 61
+        pdf.set_xy(initialX, local_vertical_offset)
+        pdf.line(initialX,pdf.get_y(),initialX + 190, pdf.get_y())
+
+        pdf.set_y(pdf.get_y() + 10)
+        pdf.line(initialX,pdf.get_y(),initialX + 190, pdf.get_y())
+
+        pdf.set_y(pdf.get_y() + 1.1)
+        pdf.line(initialX,pdf.get_y(),initialX + 190, pdf.get_y())
+
+        local_vertical_offset += 15
+        #HARDCODED PRODUCT NUMBER AND PRODUCT NAME
+        pdf.set_xy(initialX + 5, local_vertical_offset)
+        pdf.cell(w=10, h=4, txt='1',align = 'C')
+
+        pdf.set_xy(initialX+20, local_vertical_offset-2)
+        pdf.multi_cell(w=50, h=4, txt=f'Furnizare servicii software,\ncf. contract {invoice.activity.contract_id}/01 aprilie 2019')
+
+        pdf.set_xy(initialX + 85, local_vertical_offset+2)
+        pdf.cell(w=10, txt='ore', align='C')
+
+        pdf.set_xy(initialX + 110, local_vertical_offset + 2)
+        pdf.cell(w=10, txt=f'{invoice.activity.duration}', align='C')
+
+        pdf.set_xy(initialX + 135, local_vertical_offset + 2)
+        pdf.cell(w=20, txt=f'lei {invoice.unit_price}',align='C')
+
+        pdf.set_xy(initialX + 165, local_vertical_offset + 2)
+        pdf.cell(w=20, txt=f'{invoice.value}',align='C')
+
+        pdf.line(initialX,local_vertical_offset + 7,initialX + 190, local_vertical_offset + 7)
+
+        local_vertical_offset = local_vertical_offset + 11.5
+        pdf.line(initialX,local_vertical_offset,initialX + 190, local_vertical_offset)
+
+        local_vertical_offset = local_vertical_offset + 5
+        pdf.set_xy(initialX+20, local_vertical_offset)
+        pdf.cell(w=50,txt='Total lei', align='C')
+
+
     render_seller_info()
     render_buyer_info()
     render_title()
-    render_horizontal_lines()
     render_table_headings()
     render_table_data()
     render_vertical_lines()
