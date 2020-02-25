@@ -1,5 +1,6 @@
 import fpdf
 import copy
+#TODO OVERALL: MODIFY TEXT OUTPUT AS MORE INFORMATION BECOMES AVAILABLE IN INVOICE
 
 
 def render_activity_report(invoice):
@@ -85,7 +86,7 @@ def render_activity_report(invoice):
                 pdf.set_x(pdf.get_x() + table_column_description_width + 85)
                 pdf.cell(w=table_column_hours_width, txt=f'{task.duration}', align = 'C')
                 pdf.set_y(pdf.get_y() + len(processed_description) * 5)
-
+        
         pdf.line(initialX + 10, pdf.get_y() - 3, length, pdf.get_y() - 3)
 
     def render_total():
@@ -100,7 +101,6 @@ def render_activity_report(invoice):
         pdf.set_font(family='Arial')
     
     def render_seller_signature():
-
         current_y = pdf.get_y()
         pdf.set_xy(initialX + 30, pdf.get_y() + 30)
         pdf.cell(w=20, txt=f'FURNIZOR: ', align = 'C')
@@ -242,17 +242,14 @@ def render_invoice(invoice):
         pdf.set_x(local_offset - pdf.get_string_width(f'Seria: {invoice.series} {invoice.number}                            din {invoice.activity.start_date}') / 2)
         pdf.cell(w=0, h=5, txt=f'Seria: {invoice.series} {invoice.number}                            din {invoice.activity.start_date}')
  
-    def render_vertical_lines():
-        pass
-
     def render_table_headings():
         local_vertical_offset = initialY + 61
 
         pdf.set_xy(initialX + 5, local_vertical_offset)
-        pdf.multi_cell(w=10, h=4, txt='Nr.\nCrt.',align='C')
+        pdf.multi_cell(w=11, h=4, txt='Nr.\nCrt.',align='C')
 
         pdf.set_xy(initialX + 20, local_vertical_offset + 4)
-        pdf.cell(w=50, txt='Denumirea produsului / serviciului', align='C')
+        pdf.cell(w=60, txt='Denumirea produsului / serviciului', align='C')
 
         pdf.set_xy(initialX + 85, local_vertical_offset + 4)
         pdf.cell(w=10, txt='UM', align='C')
@@ -271,19 +268,21 @@ def render_invoice(invoice):
         pdf.set_xy(initialX, local_vertical_offset)
         pdf.line(initialX,pdf.get_y(),initialX + 190, pdf.get_y())
 
-        pdf.set_y(pdf.get_y() + 10)
+        pdf.set_y(pdf.get_y() + 8)
         pdf.line(initialX,pdf.get_y(),initialX + 190, pdf.get_y())
 
-        pdf.set_y(pdf.get_y() + 1.1)
+        pdf.set_y(pdf.get_y() + 1.15)
         pdf.line(initialX,pdf.get_y(),initialX + 190, pdf.get_y())
 
         local_vertical_offset += 15
+        #TODO
         #HARDCODED PRODUCT NUMBER AND PRODUCT NAME
+        local_vertical_offset -= 3
         pdf.set_xy(initialX + 5, local_vertical_offset)
-        pdf.cell(w=10, h=4, txt='1',align = 'C')
+        pdf.cell(w=11, h=4, txt='1',align = 'C')
 
         pdf.set_xy(initialX+20, local_vertical_offset-2)
-        pdf.multi_cell(w=50, h=4, txt=f'Furnizare servicii software,\ncf. contract {invoice.activity.contract_id}/01 aprilie 2019')
+        pdf.multi_cell(w=60, h=4, txt=f'Furnizare servicii software,\ncf. contract {invoice.activity.contract_id}/**contract start date**')
 
         pdf.set_xy(initialX + 85, local_vertical_offset+2)
         pdf.cell(w=10, txt='ore', align='C')
@@ -299,19 +298,79 @@ def render_invoice(invoice):
 
         pdf.line(initialX,local_vertical_offset + 7,initialX + 190, local_vertical_offset + 7)
 
-        local_vertical_offset = local_vertical_offset + 11.5
+        local_vertical_offset = local_vertical_offset + 12
         pdf.line(initialX,local_vertical_offset,initialX + 190, local_vertical_offset)
 
+        local_vertical_offset = local_vertical_offset + 2.5
+        pdf.set_xy(initialX+23.5, local_vertical_offset)
+        pdf.cell(w=50, txt='Total lei', align='C')
+        pdf.set_x(initialX + 165)
+        pdf.cell(w=20, txt=f'{invoice.value}', align='C')
+
+        pdf.line(initialX,local_vertical_offset + 2,initialX + 190, local_vertical_offset + 2)
+
         local_vertical_offset = local_vertical_offset + 5
-        pdf.set_xy(initialX+20, local_vertical_offset)
-        pdf.cell(w=50,txt='Total lei', align='C')
+        pdf.set_xy(initialX + 23.5, local_vertical_offset)
+        pdf.cell(w=50, txt='Total factura', align='C')
+        pdf.set_x(initialX + 165)
+        pdf.cell(w=20, txt=f'{invoice.value}', align='C')
+        
+        pdf.set_y(local_vertical_offset)
+    
+    def render_signature_space():
+        local_vertical_offset = pdf.get_y()
+        pdf.set_x(initialX)
+        pdf.line(initialX,local_vertical_offset + 2,initialX + 190, local_vertical_offset + 2)
+        pdf.line(initialX,local_vertical_offset + 20,initialX + 190, local_vertical_offset + 20)
+        
+        local_vertical_offset += 7
+        pdf.set_y(local_vertical_offset)
+        pdf.multi_cell(w=80, h=4, txt='Semnatura si\nstampila furnizor', align='C')
 
+        pdf.set_y(pdf.get_y()-10)
+        pdf.set_x(initialX + 80)
+        
+        pdf.cell(w=0, txt='Numele delegatului: NUME PRENUME,', align='L')
+        
+        pdf.set_y(pdf.get_y()+2.5)
+        pdf.set_x(initialX + 80)
+        pdf.multi_cell(w=80, h=3, txt='C.I seria SERIE, nr. NUMAR,\nemis de INSTITUTIE\n\nSemnatura', align='C')
+        
+        pdf.set_y(local_vertical_offset)
+        pdf.set_x(initialX + 160)
+        pdf.multi_cell(w=30, h=4, txt='Semnatura\nde primire', align='C')
 
+    #TODO Make this function adjust vertical lines length based on number of different items in the invoice
+    def render_vertical_lines():
+        pdf.set_xy(initialX, initialY)
+        pdf.line(initialX,initialY + 61, initialX, initialY + 112.5)
+
+        local_horizontal_offset = initialX + 20
+        pdf.line(local_horizontal_offset, initialY + 61, local_horizontal_offset, initialY + 94.5)
+        
+
+        local_horizontal_offset += 60
+        pdf.line(local_horizontal_offset, initialY + 61, local_horizontal_offset, initialY + 112.5)
+
+        local_horizontal_offset += 20.5
+        pdf.line(local_horizontal_offset, initialY + 61, local_horizontal_offset, initialY + 94.5)
+
+        local_horizontal_offset += 28.5
+        pdf.line(local_horizontal_offset, initialY + 61, local_horizontal_offset, initialY + 94.5)
+
+        local_horizontal_offset += 31.5
+        pdf.line(local_horizontal_offset, initialY + 61, local_horizontal_offset, initialY + 112.5)
+
+        local_horizontal_offset += 29.5
+        pdf.line(local_horizontal_offset, initialY + 61, local_horizontal_offset, initialY + 112.5)
+        
+    #Changing the calling order will cause a lot of rendering troubles
     render_seller_info()
     render_buyer_info()
     render_title()
     render_table_headings()
     render_table_data()
+    render_signature_space()
     render_vertical_lines()
     write_to_page(pdf,document_name)
 
