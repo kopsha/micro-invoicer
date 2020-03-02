@@ -6,7 +6,7 @@ import copy
 def render_activity_report(invoice):
     pdf = fpdf.FPDF(orientation='P', unit='mm', format='A4')
     pdf.add_page()
-    pdf.set_font('Arial')
+    pdf.set_font('Helvetica')
 
     document_name = 'demo_pdf_activity_report.pdf'
     initialX = pdf.get_x()
@@ -43,7 +43,7 @@ def render_activity_report(invoice):
 
     def render_table_headings():
         pdf.set_font_size(12)
-        pdf.set_font('Arial', 'B')
+        pdf.set_font('Helvetica', 'B')
         pdf.set_y(pdf.get_y() + 20)
         
         pdf.set_x(initialX + 8)
@@ -63,7 +63,7 @@ def render_activity_report(invoice):
         pdf.line(initialX + 10, pdf.get_y() + 5, length, pdf.get_y() + 5)
 
         pdf.set_y(pdf.get_y() + 8)
-        pdf.set_font('Arial')
+        pdf.set_font('Helvetica')
         pdf.set_font_size(12)
         for task in invoice.activity.tasks:
             pdf.set_x(initialX + 8)
@@ -92,13 +92,13 @@ def render_activity_report(invoice):
     def render_total():
         pdf.set_y(pdf.get_y() + 5)
         pdf.set_x(table_column_date_width + table_column_client_code_width + table_column_description_width+10)
-        pdf.set_font(family='Arial', style='B')
+        pdf.set_font(family='Helvetica', style='B')
         pdf.cell(w=20, txt=f'Total', align='C')
 
         pdf.set_x(pdf.get_x() + 5)
         pdf.cell(w=table_column_hours_width, txt=f'{invoice.activity.duration}')
         
-        pdf.set_font(family='Arial')
+        pdf.set_font(family='Helvetica')
     
     def render_seller_signature():
         current_y = pdf.get_y()
@@ -154,14 +154,14 @@ def render_activity_report(invoice):
 def render_invoice(invoice):
     pdf = fpdf.FPDF(orientation='P', unit='mm', format='A4')
     pdf.add_page()
-    pdf.set_font('Arial')
+    pdf.set_font('Helvetica')
 
     document_name = 'demo_pdf_invoice.pdf'
     initialX = pdf.get_x()
     initialY = pdf.get_y()
 
     def render_seller_info():
-        pdf.set_font('Arial', style='B', size=9)
+        pdf.set_font('Helvetica', style='B', size=9)
         pdf.cell(w=0, h=5, txt='Furnizor: ', ln=1)
         pdf.cell(w=0, h=5, txt='Nr. ORC: ', ln=1)
         pdf.cell(w=0, h=5, txt='CIF: ', ln=1)
@@ -175,7 +175,7 @@ def render_invoice(invoice):
         rendered_bank_account_length = pdf.get_string_width('Cont:')
         rendered_bank_name_length = pdf.get_string_width('Banca:')
 
-        pdf.set_font('Arial', style='')
+        pdf.set_font('Helvetica', style='')
         pdf.set_xy(initialX + rendered_seller_length + 2, initialY)
         pdf.cell(w=0, h=5, txt=f'{invoice.seller.name}', ln=1)
         pdf.set_x(initialX + rendered_registration_id_length + 2)
@@ -193,7 +193,7 @@ def render_invoice(invoice):
         local_offset = initialX + 105
 
         pdf.set_xy(local_offset, initialY)
-        pdf.set_font('Arial', style='B', size=9)
+        pdf.set_font('Helvetica', style='B', size=9)
         pdf.cell(w=0, h=5, txt='Cumparator: ', ln=1)
         pdf.set_x(local_offset)
         pdf.cell(w=0, h=5, txt='Nr. ORC: ', ln=1)
@@ -213,7 +213,7 @@ def render_invoice(invoice):
         rendered_bank_account_length = pdf.get_string_width('Cont:')
         rendered_bank_name_length = pdf.get_string_width('Banca:')
 
-        pdf.set_font('Arial', style='')
+        pdf.set_font('Helvetica', style='')
         pdf.set_xy(local_offset + rendered_buyer_length + 2, initialY)
         pdf.cell(w=0, h=5, txt=f'{invoice.buyer.name}', ln=1)
 
@@ -234,11 +234,11 @@ def render_invoice(invoice):
     
     def render_title():
         local_offset = initialX + 105
-        pdf.set_font('Arial', style='', size = 14)
+        pdf.set_font('Helvetica', style='', size = 14)
         pdf.set_xy(initialX, initialY + 40)
         pdf.cell(w=0, h=7, txt='FACTURA FISCALA', align='C', ln=1)
 
-        pdf.set_font('Arial', style='', size=9)
+        pdf.set_font('Helvetica', style='', size=9)
         pdf.set_x(local_offset - pdf.get_string_width(f'Seria: {invoice.series} {invoice.number}                            din {invoice.activity.start_date}') / 2)
         pdf.cell(w=0, h=5, txt=f'Seria: {invoice.series} {invoice.number}                            din {invoice.activity.start_date}')
  
