@@ -112,7 +112,6 @@ def previous_month():
     return last_month
 
 def make_registry(install_json):
-    print(install_json)
     if not os.path.isfile(install_json):
         raise ValueError(f'The provided path {install_json} is not a valid file.')
 
