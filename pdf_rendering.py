@@ -1,7 +1,10 @@
 import fpdf
 import copy
-#TODO OVERALL: MODIFY TEXT OUTPUT AS MORE INFORMATION BECOMES AVAILABLE IN INVOICE
-
+#TODO OVERALL: 
+# replace hardcoded: - provider's company representative name
+#                    - buyer's company representative name, identity card legal information
+#                    - contract start date
+#                    - number of items provider sold to buyer (number of table entries)
 
 def render_activity_report(invoice):
     pdf = fpdf.FPDF(orientation='P', unit='mm', format='A4')
