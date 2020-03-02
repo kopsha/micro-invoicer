@@ -5,6 +5,7 @@ import copy
 #                    - buyer's company representative name, identity card legal information
 #                    - contract start date
 #                    - number of items provider sold to buyer (number of table entries)
+#as this information becomes available in the invoice given to renderer
 
 def render_activity_report(invoice):
     pdf = fpdf.FPDF(orientation='P', unit='mm', format='A4')
