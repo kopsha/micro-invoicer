@@ -237,8 +237,11 @@ def issue_draft_invoice(db, invoice):
     db.register.next_number += 1
     invoice.status = InvoiceStatus.PUBLISHED
     db.register.invoices.append(invoice)
-    pdf.render_activity_report(invoice)
-    pdf.render_invoice(invoice)
+
+    file_save_activity_report_name = "demo_pdf_activity_report.pdf"
+    file_save_invoice_name = "demo_pdf_invoice.pdf"
+    pdf.render_activity_report(invoice, file_save_activity_report_name)
+    pdf.render_invoice(invoice, file_save_invoice_name)
 
 def cls_from_dict(pairs):
     obj = {k:v for k,v in pairs}

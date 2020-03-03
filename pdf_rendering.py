@@ -7,13 +7,12 @@ import copy
 #                    - number of items provider sold to buyer (number of table entries)
 #as this information becomes available in the invoice given to renderer
 
-def render_activity_report(invoice):
+def render_activity_report(invoice, file_save_name):
     pdf = fpdf.FPDF(orientation='P', unit='mm', format='A4')
     pdf.add_page()
     font_used = 'Helvetica'
     pdf.set_font(font_used)
 
-    document_name = 'demo_pdf_activity_report.pdf'
     initialX = pdf.get_x()
     initialY = pdf.get_y()
     table_column_date_width = 25
@@ -154,16 +153,15 @@ def render_activity_report(invoice):
     render_total()
     render_seller_signature()
     render_buyer_signature()
-    write_to_page(pdf, document_name)
+    write_to_page(pdf, file_save_name)
 
 
-def render_invoice(invoice):
+def render_invoice(invoice, file_save_name):
     pdf = fpdf.FPDF(orientation='P', unit='mm', format='A4')
     pdf.add_page()
     font_used = 'Helvetica'
     pdf.set_font(font_used)
 
-    document_name = 'demo_pdf_invoice.pdf'
     initialX = pdf.get_x()
     initialY = pdf.get_y()
 
@@ -379,7 +377,7 @@ def render_invoice(invoice):
     render_table_data()
     render_signature_space()
     render_vertical_lines()
-    write_to_page(pdf,document_name)
+    write_to_page(pdf, file_save_name)
 
 def write_to_page(pdf, document_name):
     pdf.output(document_name)
