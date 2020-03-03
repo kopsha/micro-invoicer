@@ -79,7 +79,6 @@ def render_activity_report(invoice, filename):
             pdf.set_x(pdf.get_x() + 5)
             
             processed_description = process_text_to_fit_width(pdf, task.name, text_width)
-            print(processed_description)
             current_y = pdf.get_y()
             for line in processed_description:
                 current_x = pdf.get_x()
