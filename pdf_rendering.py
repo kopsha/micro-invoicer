@@ -7,7 +7,7 @@ import copy
 #                    - number of items provider sold to buyer (number of table entries)
 #as this information becomes available in the invoice given to renderer
 
-def render_activity_report(invoice, file_save_name):
+def render_activity_report(invoice, filename):
     pdf = fpdf.FPDF(orientation='P', unit='mm', format='A4')
     pdf.add_page()
     font_used = 'Helvetica'
@@ -78,7 +78,7 @@ def render_activity_report(invoice, file_save_name):
 
             pdf.set_x(pdf.get_x() + 5)
             
-            processed_description = process_text_to_fit_width(pdf, task.name, text_width)
+            processed_description = process_text_to_fit_width(pdf, f'{task.name} {task.name}', text_width)
             print(processed_description)
             current_y = pdf.get_y()
             for line in processed_description:
@@ -87,10 +87,11 @@ def render_activity_report(invoice, file_save_name):
                 pdf.set_y(pdf.get_y() + 5)
                 pdf.set_x(current_x)
                 
-                pdf.set_y(current_y)
-                pdf.set_x(pdf.get_x() + table_column_description_width + 85)
-                pdf.cell(w=table_column_hours_width, txt=f'{task.duration}', align = 'C')
-                pdf.set_y(pdf.get_y() + len(processed_description) * 5)
+            pdf.set_y(current_y)
+            pdf.set_x(pdf.get_x() + table_column_description_width + 85)
+            pdf.cell(w=table_column_hours_width, txt=f'{task.duration}', align = 'C')
+                
+            pdf.set_y(pdf.get_y() + len(processed_description) * 6)
         
         pdf.line(initialX + 10, pdf.get_y() - 3, length, pdf.get_y() - 3)
 
@@ -130,17 +131,17 @@ def render_activity_report(invoice, file_save_name):
         pdf.set_x(initialX + 130)
         pdf.cell(w=20, h=6, txt=f'L.S.', align = 'C', ln = 1)
     
-    def process_text_to_fit_width(pdf, text, width):
+    def process_text_to_fit_width(pdf, text, line_width):
         words = str(text).split()
         rows = []
         row = ''
 
         for word in words:
             next_row = ' '.join([row, word])
-            if pdf.get_string_width(next_row) > width:
-                # start a new row
+            if pdf.get_string_width(next_row) > line_width:
                 rows.append(row)
-                row = next_row
+                next_row = word
+            row = next_row
         rows.append(row)
 
         return rows
@@ -153,10 +154,10 @@ def render_activity_report(invoice, file_save_name):
     render_total()
     render_seller_signature()
     render_buyer_signature()
-    write_to_page(pdf, file_save_name)
+    write_to_page(pdf, filename)
 
 
-def render_invoice(invoice, file_save_name):
+def render_invoice(invoice, filename):
     pdf = fpdf.FPDF(orientation='P', unit='mm', format='A4')
     pdf.add_page()
     font_used = 'Helvetica'
@@ -198,7 +199,7 @@ def render_invoice(invoice, file_save_name):
         local_offset = initialX + 105
 
         pdf.set_xy(local_offset, initialY)
-        pdf.set_font(font_used', style='B', size=9)
+        pdf.set_font(font_used, style='B', size=9)
         pdf.cell(w=0, h=5, txt='Cumparator: ', ln=1)
         pdf.set_x(local_offset)
         pdf.cell(w=0, h=5, txt='Nr. ORC: ', ln=1)
@@ -377,7 +378,7 @@ def render_invoice(invoice, file_save_name):
     render_table_data()
     render_signature_space()
     render_vertical_lines()
-    write_to_page(pdf, file_save_name)
+    write_to_page(pdf, filename)
 
 def write_to_page(pdf, document_name):
     pdf.output(document_name)
