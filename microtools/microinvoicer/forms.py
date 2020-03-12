@@ -1,8 +1,15 @@
+from django.forms import ModelForm
 from django_registration.forms import RegistrationForm
 
-from . import models
+from .models import *
 
 class MicroRegistrationForm(RegistrationForm):
     class Meta(RegistrationForm.Meta):
-        model = models.MicroUser
-        exclude = []
+        model = MicroUser
+        fields = '__all__'
+
+
+class FiscalEntityForm(ModelForm):
+    class Meta:
+        model = FiscalEntity
+        fields = '__all__'
