@@ -9,6 +9,7 @@ verify_ssl = true
 pytest = "*"
 fpdf = "*"
 django = "*"
+django-registration = "*"
 
 [requires]
 python_version = "3.7"
