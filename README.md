@@ -2,22 +2,27 @@
 
 Making invoices has never been easier
 
-## use cases
+## Conceptualized API as use cases
 
-* registry = install_registry(series, start_number, seller)
-* registry = get_installed()
+1, load / create the registry
 
-* contract = registry.make_contract(buyer, hourly_rate)
-* contract = registry.last_contract()
-* contract = registry.find_contract(buyer)
+* `registry = install_registry(series, start_number, seller)`, or
+* `registry = get_installed()`
 
-* activity = make_activity(contract, hours, project_code, flavor)
-* report = list() of activities
+2, load / create a contract
 
-* invoice = make_time_invoice(date, report, exchange_rate, contract)
-* invoice = make_materials_invoice(date, price, quantity, contract)
+* `contract = registry.make_contract(buyer, hourly_rate)`, or
+* `contract = registry.last_contract()`, or
+* `contract = registry.find_contract(buyer)`
 
-* invoice.render_pdf(folder)
+3, create new invoice
+
+* `invoice = make_time_invoice(date, report, exchange_rate, contract)`, or
+* `invoice = make_materials_invoice(date, price, quantity, contract)`
+
+4, release all draft invoices
+
+5, amend invoice (storno)
 
 
 ## Setup instructions
