@@ -19,69 +19,134 @@ Making invoices has never been easier
 
 * invoice.render_pdf(folder)
 
-Setting up the program for demo
 
-1. Create three files at the location of your python file (with your favorite editor) called:
-	seller.json
-	buyer.json
-	invoice_data.json
+## Setup instructions
 
-MAKE SURE THE FILES ARE IN .json FORMAT.
-DO NOT CREATE .txt FILES !
+Before being able to generate (issue) a new invoice you need to provide some data to the script.
+In the same folder, create the following json files and fill in your company and contract details as in the examples below:
 
-
-2. Copy and paste the following data (braces included):
-
--INTO FILE seller.json
-
+`seller.json`
+```json
 {
     "name" : "AGRICULTORII VESELI S.R.L",
     "registration_id": "J12/3156/1010",
     "fiscal_code": "12345678",
-    "address": "Castelul Fermecat, Comuna Imperiala, nr. 3 jud. Regatul Albastru",
+    "address": "Castelul Fermecat, Comuna Imperiala, nr. 3, jud. Regatul Albastru",
     "bank_account": "RA12 TRRG RANC RT01 1234 5678",
     "bank_name": "Trezoreria Regala",
     "invoice_series" : "APR",
     "invoice_start_number" : 1
 }
+```
 
-
-
--INTO FILE buyer.json
-
+`contract.json`
+```json
 {
     "name" : "FAMILIA REGALA S.R.L.",
     "registration_id": "J12/0001/1001",
     "fiscal_code": "987654321",
-    "address": "Castelul Regal, Orasul Minunilor, nr. 1 jud. Regatul Albastru",
+    "address": "Castelul Regal, Orasul Minciunilor, nr. 1, jud. Regatul Albastru",
     "bank_account": "RA01 TRRG RANC RT01 0001 0001",
     "bank_name": "Trezoreria Regala",
-    "hourly_rate" : 28
+    "hourly_rate" : 112
 }
+```
 
 
--INTO FILE invoice_data.json
+Then, run the script providing the json files created earlier as arguments:
 
+```console
+micro-invoicer $ python mini_invoicer.py --install seller.json --contract contract.json --commit
+********************************************************************************
+* Mini Invoicer                                                                *
+********************************************************************************
+All changes will be written to local database.
+********************************************************************************
+* Installing new invoice register                                              *
+********************************************************************************
+Created register for AGRICULTORII VESELI S.R.L
+Created contract with FAMILIA REGALA S.R.L.
+Local database updated successfully.
+********************************************************************************
+* AGRICULTORII VESELI S.R.L registry quick view                                *
+********************************************************************************
+Contracts:
+  0 : FAMILIA REGALA S.R.L.
+No invoices found in registry.
+********************************************************************************
+* [14:36:12] Finished in 0.00 seconds.                                         *
+********************************************************************************
+micro-invoicer $ _
+```
+
+Notice the `--commit` flag, which tells the script that you want to write the required changes to disk.
+
+Now, the setup is complete so you can ...
+
+
+### Issue a new invoice
+
+In order to render (read as *issue*) a PDF with a new invoice, you need to provide the details of that invoice in a new json file.
+
+`new_invoice.json`
+```json
 {
     "contract_id" : 0,
-    "hours" : 168,
-    "flavor": "livrat",
-    "project_id": "2.7_LVR_LEG",
+    "hours" : 128,
+    "flavor": "authentication module",
+    "project_id": "FooBar Banking",
     "xchg_rate" : 7.4551
 }
+```
+
+Then, run the script with using the `--invoice` argument as below:
+```console
+micro-invoicer $ python mini_invoicer.py --invoice invoice.json --commit
+********************************************************************************
+* Mini Invoicer                                                                *
+********************************************************************************
+All changes will be written to local database.
+********************************************************************************
+* AGRICULTORII VESELI S.R.L registry quick view                                *
+********************************************************************************
+Contracts:
+  0 : FAMILIA REGALA S.R.L.
+No invoices found in registry.
+New invoice:
+   APR-0001 : FAMILIA REGALA S.R.L.            :     128 ore :   106876.31 lei
+Local database updated successfully.
+********************************************************************************
+* [14:43:08] Finished in 0.01 seconds.                                         *
+********************************************************************************
+micro-invoicer $ _
+```
+
+And you're done.
+
+For the next one, you only need to update this json file and run the script with `--invoice` argument again.
 
 
+### quicklook invoice reqistry
 
-3. Run the python file via command prompt / terminal with the required install arguments as shown IN THE FOLLOWING EXAMPLE 
-python c:/Users/sergiu.adam/Documents/GitHub/micro-invoicer/mini_invoicer.py --install c:/Users/sergiu.adam/Documents/GitHub/micro-invoicer/seller.json -c c:/Users/sergiu.adam/Documents/GitHub/micro-invoicer/buyer.json --commit
-Generalised as:
-python "PATH_TO_MINI_INVOICER/"mini_invoicer.py --install "PATH_TO_MINI_INVOICER/"seller.json -c "PATH_TO_MINI_INVOICER/"buyer.json --commit
-RUN THIS COMMAND ONLY ONCE, AT THE SETUP OF THE PROGRAM
+At some point, you may want to inspect the current registry and all you have to do is to run the script without arguments.
 
-In order to create a PDF invoice without saving the fact that a new invoice has been emitted, type
-python "PATH_TO_MINI_INVOICER/"mini_invoicer.py -n "PATH_TO_MINI_INVOICER/"invoice_data.json
+```console
+micro-invoicer $ python mini_invoicer.py 
+********************************************************************************
+* Mini Invoicer                                                                *
+********************************************************************************
+Performing a dry run, local database will not be touched.
+********************************************************************************
+* AGRICULTORII VESELI S.R.L registry quick view                                *
+********************************************************************************
+Contracts:
+  0 : FAMILIA REGALA S.R.L.
+Last 5 invoices in registry:
+   APR-0001 : FAMILIA REGALA S.R.L.            :     128 ore :   106876.31 lei
+********************************************************************************
+* [14:46:42] Finished in 0.00 seconds.                                         *
+********************************************************************************
+micro-invoicer $ _
+```
 
-In order to create a PDF invoice WITH saving the fact that a new invoice has been emitted, type
-python "PATH_TO_MINI_INVOICER/"mini_invoicer.py -n "PATH_TO_MINI_INVOICER/"invoice_data.json --commit
-
-
+You can the full list of arguments using `--help` as argument.
