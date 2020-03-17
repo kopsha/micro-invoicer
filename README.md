@@ -126,7 +126,7 @@ And you're done.
 For the next one, you only need to update this json file and run the script with `--invoice` argument again.
 
 
-### quicklook invoice reqistry
+### Reqistry quick view
 
 At some point, you may want to inspect the current registry and all you have to do is to run the script without arguments.
 
@@ -149,4 +149,4 @@ Last 5 invoices in registry:
 micro-invoicer $ _
 ```
 
-You can the full list of arguments using `--help` as argument.
+You can see the full list of arguments with `--help`.
