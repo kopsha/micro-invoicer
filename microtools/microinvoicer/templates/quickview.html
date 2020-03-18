@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+
+{% if seller %}
+    <h4>{{ seller.name }} registry quick view</h4>
+{% else %}
+    <h4>Please fill in the fiscal information of your company.</h4>
+{% endif %}
+
+<hr>
+
+{% if invoices %}
+    <table>
+        {% for invoice in invoices %}
+        <tr>
+            <td>{{ invoice.series_number }}</td>
+            <td>Published</td>
+            <td>{{ invoice.buyer }}</td>
+            <td>{{ invoice.duration }} hours</td>
+            <td>{{ invoice.value|intcomma }} $</td>
+            <td>PDF link</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>No invoices found. You can always create one.</p>
+{% endif %}
+
+{% endblock %}
