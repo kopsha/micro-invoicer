@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if user.is_authenticated %}
+<h2>Welcome, {{ user.get_short_name }}</h2>
+{% endif %}
+<h3>Let there be awesomeness</h3>
+{% endblock %}

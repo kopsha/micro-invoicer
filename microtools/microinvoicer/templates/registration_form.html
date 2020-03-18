@@ -1,0 +1,11 @@
+{% extends "base_form.html" %}
+{% load i18n %}
+{% load material_form %}
+
+{% block formtitle %}Register{% endblock %}
+{% block formclass %}col s12 m10 l8 offset-l2 offset-m1{% endblock %}
+{% block formcontent %}
+    {% part form.first_name prefix %}<i class="material-icons prefix">account_box</i>{% endpart %}
+    {% part form.email prefix %}<i class="material-icons prefix">email</i>{% endpart %}
+    {% part form.password1 prefix %}<i class="material-icons prefix">lock_open</i>{% endpart %}
+{% endblock %}
