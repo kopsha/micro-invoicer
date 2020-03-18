@@ -155,3 +155,14 @@ micro-invoicer $ _
 ```
 
 You can see the full list of arguments with `--help`.
+
+## Sitemap
+
+/           | Home          | index.html            | # invoice list
+----        | ----          | ----                  | ----
+/profile    | Profile       | profile.html          | # profile view
+/invoice    | Invoice       | invoice.html          | # invoice view
+/contract   | Contract      | contract.html         | # contract view
+/contracts  | Contracts     | contract_list.html    | # contracts list view
+/register/fiscal_entity |   |                       | # will trigger create registry
+
