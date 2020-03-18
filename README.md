@@ -1,4 +1,4 @@
-# mini-invoicer
+# micro-invoicer
 
 Making invoices has never been easier
 
