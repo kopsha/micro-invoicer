@@ -10,6 +10,8 @@ pytest = "*"
 fpdf = "*"
 django = "*"
 django-registration = "*"
+django-material = "*"
+djongo = {git = "https://github.com/vladrotea/djongo"}
 
 [requires]
 python_version = "3.7"

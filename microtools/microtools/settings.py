@@ -32,7 +32,7 @@ ALLOWED_HOSTS = []
 LOCAL_APPS = [
     'microinvoicer.apps.MicroinvoicerConfig'
 ]
-INSTALLED_APPS = LOCAL_APPS + [
+INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,7 +40,8 @@ INSTALLED_APPS = LOCAL_APPS + [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_registration',
-]
+    'material',
+] + LOCAL_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -123,6 +124,11 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-
+# Auth settings
 AUTH_USER_MODEL = 'microinvoicer.MicroUser'
+
+LOGIN_URL = 'login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
 ACCOUNT_ACTIVATION_DAYS = 7
