@@ -2,7 +2,11 @@
 
 {% block content %}
 
-<h3>Hey buddy,</h3>
-<p>the index is empty</p>
+{% if user.is_authenticated %}
+    {% include 'quickview.html' %}
+{% else %}
+    <h3>Hey buddy,</h3>
+    How did you got here?
+{% endif %}
 
 {% endblock %}
