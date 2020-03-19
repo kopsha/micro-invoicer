@@ -13,6 +13,7 @@ from dataclasses import dataclass, asdict, field
 from datetime import datetime, date, timedelta
 from typing import List
 import enum
+import json
 
 
 class MicroUser(AbstractBaseUser, PermissionsMixin):
@@ -29,6 +30,7 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(_('staff status'), default=False)
     is_active = models.BooleanField(_('active'), default=True)
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
+    datastore = models.TextField(blank=True)
 
     objects = MicroUserManager()
 
@@ -57,9 +59,49 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
 
-"""
-Dataclasses area
-"""
+    def save_datastore(self, data):
+        def date_serializer(obj):
+            if isinstance(obj, date):
+                return obj.isoformat()
+
+            raise TypeError(f'Type {type(obj)} is not JSON serializable')
+
+        self.datastore = json.dumps(asdict(data), indent=4, default=date_serializer)
+        self.save()
+
+    def load_datastore(self):
+        def cls_from_dict(pairs):
+            obj = {k:v for k,v in pairs}
+
+            if 'seller' in obj:
+                obj['seller'] = FiscalEntity(**obj['seller'])
+
+            if 'buyer' in obj:
+                obj['buyer'] = FiscalEntity(**obj['buyer'])
+
+            if 'register' in obj:
+                obj['register'] = InvoiceRegister(**obj['register'])
+
+            if 'contracts' in obj:
+                obj['contracts'] = [ServiceContract(**contract_obj) for contract_obj in obj['contracts']]
+
+            if 'tasks' in obj:
+                obj['tasks'] = [Task(**task_obj) for task_obj in obj['tasks']]
+
+            if 'activity' in obj:
+                obj['activity'] = ActivityReport(**obj['activity'])
+
+            if 'invoices' in obj:
+                obj['invoices'] = [TimeInvoice(**invoice_obj) for invoice_obj in obj['invoices']]
+
+            if 'invoices' in obj:
+                obj['invoices'] = [TimeInvoice(**invoice_obj) for invoice_obj in obj['invoices']]
+
+            return obj
+
+        data = json.loads(str(self.datastore), object_pairs_hook=cls_from_dict)
+        return LocalStorage(register=data['register'], contracts=data['contracts'])
+
 
 @dataclass
 class FiscalEntity:

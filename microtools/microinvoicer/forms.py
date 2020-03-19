@@ -32,3 +32,7 @@ class SellerForm(forms.Form):
     bank_name = forms.CharField(max_length=80, required=True)
     invoice_series = forms.CharField(max_length=5, required=True)
     start_no = forms.IntegerField(required=True)
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user')  # To get request.user. Do not use kwargs.pop('user', None) due to potential security hole
+        return super().__init__(*args, **kwargs)

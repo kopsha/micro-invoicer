@@ -14,6 +14,30 @@ from . import models
 class MicroHomeView(TemplateView):
     template_name = 'index.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            db = self.request.user.load_datastore()
+            context['seller'] = { 'name' : db.register.seller.name }
+            context['invoices'] = db.register.invoices
+        else:
+            # TODO: factor this out someday
+            context['seller'] = { 'name' : 'Anonymous' }
+            context['invoices'] = [{
+                'series_number' : 'A-0001',
+                'buyer' : 'ANONYMOUS S.R.L.',
+                'duration' : 128,
+                'value' : 106876.31,
+            },
+            {
+                'series_number' : 'A-0002',
+                'buyer' : 'ANONYMOUS S.R.L.',
+                'duration' : 92,
+                'value' : 6995.12,
+            }]
+        print(context)
+        return context
+
 
 class MicroRegistrationView(RegistrationView):
     template_name = 'registration_form.html'
@@ -39,17 +63,19 @@ class SellerView(LoginRequiredMixin, FormView):
         context['form_title'] = self.form_title
         return context
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
     def form_valid(self, form):
         invoice_series = form.cleaned_data.pop('invoice_series')
         start_no = form.cleaned_data.pop('start_no')
         seller = models.FiscalEntity(**form.cleaned_data)
-        registry = models.InvoiceRegister(
-            seller=seller,
-            invoice_series=invoice_series,
-            next_number=start_no
-        )
-        # save this shit to db
-        print(registry)
+        registry = models.InvoiceRegister(seller=seller, invoice_series=invoice_series, next_number=start_no)
+        db = models.LocalStorage(registry)
+        form.user.save_datastore(db)
+
         return super().form_valid(form)
 
 
@@ -60,32 +86,3 @@ class ProfileView(LoginRequiredMixin, TemplateView):
 class QuickView(TemplateView):
     template_name = 'quickview.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            # TODO: pick user data
-            context['seller'] = { 'name' : 'BETTY SRL' }
-            context['invoices'] = [
-            {
-                'series_number' : 'JUST-01',
-                'buyer' : 'CLIENTUL S.R.L.',
-                'duration' : 128,
-                'value' : 106876.31,
-            }]
-        else:
-            # TODO: factor this out someday
-            context['seller'] = { 'name' : 'Anonymous' }
-            context['invoices'] = [{
-                'series_number' : 'A-0001',
-                'buyer' : 'ANONYMOUS S.R.L.',
-                'duration' : 128,
-                'value' : 106876.31,
-            },
-            {
-                'series_number' : 'A-0002',
-                'buyer' : 'ANONYMOUS S.R.L.',
-                'duration' : 92,
-                'value' : 6995.12,
-            }]
-        print(context)
-        return context
