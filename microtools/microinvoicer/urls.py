@@ -8,8 +8,8 @@ urlpatterns = [
     path('login/', views.MicroLoginView.as_view(), name='microinvoice_login'),
     path('logout/', auth_views.LogoutView.as_view(), name='microinvoice_logout'),
     path('profile/', views.ProfileView.as_view(), name='microinvoice_profile'),
-    path('profile/fiscal/', views.FiscalEntityView.as_view(), name='microinvoice_fiscal_entity'),
-    path('draft/', views.FiscalEntityView.as_view(), name='microinvoice_draft'),
-    path('setup/', views.FiscalEntityView.as_view(), name='microinvoice_setup'),
+    path('profile/fiscal/', views.SellerView.as_view(), name='microinvoice_fiscal_entity'),
+    path('draft/', views.SellerView.as_view(), name='microinvoice_draft'),
+    path('setup/', views.SellerView.as_view(), name='microinvoice_setup'),
     path('', views.MicroHomeView.as_view(), name='index'),
 ]

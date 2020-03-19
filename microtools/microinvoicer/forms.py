@@ -1,9 +1,9 @@
-from django.forms import ModelForm
+from django import forms
 from django_registration.forms import RegistrationForm
 
 from material import Layout, Row
 
-from .models import MicroUser, FiscalEntity
+from .models import MicroUser
 
 
 class MicroRegistrationForm(RegistrationForm):
@@ -23,7 +23,12 @@ class MicroRegistrationForm(RegistrationForm):
     )
 
 
-class FiscalEntityForm(ModelForm):
-    class Meta:
-        model = FiscalEntity
-        fields = '__all__'
+class SellerForm(forms.Form):
+    name = forms.CharField(max_length=100, required=True)
+    registration_id = forms.CharField(max_length=20, required=True)
+    fiscal_code = forms.CharField(max_length=15, required=True)
+    address = forms.CharField(max_length=240, required=True)
+    bank_account = forms.CharField(max_length=32, required=True)
+    bank_name = forms.CharField(max_length=80, required=True)
+    invoice_series = forms.CharField(max_length=5, required=True)
+    start_no = forms.IntegerField(required=True)
