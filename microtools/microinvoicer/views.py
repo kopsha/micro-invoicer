@@ -10,6 +10,7 @@ from django_registration.backends.one_step.views import RegistrationView
 
 from . import forms
 from . import models
+from . import micro_models
 
 class MicroHomeView(TemplateView):
     template_name = 'index.html'
@@ -18,24 +19,11 @@ class MicroHomeView(TemplateView):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
             db = self.request.user.load_datastore()
-            context['seller'] = { 'name' : db.register.seller.name }
-            context['invoices'] = db.register.invoices
         else:
-            # TODO: factor this out someday
-            context['seller'] = { 'name' : 'Anonymous' }
-            context['invoices'] = [{
-                'series_number' : 'A-0001',
-                'buyer' : 'ANONYMOUS S.R.L.',
-                'duration' : 128,
-                'value' : 106876.31,
-            },
-            {
-                'series_number' : 'A-0002',
-                'buyer' : 'ANONYMOUS S.R.L.',
-                'duration' : 92,
-                'value' : 6995.12,
-            }]
-        print(context)
+            db = micro_models.fake_anonymous_data()
+
+        context['seller'] = { 'name' : db.register.seller.name }
+        context['invoices'] = db.register.invoices
         return context
 
 

@@ -2,11 +2,6 @@
 
 {% block content %}
 
-{% if user.is_authenticated %}
-    {% include 'quickview.html' %}
-{% else %}
-    <h3>Hey buddy,</h3>
-    How did you got here?
-{% endif %}
+{% include 'quickview.html' %}
 
 {% endblock %}
