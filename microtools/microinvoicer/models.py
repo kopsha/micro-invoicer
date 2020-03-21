@@ -10,6 +10,7 @@ from django.utils import timezone
 from .managers import MicroUserManager
 
 from .micro_models import *
+import decimal
 
 class MicroUser(AbstractBaseUser, PermissionsMixin):
     """
@@ -55,13 +56,16 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
 
 
     def save_datastore(self, data):
-        def date_serializer(obj):
+        def custom_serializer(obj):
             if isinstance(obj, date):
                 return obj.isoformat()
 
+            if isinstance(obj, decimal.Decimal):
+                return float(obj)
+
             raise TypeError(f'Type {type(obj)} is not JSON serializable')
 
-        self.datastore = json.dumps(asdict(data), indent=4, default=date_serializer)
+        self.datastore = json.dumps(asdict(data), indent=4, default=custom_serializer)
         self.save()
 
     def load_datastore(self):

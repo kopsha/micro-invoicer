@@ -162,8 +162,8 @@ You can see the full list of arguments with `--help`.
  ----        | ----          | ----                  | ----
  /           | Home          | index.html            | registry quickview
  /profile    | Profile       | profile.html          | profile view (reset)
- /invoice    | Invoice       | invoice.html          | invoice detail view
  /contract   | Contract      | contract.html         | contract detail view
  /contracts  | Contracts     | contract_list.html    | contract list view
+ /invoice    | Invoice       | invoice.html          | invoice detail view
  /register/fiscal|           | fiscal_entity.html    | # will trigger reset
 

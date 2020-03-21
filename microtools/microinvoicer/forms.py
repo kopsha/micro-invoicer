@@ -23,16 +23,28 @@ class MicroRegistrationForm(RegistrationForm):
     )
 
 
-class SellerForm(forms.Form):
-    name = forms.CharField(max_length=100, required=True)
-    registration_id = forms.CharField(max_length=20, required=True)
-    fiscal_code = forms.CharField(max_length=15, required=True)
-    address = forms.CharField(max_length=240, required=True)
-    bank_account = forms.CharField(max_length=32, required=True)
-    bank_name = forms.CharField(max_length=80, required=True)
+class FiscalEntityForm(forms.Form):
+    name = forms.CharField(max_length=120, required=True, strip=True)
+    owner_fullname = forms.CharField(max_length=80, required=True, strip=True)
+    registration_id = forms.CharField(max_length=20, required=True, strip=True)
+    fiscal_code = forms.CharField(max_length=15, required=True, strip=True)
+    address = forms.CharField(max_length=240, required=True, strip=True)
+    bank_account = forms.CharField(max_length=32, required=True, strip=True)
+    bank_name = forms.CharField(max_length=80, required=True, strip=True)
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user')  # To get request.user. Do not use kwargs.pop('user', None) due to potential security hole
+        super().__init__(*args, **kwargs)
+
+
+class SellerForm(FiscalEntityForm):
     invoice_series = forms.CharField(max_length=5, required=True)
     start_no = forms.IntegerField(required=True)
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user')  # To get request.user. Do not use kwargs.pop('user', None) due to potential security hole
-        return super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
+        self.fields['owner_fullname'].initial = self.user.get_full_name()
+
+
+class BuyerForm(FiscalEntityForm):
+    hourly_rate = forms.DecimalField(required=True, decimal_places=2)

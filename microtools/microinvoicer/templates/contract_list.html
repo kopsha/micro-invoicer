@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+
+<h2>Contracts overview</h2>
+<table>
+<thead>
+    <tr>
+        <td>#</td>
+        <td>Buyer</td>
+        <td>Rate</td>
+    </tr>
+</thead>
+
+{% for contract in object_list %}
+    <tr>
+        <td> <a href="{{ contract.get_full_ }}"></a>{{ forloop.counter }}</td>
+        <td>{{ contract.buyer.name }}</td>
+        <td>{{ contract.hourly_rate|intcomma }} lei</td>
+    </tr>
+{% empty %}
+    <tr>No contracts found</tr>
+{% endfor %}
+</table>
+
+<p><a href="{% url 'microinvoice_buyer' %}">Create</a></p>
+
+{% endblock %}

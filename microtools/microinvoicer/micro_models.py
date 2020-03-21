@@ -7,6 +7,7 @@ import json
 @dataclass
 class FiscalEntity:
     name: str
+    owner_fullname: str
     registration_id: str
     fiscal_code: str
     address: str
@@ -91,6 +92,7 @@ class LocalStorage:
 def fake_anonymous_data():
     seller = FiscalEntity(**{
                 "name": "Anonymous",
+                "owner_fullname": "Giani Uragan",
                 "registration_id": "J26/377/2007",
                 "fiscal_code": "21236676",
                 "address": "Calatele village, No. 185",
