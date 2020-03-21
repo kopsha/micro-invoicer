@@ -9,8 +9,7 @@ from django.utils import timezone
 
 from .managers import MicroUserManager
 
-from .micro_models import *
-import decimal
+from . import micro_use_cases as muc
 
 class MicroUser(AbstractBaseUser, PermissionsMixin):
     """
@@ -54,49 +53,12 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
         """
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
-
-    def save_datastore(self, data):
-        def custom_serializer(obj):
-            if isinstance(obj, date):
-                return obj.isoformat()
-
-            if isinstance(obj, decimal.Decimal):
-                return float(obj)
-
-            raise TypeError(f'Type {type(obj)} is not JSON serializable')
-
-        self.datastore = json.dumps(asdict(data), indent=4, default=custom_serializer)
+    def write_data(self, db):
+        # TODO: add some validation / exception handling
+        self.datastore = muc.dumps(db)
         self.save()
 
-    def load_datastore(self):
-        def cls_from_dict(pairs):
-            obj = {k:v for k,v in pairs}
+    def read_data(self):
+        # TODO: add some validation / exception handling
+        return muc.loads(str(self.datastore))
 
-            if 'seller' in obj:
-                obj['seller'] = FiscalEntity(**obj['seller'])
-
-            if 'buyer' in obj:
-                obj['buyer'] = FiscalEntity(**obj['buyer'])
-
-            if 'register' in obj:
-                obj['register'] = InvoiceRegister(**obj['register'])
-
-            if 'contracts' in obj:
-                obj['contracts'] = [ServiceContract(**contract_obj) for contract_obj in obj['contracts']]
-
-            if 'tasks' in obj:
-                obj['tasks'] = [Task(**task_obj) for task_obj in obj['tasks']]
-
-            if 'activity' in obj:
-                obj['activity'] = ActivityReport(**obj['activity'])
-
-            if 'invoices' in obj:
-                obj['invoices'] = [TimeInvoice(**invoice_obj) for invoice_obj in obj['invoices']]
-
-            if 'invoices' in obj:
-                obj['invoices'] = [TimeInvoice(**invoice_obj) for invoice_obj in obj['invoices']]
-
-            return obj
-
-        data = json.loads(str(self.datastore), object_pairs_hook=cls_from_dict)
-        return LocalStorage(register=data['register'], contracts=data['contracts'])

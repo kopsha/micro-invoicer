@@ -4,6 +4,7 @@ from typing import List
 import enum
 import json
 
+
 @dataclass
 class FiscalEntity:
     name: str
@@ -88,33 +89,9 @@ class LocalStorage:
     register: InvoiceRegister
     contracts: List[ServiceContract] = field(default_factory=list)
 
+    def flatten_contracts(self):
+        return [asdict(c) for c in reversed(self.contracts)]
 
-def fake_anonymous_data():
-    seller = FiscalEntity(**{
-                "name": "Anonymous",
-                "owner_fullname": "Giani Uragan",
-                "registration_id": "J26/377/2007",
-                "fiscal_code": "21236676",
-                "address": "Calatele village, No. 185",
-                "bank_account": "RA01 TRRG RANC RT01 0001 0001",
-                "bank_name": "Trezoreria Regala"
-            })
-    register = InvoiceRegister(**{
-            "seller": seller,
-            "invoice_series": "AAA",
-            "next_number": 11,
-            "invoices": [{
-                'series_number' : 'AAA-0001',
-                'buyer' : 'ANONYMOUS S.R.L.',
-                'duration' : 128,
-                'value' : 106876.31,
-            },
-            {
-                'series_number' : 'AAA-0002',
-                'buyer' : 'ANONYMOUS S.R.L.',
-                'duration' : 92,
-                'value' : 6995.12,
-            }]
-        })
-    db = LocalStorage(register=register)
-    return db
+    def invoices(self):
+        return list(reversed(self.register.invoices))
+

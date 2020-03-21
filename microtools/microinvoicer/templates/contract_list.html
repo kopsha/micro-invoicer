@@ -7,7 +7,6 @@
 <table>
 <thead>
     <tr>
-        <td>#</td>
         <td>Buyer</td>
         <td>Rate</td>
     </tr>
@@ -15,9 +14,8 @@
 
 {% for contract in object_list %}
     <tr>
-        <td> <a href="{{ contract.get_full_ }}"></a>{{ forloop.counter }}</td>
         <td>{{ contract.buyer.name }}</td>
-        <td>{{ contract.hourly_rate|intcomma }} lei</td>
+        <td>{{ contract.hourly_rate|intcomma }} lei / ora</td>
     </tr>
 {% empty %}
     <tr>No contracts found</tr>
