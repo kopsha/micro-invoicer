@@ -2,7 +2,9 @@ from dataclasses import dataclass, asdict, field
 from datetime import datetime, date, timedelta
 from typing import List
 import enum
+import inspect
 import json
+import sys
 
 
 @dataclass
@@ -94,4 +96,4 @@ class LocalStorage:
 
     def invoices(self):
         return list(reversed(self.register.invoices))
-
+   

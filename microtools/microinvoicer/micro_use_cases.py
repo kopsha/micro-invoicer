@@ -144,36 +144,31 @@ def create_random_activity(contract_id, hours, flavor, project_id):
     return activity
 
 
-
-def cls_from_dict(pairs):
-    obj = {k:v for k,v in pairs}
-
-    if 'seller' in obj:
-        obj['seller'] = FiscalEntity(**obj['seller'])
-
-    if 'buyer' in obj:
-        obj['buyer'] = FiscalEntity(**obj['buyer'])
-
-    if 'register' in obj:
-        obj['register'] = InvoiceRegister(**obj['register'])
-
-    if 'contracts' in obj:
-        obj['contracts'] = [ServiceContract(**contract_obj) for contract_obj in obj['contracts']]
-
-    if 'tasks' in obj:
-        obj['tasks'] = [Task(**task_obj) for task_obj in obj['tasks']]
-
-    if 'activity' in obj:
-        obj['activity'] = ActivityReport(**obj['activity'])
-
-    if 'invoices' in obj:
-        obj['invoices'] = [TimeInvoice(**invoice_obj) for invoice_obj in obj['invoices']]
-
-    return obj
-
-
 def loads(content):
-    data = json.loads(content, object_pairs_hook=cls_from_dict)
+    def from_dict(pairs):
+        factory_map = {
+            'seller': FiscalEntity,
+            'buyer': FiscalEntity,
+            'register': InvoiceRegister,
+            'activity': ActivityReport,
+            'contracts': ServiceContract,
+            'tasks': Task,
+            'invoices': TimeInvoice,
+        }
+        obj = {}
+
+        for key,value in pairs:
+            if key in factory_map:
+                if isinstance(value, list):
+                    obj[key] = [factory_map[key](**item) for item in value ]
+                else:
+                    obj[key] = factory_map[key](**value)
+            else:
+                obj[key] = value
+
+        return obj
+
+    data = json.loads(content, object_pairs_hook=from_dict)
     db = LocalStorage(register=data['register'], contracts=data['contracts'])
     return db
 
