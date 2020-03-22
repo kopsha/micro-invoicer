@@ -48,7 +48,7 @@ class MicroHomeView(LoginRequiredMixin, TemplateView):
 class BaseFormView(LoginRequiredMixin, FormView):
     """Extend this view for any form"""
     template_name = 'base_form.html'
-    success_url = reverse_lazy('home')
+    success_url = reverse_lazy('microinvoicer_home')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -84,10 +84,10 @@ class BuyerView(BaseFormView):
     form_class = forms.BuyerForm
 
     def form_valid(self, form):
-        db = form.user.read_data()
+        db = form.user['db']
         contract = muc.create_contract(form.cleaned_data)
         db.contracts.append(contract)
-        form.user.write_data(db)
+        self.request.user.write_data(db)
         return super().form_valid(form)
 
 

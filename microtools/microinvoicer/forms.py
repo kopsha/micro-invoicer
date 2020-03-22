@@ -2,6 +2,7 @@ from dataclasses import asdict
 from django import forms
 from django_registration.forms import RegistrationForm
 from material import Layout, Row
+from django.forms.models import model_to_dict
 
 from .models import MicroUser
 
@@ -25,7 +26,12 @@ class MicroRegistrationForm(RegistrationForm):
 
 class BaseUserForm(forms.Form):
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user')  # To get request.user. Do not use kwargs.pop('user', None) due to potential security hole
+        user = kwargs.pop('user')
+        self.user = {
+            'full_name': user.get_full_name(),
+            'email': user.email,
+            'db': user.read_data(),
+        }
         super().__init__(*args, **kwargs)
 
 
@@ -42,7 +48,6 @@ class FiscalEntityForm(BaseUserForm):
 class ProfileForm(FiscalEntityForm):
     full_name = forms.CharField(max_length=80, disabled=True)
     email = forms.EmailField(disabled=True)
-    date_joined = forms.DateField(disabled=True)
 
     field_order = [
         'email', 'full_name', 'date_joined',
@@ -54,13 +59,11 @@ class ProfileForm(FiscalEntityForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # user fields
-        self.fields['full_name'].initial = self.user.get_full_name()
-        self.fields['email'].initial = self.user.email
-        self.fields['date_joined'].initial = self.user.date_joined
+        self.fields['full_name'].initial = self.user['full_name']
+        self.fields['email'].initial = self.user['email']
 
         # company fields
-        db = self.user.read_data()
-        for f,value in asdict(db.register.seller).items():
+        for f,value in asdict(self.user['db'].register.seller).items():
             self.fields[f].initial = value
 
         editables = ['address', 'bank_name', 'bank_account',]
@@ -74,7 +77,7 @@ class SellerForm(FiscalEntityForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        db = self.user.read_data()
+        db = self.user['db']
         for f,value in asdict(db.register.seller).items():
             self.fields[f].initial = value
         self.fields['invoice_series'].initial = db.register.invoice_series
@@ -101,6 +104,8 @@ class InvoiceForm(BaseUserForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        db = self.user.read_data()
-        self.fields['contract_id'].choices = ((i, f'{c.buyer.name}, {c.hourly_rate} euro / hour') for i, c in enumerate(db.contracts))
+        self.fields['contract_id'].choices = (
+            (i, f'{c.buyer.name}, {c.hourly_rate} euro / hour')
+                for i, c in enumerate(self.user['db'].contracts)
+        )
 
