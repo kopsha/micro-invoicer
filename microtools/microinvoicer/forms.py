@@ -87,7 +87,7 @@ class SellerForm(FiscalEntityForm):
             self.fields['owner_fullname'].initial = self.user.get_full_name()
 
 
-class BuyerForm(FiscalEntityForm):
+class ContractForm(FiscalEntityForm):
     hourly_rate = forms.DecimalField(required=True, decimal_places=2)
 
 

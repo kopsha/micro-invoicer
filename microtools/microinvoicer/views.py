@@ -78,10 +78,10 @@ class SellerView(BaseFormView):
         return super().form_valid(form)
 
 
-class BuyerView(BaseFormView):
-    """Updates buyer and contract details"""
+class ContractView(BaseFormView):
+    """Contract details"""
     form_title = 'Buyer contract details'
-    form_class = forms.BuyerForm
+    form_class = forms.ContractForm
 
     def form_valid(self, form):
         db = form.user['db']
@@ -92,7 +92,7 @@ class BuyerView(BaseFormView):
 
 
 class ContractsView(LoginRequiredMixin, ListView):
-    """Show all contracts"""
+    """Contracts manager"""
     template_name = 'contract_list.html'
 
     def get_queryset(self):
@@ -106,9 +106,9 @@ class DraftInvoiceView(BaseFormView):
     form_class = forms.InvoiceForm
 
     def form_valid(self, form):
-        db = form.user.read_data()
+        db = form.user['db']
         db = muc.draft_time_invoice(db, form.cleaned_data)
-        form.user.write_data(db)
+        self.request.user.write_data(db)
         return super().form_valid(form)
 
 

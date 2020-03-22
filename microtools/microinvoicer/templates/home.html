@@ -29,7 +29,7 @@
         </tr>
         {% endfor %}
         </table>
-        <small align="right">{{ contracts|length|intword }} contract{{ contracts|length|pluralize}} found, you can always <a href="{% url 'microinvoicer_buyer' %}">create</a> one.</small>
+        <small align="right">{{ contracts|length|intword }} contract{{ contracts|length|pluralize}} found, you can always <a href="{% url 'microinvoicer_contract' %}">create</a> one.</small>
     </p>
 {% else %}
     <h4>No fiscal information about seller available.</h4>
