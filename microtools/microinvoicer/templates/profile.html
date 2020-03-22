@@ -1,5 +1,9 @@
-{% extends "base.html" %}
+{% extends "base_form.html" %}
 
-{% block content %}
-<h3>Your profile</h3>
+{% block more_content %}
+<h4>Danger zone</h4>
+<p>
+    <strong>Warning:</strong> This action will erase all your profile data: invoices, contracts, company information, everything. Use it only if any detail of the fiscal information has changed (company name, registration number or owner name).
+    <br><a class="btn btn-primary" href="{% url 'microinvoicer_setup' %}">Reset profile</a>
+</p>
 {% endblock %}

@@ -1,8 +1,14 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block content %}
+
+
 {% if user.is_authenticated %}
-<h2>Welcome, {{ user.get_short_name }}</h2>
+    <meta http-equiv="REFRESH" content="0;url={% url 'microinvoicer_home' %}">
+{% else %}
+    <h3>Hey buddy,</h3>
+    <p>Please login to use the awesome features.</p>
 {% endif %}
-<h3>Let there be awesomeness</h3>
+
 {% endblock %}

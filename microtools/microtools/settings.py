@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'django_registration',
     'material',
 ] + LOCAL_APPS
@@ -127,8 +128,8 @@ STATIC_URL = '/static/'
 # Auth settings
 AUTH_USER_MODEL = 'microinvoicer.MicroUser'
 
-LOGIN_URL = 'login/'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/home/'
 LOGOUT_REDIRECT_URL = '/'
 
 ACCOUNT_ACTIVATION_DAYS = 7

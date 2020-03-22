@@ -158,11 +158,12 @@ You can see the full list of arguments with `--help`.
 
 ## Sitemap
 
-/           | Home          | index.html            | # invoice list
-----        | ----          | ----                  | ----
-/profile    | Profile       | profile.html          | # profile view
-/invoice    | Invoice       | invoice.html          | # invoice view
-/contract   | Contract      | contract.html         | # contract view
-/contracts  | Contracts     | contract_list.html    | # contracts list view
-/register/fiscal_entity |   |                       | # will trigger create registry
+ URL         | Title         | Template              | View Kind
+ ----        | ----          | ----                  | ----
+ /           | Home          | index.html            | registry quickview
+ /profile    | Profile       | profile.html          | profile view (reset)
+ /contract   | Contract      | contract.html         | contract detail view
+ /contracts  | Contracts     | contract_list.html    | contract list view
+ /invoice    | Invoice       | invoice.html          | invoice detail view
+ /register/fiscal|           | fiscal_entity.html    | # will trigger reset
 

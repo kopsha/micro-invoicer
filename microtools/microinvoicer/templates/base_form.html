@@ -1,10 +1,9 @@
 {% extends "base.html" %}
-{% load i18n %}
 {% load material_form %}
 
 {% block content %}
 <div class="row">
-    <div class="{%block formclass %}col s12 m8 l6 offset-l3 offset-m2{% endblock %}">
+    <div class="{%block formclass %}col s12 m8 l8 offset-l2 offset-m2{% endblock %}">
         <div class="card">
             <form method="post" action=".">
                 <div class="card-content">
@@ -18,7 +17,7 @@
                     {% block actions %}
                     <div class="right-align">
                         {% block formbuttons %}
-                        <button class="btn btn-primary" type="submit" style="background-color: rgba(0, 0, 0, 0.87)">Submit</button>
+                        <button class="btn btn-primary" type="submit" style="background-color: rgba(0, 0, 0, 0.87)"> &gt;&gt; </button>
                         {% endblock %}
                     </div>
                     {% endblock %}
@@ -28,4 +27,5 @@
         </div>
     </div>
 </div>
+<div class="row">{% block more_content %}{% endblock %}</div>
 {% endblock %}

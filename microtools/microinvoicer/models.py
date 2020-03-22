@@ -9,6 +9,7 @@ from django.utils import timezone
 
 from .managers import MicroUserManager
 
+from . import micro_use_cases as muc
 
 class MicroUser(AbstractBaseUser, PermissionsMixin):
     """
@@ -18,12 +19,13 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
     AbstractBaseUser seems to offer the most flexibility in this regards, as
     we can change the mappings later on
     """
-    first_name = models.CharField(_('first name'), max_length=30, blank=True)
-    last_name = models.CharField(_('last name'), max_length=30, blank=True)
+    first_name = models.CharField(_('first name'), max_length=40, blank=False)
+    last_name = models.CharField(_('last name'), max_length=40, blank=False)
     email = models.EmailField(_('email address'), unique=True)
     is_staff = models.BooleanField(_('staff status'), default=False)
     is_active = models.BooleanField(_('active'), default=True)
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
+    datastore = models.TextField(blank=True)
 
     objects = MicroUserManager()
 
@@ -35,30 +37,21 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = _('micro users')
 
     def get_full_name(self):
-        """
-        Returns the first_name plus the last_name, with a space in between.
-        """
-        full_name = '%s %s' % (self.first_name, self.last_name)
+        full_name = f'{self.first_name} {self.last_name}'
         return full_name.strip()
 
     def get_short_name(self):
-        "Returns the short name for the user."
         return self.first_name
 
     def email_user(self, subject, message, from_email=None, **kwargs):
-        """
-        Sends an email to this User.
-        """
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
-class FiscalEntity(models.Model):
-    name = models.CharField(max_length=100)
-    registration_id = models.CharField(max_length=100)
-    fiscal_code = models.CharField(max_length=100)
-    address = models.CharField(max_length=100)
-    bank_account = models.CharField(max_length=100)
-    bank_name = models.CharField(max_length=100)
+    def write_data(self, db):
+        # TODO: add some validation / exception handling
+        self.datastore = muc.dumps(db)
+        self.save()
 
-    class Meta:
-        verbose_name = _('fiscal entity')
-        verbose_name_plural = _('fiscal entities')
+    def read_data(self):
+        # TODO: add some validation / exception handling
+        return muc.loads(str(self.datastore))
+
