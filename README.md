@@ -158,12 +158,15 @@ You can see the full list of arguments with `--help`.
 
 ## Sitemap
 
- URL         | Title         | Template              | View Kind
- ----        | ----          | ----                  | ----
- /           | Home          | index.html            | registry quickview
- /profile    | Profile       | profile.html          | profile view (reset)
- /contract   | Contract      | contract.html         | contract detail view
- /contracts  | Contracts     | contract_list.html    | contract list view
- /invoice    | Invoice       | invoice.html          | invoice detail view
- /register/fiscal|           | fiscal_entity.html    | # will trigger reset
-
+ URL             | Title            | Template               | Purpose
+ ----            | ----             | ----                   | ----
+ /               | Index            | index.html             | site landing page
+ /register       | Registration     | registration_form.html | signup page
+ /home           | home             | home.html              | user home (registry overview)
+ /profile        | Profile          | profile.html           | user profile (with reset option)
+ /setup          | Setup            | base_form.html         | setup company/seller info
+ /contract       | Contract         | base_form.html         | contract details
+ /contracts      | Contracts        | contract_list.html     | contracts manager
+ /draft_time     | Time Invoice     | base_form.html         | create time invoice
+ /draft_material | Material Invoice | base_form.html         | create materials invoice
+ 
