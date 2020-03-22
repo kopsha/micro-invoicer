@@ -1,6 +1,6 @@
+from dataclasses import asdict
 from django import forms
 from django_registration.forms import RegistrationForm
-
 from material import Layout, Row
 
 from .models import MicroUser
@@ -30,7 +30,7 @@ class BaseUserForm(forms.Form):
 
 
 class FiscalEntityForm(BaseUserForm):
-    name = forms.CharField(max_length=120, required=True, strip=True)
+    name = forms.CharField(max_length=80, required=True, strip=True, label='Company name')
     owner_fullname = forms.CharField(max_length=80, required=True, strip=True)
     registration_id = forms.CharField(max_length=20, required=True, strip=True)
     fiscal_code = forms.CharField(max_length=15, required=True, strip=True)
@@ -39,13 +39,49 @@ class FiscalEntityForm(BaseUserForm):
     bank_name = forms.CharField(max_length=80, required=True, strip=True)
 
 
+class ProfileForm(FiscalEntityForm):
+    full_name = forms.CharField(max_length=80, disabled=True)
+    email = forms.EmailField(disabled=True)
+    date_joined = forms.DateField(disabled=True)
+
+    field_order = [
+        'email', 'full_name', 'date_joined',
+        'name', 'owner_fullname', 'registration_id', 'fiscal_code',
+        'address', 'bank_name', 'bank_account',
+    ]
+    fields = field_order
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # user fields
+        self.fields['full_name'].initial = self.user.get_full_name()
+        self.fields['email'].initial = self.user.email
+        self.fields['date_joined'].initial = self.user.date_joined
+
+        # company fields
+        db = self.user.read_data()
+        for f,value in asdict(db.register.seller).items():
+            self.fields[f].initial = value
+
+        editables = ['address', 'bank_name', 'bank_account',]
+        for f in self.base_fields:
+            self.fields[f].disabled = True if f not in editables else False
+
+
+
 class SellerForm(FiscalEntityForm):
     invoice_series = forms.CharField(max_length=5, required=True)
     start_no = forms.IntegerField(required=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['owner_fullname'].initial = self.user.get_full_name()
+        db = self.user.read_data()
+        for f,value in asdict(db.register.seller).items():
+            self.fields[f].initial = value
+        self.fields['invoice_series'].initial = db.register.invoice_series
+        self.fields['start_no'].initial = db.register.next_number
+        if not self.fields['owner_fullname']:
+            self.fields['owner_fullname'].initial = self.user.get_full_name()
 
 
 class BuyerForm(FiscalEntityForm):

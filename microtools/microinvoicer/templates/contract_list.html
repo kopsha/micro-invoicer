@@ -15,7 +15,7 @@
 {% for contract in object_list %}
     <tr>
         <td>{{ contract.buyer.name }}</td>
-        <td>{{ contract.hourly_rate|intcomma }} lei / ora</td>
+        <td>{{ contract.hourly_rate|intcomma }} euro / hour</td>
     </tr>
 {% empty %}
     <tr>No contracts found</tr>

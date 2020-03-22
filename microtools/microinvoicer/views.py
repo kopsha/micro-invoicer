@@ -65,6 +65,9 @@ class SellerView(BaseFormView):
     form_class = forms.SellerForm
 
     def form_valid(self, form):
+        names = form.cleaned_data['owner_fullname'].split(' ')
+        form.user.last_name = names[-1]
+        form.user.first_name = ' '.join(names[:-1])
         db = muc.create_empty_db(form.cleaned_data)
         form.user.write_data(db)
         return super().form_valid(form)
@@ -84,6 +87,7 @@ class BuyerView(BaseFormView):
 
 
 class ContractsView(LoginRequiredMixin, ListView):
+    """Show all contracts"""
     template_name = 'contract_list.html'
 
     def get_queryset(self):
@@ -103,5 +107,7 @@ class DraftInvoiceView(BaseFormView):
         return super().form_valid(form)
 
 
-class ProfileView(LoginRequiredMixin, TemplateView):
-    template_name = 'profile.html'
+class ProfileView(BaseFormView):
+    form_title = 'Your Profile'
+    form_class = forms.ProfileForm
+
