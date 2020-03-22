@@ -7,18 +7,6 @@
     <h4>{{ seller.name }}</h4>
     <p>
         <table>
-        <tr><td></td><td></td></tr>
-        {% for contract in contracts %}
-        <tr>
-            <td>{{ contract.buyer.name }}</td>
-            <td>{{ contract.hourly_rate|intcomma }} euro / hour</td>
-        </tr>
-        {% endfor %}
-        </table>
-        <small align="right">{{ contracts|length|intword }} contract{{ contracts|length|pluralize}} found, you can always <a href="{% url 'microinvoicer_buyer' %}">create</a> one.</small>
-    </p>
-    <p>
-        <table>
         <tr><td></td><td></td><td></td><td></td></tr>
         {% for invoice in invoices %}
         <tr>
@@ -30,6 +18,18 @@
         {% endfor %}
         </table>
         <small>{{ invoices|length|intword }} invoice{{ invoices|length|pluralize}} found, you can create <a href="{% url 'microinvoicer_draft_time' %}">time</a> or <a href="{% url 'microinvoicer_draft_material' %}">material</a> invoices.</small>
+    </p>
+    <p>
+        <table>
+        <tr><td></td><td></td></tr>
+        {% for contract in contracts %}
+        <tr>
+            <td>{{ contract.buyer.name }}</td>
+            <td>{{ contract.hourly_rate|intcomma }} euro / hour</td>
+        </tr>
+        {% endfor %}
+        </table>
+        <small align="right">{{ contracts|length|intword }} contract{{ contracts|length|pluralize}} found, you can always <a href="{% url 'microinvoicer_buyer' %}">create</a> one.</small>
     </p>
 {% else %}
     <h4>No fiscal information about seller available.</h4>

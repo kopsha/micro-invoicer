@@ -68,7 +68,6 @@ class ProfileForm(FiscalEntityForm):
             self.fields[f].disabled = True if f not in editables else False
 
 
-
 class SellerForm(FiscalEntityForm):
     invoice_series = forms.CharField(max_length=5, required=True)
     start_no = forms.IntegerField(required=True)
@@ -80,6 +79,7 @@ class SellerForm(FiscalEntityForm):
             self.fields[f].initial = value
         self.fields['invoice_series'].initial = db.register.invoice_series
         self.fields['start_no'].initial = db.register.next_number
+        
         if not self.fields['owner_fullname']:
             self.fields['owner_fullname'].initial = self.user.get_full_name()
 
@@ -103,3 +103,4 @@ class InvoiceForm(BaseUserForm):
         super().__init__(*args, **kwargs)
         db = self.user.read_data()
         self.fields['contract_id'].choices = ((i, f'{c.buyer.name}, {c.hourly_rate} euro / hour') for i, c in enumerate(db.contracts))
+

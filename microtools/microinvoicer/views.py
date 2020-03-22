@@ -48,7 +48,7 @@ class MicroHomeView(LoginRequiredMixin, TemplateView):
 class BaseFormView(LoginRequiredMixin, FormView):
     """Extend this view for any form"""
     template_name = 'base_form.html'
-    success_url = reverse_lazy('index')
+    success_url = reverse_lazy('home')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
