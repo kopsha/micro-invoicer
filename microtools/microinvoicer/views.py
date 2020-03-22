@@ -13,18 +13,9 @@ from . import models
 from . import micro_models
 from . import micro_use_cases as muc
 
-class MicroHomeView(TemplateView):
+
+class IndexView(TemplateView):
     template_name = 'index.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            db = self.request.user.read_data()
-            context['seller'] = { 'name' : db.register.seller.name }
-            context['contracts'] = db.flatten_contracts()
-            context['invoices'] = db.invoices()
-
-        return context
 
 
 class MicroRegistrationView(RegistrationView):
@@ -38,6 +29,20 @@ class MicroRegistrationView(RegistrationView):
 
 class MicroLoginView(LoginView):
     template_name = 'login.html'
+
+
+class MicroHomeView(LoginRequiredMixin, TemplateView):
+    template_name = 'home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            db = self.request.user.read_data()
+            context['seller'] = { 'name' : db.register.seller.name }
+            context['contracts'] = db.flatten_contracts()
+            context['invoices'] = db.invoices()
+
+        return context
 
 
 class BaseFormView(LoginRequiredMixin, FormView):
@@ -108,6 +113,6 @@ class DraftInvoiceView(BaseFormView):
 
 
 class ProfileView(BaseFormView):
+    template_name = 'profile.html'
     form_title = 'Your Profile'
     form_class = forms.ProfileForm
-

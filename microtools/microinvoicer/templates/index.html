@@ -3,41 +3,12 @@
 
 {% block content %}
 
-{% if seller %}
-    <h4>{{ seller.name }}</h4>
-    <p>
-        <table>
-        <tr><td></td><td></td></tr>
-        {% for contract in contracts %}
-        <tr>
-            <td>{{ contract.buyer.name }}</td>
-            <td>{{ contract.hourly_rate|intcomma }} euro / hour</td>
-        </tr>
-        {% endfor %}
-        </table>
-        <small>{{ contracts|length|intword }} contract{{ contracts|length|pluralize}} found</small>
-    </p>
-    <p>
-        <table>
-        <tr><td></td><td></td><td></td><td></td></tr>
-        {% for invoice in invoices %}
-        <tr>
-            <td>{{ invoice.series_number }}</td>
-            <td>{{ invoice.buyer.name }}</td>
-            <td>{{ invoice.activity.duration }} hours</td>
-            <td>{{ invoice.value|intcomma }} lei</td>
-        </tr>
-        {% endfor %}
-        </table>
-        <small>{{ invoices|length|intword }} invoice{{ invoices|length|pluralize}} found</small>
-    </p>
-    <br>
-    <p>
-        Create <a href="{% url 'microinvoice_draft_time' %}">time invoice</a>
-    </p>
+
+{% if user.is_authenticated %}
+    <meta http-equiv="REFRESH" content="0;url={% url 'microinvoicer_home' %}">
 {% else %}
-    <h4>No fiscal information about seller available.</h4>
-    <p>Open <a href="{% url 'microinvoice_setup' %}">seller</a> details right now.</p>
+    <h3>Hey buddy,</h3>
+    <p>Please login to use the awesome features.</p>
 {% endif %}
 
 {% endblock %}

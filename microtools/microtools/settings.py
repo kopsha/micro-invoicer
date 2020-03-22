@@ -129,7 +129,7 @@ STATIC_URL = '/static/'
 AUTH_USER_MODEL = 'microinvoicer.MicroUser'
 
 LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/home/'
 LOGOUT_REDIRECT_URL = '/'
 
 ACCOUNT_ACTIVATION_DAYS = 7
