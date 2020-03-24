@@ -168,9 +168,12 @@ def loads(content):
 
         return obj
 
-    data = json.loads(content, object_pairs_hook=from_dict)
-    db = LocalStorage(register=data['register'], contracts=data['contracts'])
-    return db
+    try:
+        data = json.loads(content, object_pairs_hook=from_dict)
+    except json.JSONDecodeError:
+        return None
+
+    return LocalStorage(register=data['register'], contracts=data['contracts'])
 
 
 def dumps(db):

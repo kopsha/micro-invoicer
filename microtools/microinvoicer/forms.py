@@ -63,8 +63,9 @@ class ProfileForm(FiscalEntityForm):
         self.fields['email'].initial = self.user['email']
 
         # company fields
-        for f,value in asdict(self.user['db'].register.seller).items():
-            self.fields[f].initial = value
+        if self.user['db']:
+            for f,value in asdict(self.user['db'].register.seller).items():
+                self.fields[f].initial = value
 
         editables = ['address', 'bank_name', 'bank_account',]
         for f in self.base_fields:
@@ -78,13 +79,14 @@ class SellerForm(FiscalEntityForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         db = self.user['db']
-        for f,value in asdict(db.register.seller).items():
-            self.fields[f].initial = value
-        self.fields['invoice_series'].initial = db.register.invoice_series
-        self.fields['start_no'].initial = db.register.next_number
+        if db:
+            for f,value in asdict(db.register.seller).items():
+                self.fields[f].initial = value
+            self.fields['invoice_series'].initial = db.register.invoice_series
+            self.fields['start_no'].initial = db.register.next_number
         
-        if not self.fields['owner_fullname']:
-            self.fields['owner_fullname'].initial = self.user.get_full_name()
+        if not self.fields['owner_fullname'].initial:
+            self.fields['owner_fullname'].initial = self.user['full_name']
 
 
 class ContractForm(FiscalEntityForm):
@@ -104,8 +106,8 @@ class InvoiceForm(BaseUserForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['contract_id'].choices = (
-            (i, f'{c.buyer.name}, {c.hourly_rate} euro / hour')
-                for i, c in enumerate(self.user['db'].contracts)
-        )
-
+        if self.user['db']:
+            self.fields['contract_id'].choices = (
+                (i, f'{c.buyer.name}, {c.hourly_rate} euro / hour')
+                    for i, c in enumerate(self.user['db'].contracts)
+            )

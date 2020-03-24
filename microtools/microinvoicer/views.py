@@ -38,9 +38,10 @@ class MicroHomeView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
             db = self.request.user.read_data()
-            context['seller'] = { 'name' : db.register.seller.name }
-            context['contracts'] = db.flatten_contracts()
-            context['invoices'] = db.invoices()
+            if db:
+                context['seller'] = { 'name' : db.register.seller.name }
+                context['contracts'] = db.flatten_contracts()
+                context['invoices'] = db.invoices()
 
         return context
 
@@ -70,11 +71,8 @@ class SellerView(BaseFormView):
     form_class = forms.SellerForm
 
     def form_valid(self, form):
-        names = form.cleaned_data['owner_fullname'].split(' ')
-        form.user.last_name = names[-1]
-        form.user.first_name = ' '.join(names[:-1])
         db = muc.create_empty_db(form.cleaned_data)
-        form.user.write_data(db)
+        self.request.user.write_data(db)
         return super().form_valid(form)
 
 
@@ -85,9 +83,10 @@ class ContractView(BaseFormView):
 
     def form_valid(self, form):
         db = form.user['db']
-        contract = muc.create_contract(form.cleaned_data)
-        db.contracts.append(contract)
-        self.request.user.write_data(db)
+        if db:
+            contract = muc.create_contract(form.cleaned_data)
+            db.contracts.append(contract)
+            self.request.user.write_data(db)
         return super().form_valid(form)
 
 
@@ -97,7 +96,7 @@ class ContractsView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         db = self.request.user.read_data()
-        return db.flatten_contracts()
+        return db.flatten_contracts() if db else []
 
 
 class DraftInvoiceView(BaseFormView):
@@ -107,8 +106,9 @@ class DraftInvoiceView(BaseFormView):
 
     def form_valid(self, form):
         db = form.user['db']
-        db = muc.draft_time_invoice(db, form.cleaned_data)
-        self.request.user.write_data(db)
+        if db:
+            db = muc.draft_time_invoice(db, form.cleaned_data)
+            self.request.user.write_data(db)
         return super().form_valid(form)
 
 
