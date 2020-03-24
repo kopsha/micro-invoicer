@@ -4,6 +4,22 @@ Making invoices has never been easier
 
 ## Conceptualized API as use cases
 
+
+registry
+* created with (seller, series, start_no)
+* add_contract(buyer, hourly_rate)
+* contracts[]  # read-only property
+* amend_contract(id, buyer, hourly_rate)
+* new_draft_invoice(...) : invoice
+* publish(invoice)
+* invoices() : invoice stack iterator
+
+registry has:
+* seller
+* contracts[]
+* series, next_id
+* invoice_stack[]
+
 1, load / create the registry
 
 * `registry = install_registry(series, start_number, seller)`, or

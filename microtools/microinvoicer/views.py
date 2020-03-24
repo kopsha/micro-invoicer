@@ -24,7 +24,7 @@ class MicroRegistrationView(RegistrationView):
     # For now, we redirect straight to fiscal information view after signup.
     # When we'll change to two step registration, fiscal form will be shown at
     # the first login
-    success_url = reverse_lazy('microinvoice_fiscal_entity')
+    success_url = reverse_lazy('microinvoicer_setup')
 
 
 class MicroLoginView(LoginView):
