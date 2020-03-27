@@ -1,4 +1,4 @@
-from django.db import models
+from djongo import models
 
 from django.core.mail import send_mail
 from django.contrib.auth.base_user import AbstractBaseUser
@@ -7,9 +7,18 @@ from django.contrib.auth.models import PermissionManager
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 
+
 from .managers import MicroUserManager
 
 from . import micro_use_cases as muc
+
+
+class MicroUserData(models.Model):
+    data = models.TextField()
+
+    class Meta:
+        abstract = True
+
 
 class MicroUser(AbstractBaseUser, PermissionsMixin):
     """
@@ -25,7 +34,10 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(_('staff status'), default=False)
     is_active = models.BooleanField(_('active'), default=True)
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
-    datastore = models.TextField(blank=True)
+    datastore = models.EmbeddedField(
+        model_container=MicroUserData,
+        default=MicroUserData()
+    )
 
     objects = MicroUserManager()
 
@@ -47,11 +59,15 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
     def write_data(self, db):
-        # TODO: add some validation / exception handling
-        self.datastore = muc.dumps(db)
+        self.datastore.data = muc.dumps(db)
         self.save()
+        print(self.datastore.data)
 
     def read_data(self):
         # TODO: add some validation / exception handling
-        return muc.loads(str(self.datastore))
+        try:
+            data = str(self.datastore.data)
+            return muc.loads(data)
+        except AttributeError:
+            return None
 
