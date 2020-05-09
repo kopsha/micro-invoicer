@@ -10,7 +10,7 @@
         <tr><td></td><td></td><td></td><td></td></tr>
         {% for invoice in invoices %}
         <tr>
-            <td>{{ invoice.series_number }}</td>
+            <td><a href="{% url 'microinvoicer_time_invoice' invoice_id=forloop.counter %}">{{ invoice.series_number }}</a></td>
             <td>{{ invoice.buyer.name }}</td>
             <td>{{ invoice.activity.duration }} hours</td>
             <td>{{ invoice.value|floatformat:2|intcomma }} lei</td>
