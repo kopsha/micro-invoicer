@@ -9,7 +9,6 @@ from django.utils import timezone
 
 
 from .managers import MicroUserManager
-
 from . import micro_use_cases as muc
 
 
@@ -34,10 +33,8 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(_('staff status'), default=False)
     is_active = models.BooleanField(_('active'), default=True)
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
-    datastore = models.EmbeddedField(
-        model_container=MicroUserData,
-        default=MicroUserData()
-    )
+    datastore = models.TextField(blank=True, default='')
+    crc = models.CharField(_('crc32'), max_length=10, blank=False, default='0x0')
 
     objects = MicroUserManager()
 
@@ -59,15 +56,26 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
     def write_data(self, db):
-        self.datastore.data = muc.dumps(db)
+        # TODO: add some validation / exception handling
+        self.datastore = muc.dumps(db)
+        self.crc = muc.to_crc32(self.datastore)
         self.save()
         print(self.datastore.data)
 
     def read_data(self):
         # TODO: add some validation / exception handling
-        try:
-            data = str(self.datastore.data)
-            return muc.loads(data)
-        except AttributeError:
-            return None
+        crc = muc.to_crc32(self.datastore)
+
+        if crc != self.crc:
+            print('\t >> [warning] crc check failed. did someone messed with your data?')
+            print(f'{self.datastore!r}')
+            print(f'computed _{crc}_ vs _{self.crc}_ stored')
+
+            self.datastore = ''
+            self.crc = muc.to_crc32(self.datastore)
+            self.save()
+
+        db = muc.loads(self.datastore)
+
+        return db
 

@@ -13,6 +13,7 @@ django = "*"
 django-registration = "*"
 django-material = "*"
 djongo = {git = "https://github.com/vladrotea/djongo"}
+zlip = "*"
 
 [requires]
 python_version = "3.7"

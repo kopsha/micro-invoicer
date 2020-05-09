@@ -2,6 +2,8 @@ import enum
 import json
 import random
 import decimal
+import zlib
+
 #import pdf_rendering as pdf
 
 from dataclasses import dataclass, asdict, field
@@ -188,6 +190,10 @@ def dumps(db):
 
     content = json.dumps(asdict(db), indent=4, default=custom_serializer)
     return content
+
+
+def to_crc32(data):
+    return hex(zlib.crc32(bytearray(data, 'utf-8')) & 0xffffffff)
 
 
 if __name__ == '__main__':

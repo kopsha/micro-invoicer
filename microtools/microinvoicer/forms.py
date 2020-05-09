@@ -106,8 +106,7 @@ class InvoiceForm(BaseUserForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.user['db']:
-            self.fields['contract_id'].choices = (
-                (i, f'{c.buyer.name}, {c.hourly_rate} euro / hour')
-                    for i, c in enumerate(self.user['db'].contracts)
-            )
+        self.fields['contract_id'].choices = (
+            (i, f'{c.buyer.name}, {c.hourly_rate} euro / hour')
+                for i, c in enumerate(self.user['db'].contracts)
+        )
