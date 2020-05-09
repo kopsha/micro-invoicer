@@ -3,7 +3,7 @@
 from django.http import Http404
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, ListView
-from django.views.generic.edit import FormView
+from django.views.generic.edit import FormView, DeletionMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
 
@@ -12,6 +12,7 @@ from django_registration.backends.one_step.views import RegistrationView
 from . import forms
 from . import micro_use_cases as muc
 
+from dataclasses import asdict, astuple
 
 class IndexView(TemplateView):
     """Bla Bla."""
@@ -63,6 +64,7 @@ class BaseFormView(LoginRequiredMixin, FormView):
         """Bla Bla."""
         context = super().get_context_data(**kwargs)
         context['form_title'] = self.form_title
+
         return context
 
     def get_form_kwargs(self):
@@ -113,7 +115,7 @@ class ContractsView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         """Bla Bla."""
         db = self.request.user.read_data()
-        return db.flatten_contracts() if db else []
+        return db.flatten_contracts()
 
 
 class DraftInvoiceView(BaseFormView):
@@ -131,30 +133,47 @@ class DraftInvoiceView(BaseFormView):
         return super().form_valid(form)
 
 
-class TimeInvoiceView(BaseFormView):
+class TimeInvoiceView(DeletionMixin, BaseFormView):
     """Allows to mess up with a time invoice."""
 
     form_title = 'Time Invoice'
     form_class = forms.InvoiceForm
+    template_name = 'invoice_detail.html'
 
-    def get_initial(self):
-        """we need this data"""
+    def get_initial(self, **kwargs):
+        """Populate invoice using the url argument as index"""
         initial = super().get_initial()
         invoices = self.request.user.read_data().invoices()
 
         try:
+            print(self.kwargs)
             ndx = int(self.kwargs['invoice_id']) - 1
             invoice = invoices[ndx]
-        except (IndexError, KeyError):
-            raise Http404
-        finally:
             initial['duration'] = invoice.activity.duration
             initial['flavor'] = invoice.activity.flavor
             initial['project_id'] = invoice.activity.project_id
             initial['xchg_rate'] = invoice.conversion_rate
+            self.invoice = invoice
+        except (IndexError, KeyError):
+            print('*** pfuck ***')
+            raise Http404
 
         return initial
 
+    def get_context_data(self, **kwargs):
+        """Appends invoice details to context data"""
+        context = super().get_context_data(**kwargs)
+        if self.invoice:
+            context['my_url'] = reverse_lazy('microinvoicer_time_invoice', kwargs=self.kwargs)
+            context['invoice'] = self.invoice
+            context['task_list'] = self.invoice.activity.tasks
+
+        return context
+
+    def delete(self, **kwargs):
+        print('should delete', kwargs)
+
+        return super().delete()
 
     def form_valid(self, form):
         """Bla Bla."""
@@ -162,9 +181,7 @@ class TimeInvoiceView(BaseFormView):
         db = muc.draft_time_invoice(db, form.cleaned_data)
         print(form.cleaned_data)
         self.request.user.write_data(db)
-        
         return super().form_valid(form)
-
 
 
 class ProfileView(BaseFormView):

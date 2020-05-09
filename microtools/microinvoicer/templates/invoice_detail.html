@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="row">
+    <h4 align="center">Invoice {{ invoice.series_number }}</h4>
+
+            <p align="right">
+                <strong><u>{{ invoice.buyer.name }}</u></strong><br>
+                <small>[buyer]</small><br>
+                {{ invoice.buyer.fiscal_code }}<br>
+                {{ invoice.buyer.registration_id }}<br>
+                {{ invoice.buyer.address }}<br>
+                {{ invoice.buyer.bank_account }} @ {{ invoice.buyer.bank_name }}<br>
+            </p>
+
+    <br>
+    <h5 align="center">
+        {{ invoice.activity.duration }} <sub><small>hours</small></sub>
+        x {{ invoice.hourly_rate|floatformat:0 }} <sub><small>euro/hour</small></sub>
+        [ x {{ invoice.conversion_rate|floatformat:4 }} <sub><small>lei/euro</small></sub> ]
+        = {{ invoice.value|floatformat:2|intcomma }} <sub><small>lei</small></sub>
+    </h5>
+    <br>
+
+    <p align="center">Attached report details</p>
+    <div class="card">
+        <div class="card-content">
+            <table>
+            <thead>
+                <tr align="center">
+                    <td style="text-align:center">project id</td>
+                    <td>activity</td>
+                    <td style="text-align:center">Hours</td>
+                </tr>
+            </thead>
+
+            {% for task in task_list %}
+                <tr>
+                    <td style="text-align:center">{{ task.project_id }}</td>
+                    <td>{{ task.name }}</td>
+                    <td style="text-align:center">{{ task.duration }}</td>
+                </tr>
+            {% empty %}
+                <tr>This is odd: no invoiced items found.</tr>
+            {% endfor %}
+            <tr>
+                <td></td>
+                <td style="text-align:right"><small>total</small></td>
+                <td style="text-align:center"><strong>{{ invoice.activity.duration }}</strong></td>
+            </tr>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
