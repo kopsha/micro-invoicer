@@ -101,7 +101,7 @@ class RegisterContractView(BaseFormView):
 
     def form_valid(self, form):
         """Just append, no biggie"""
-        db = form.user['db']
+        db = self.request.user.read_data()
         contract = muc.create_contract(form.cleaned_data)
         db.contracts.append(contract)
         self.request.user.write_data(db)
@@ -113,11 +113,13 @@ class ContractDetailsView(BaseFormView):
 
     form_title = 'Contract details'
     form_class = forms.ContractForm
+    template_name = 'base_details_form.html'
 
     def get_initial(self, **kwargs):
         """provide contract details using the url argument as index"""
         initial = super().get_initial()
         db = self.request.user.read_data()
+        self.contract_ndx = None
 
         try:
             ndx = int(self.kwargs['contract_id']) - 1
@@ -130,12 +132,29 @@ class ContractDetailsView(BaseFormView):
             initial['bank_account'] = contract.buyer.bank_account
             initial['bank_name'] = contract.buyer.bank_name
             initial['hourly_rate'] = contract.hourly_rate
-            self.contract = contract
+            self.contract_ndx = ndx
 
         except (IndexError, KeyError):
             raise Http404
 
         return initial
+
+    def get_context_data(self, **kwargs):
+        """Appends last invoice details to context data"""
+        context = super().get_context_data(**kwargs)
+        context['update_self_url'] = reverse_lazy(
+            'microinvoicer_contract',
+            kwargs={'contract_id': self.contract_ndx + 1}
+        )
+        return context
+
+    def form_valid(self, form):
+        """Something has changed, must update db."""
+        assert self.contract_ndx is not None
+        db = self.request.user.read_data()
+        db.contracts[self.contract_ndx] = muc.create_contract(form.cleaned_data)
+        self.request.user.write_data(db)
+        return super().form_valid(form)
 
 
 class DraftInvoiceView(BaseFormView):
