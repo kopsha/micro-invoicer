@@ -11,7 +11,7 @@
             <tr>
                 <td>Invoice Registry</td><td></td><td></td><td></td>
                 <td style="text-align:center">
-                    <h5><a href="{% url 'microinvoicer_draft_time' %}">&#x2A01;
+                    <h5><a href="{% url 'microinvoicer_draft_time' %}">&#x002B;
                     </a></h5>
                 </td>
             </tr>
@@ -40,7 +40,7 @@
             <td></td>
             <td style="text-align:center"><h5>
                 <a href="{% url 'microinvoicer_register_contract' %}">
-                &#x2A01;
+                &#x002B;
                 </a>
             </h5></td>
         </tr>
@@ -48,7 +48,7 @@
         <tr>
             <td style="text-align:center">{{ contract.buyer.name }}</td>
             <td style="text-align:center">{{ contract.hourly_rate|floatformat:2|intcomma }} euro / hour</td>
-            <td></td>
+            <td style="text-align:center"><a href="{% url 'microinvoicer_contract' contract_id=forloop.counter %}">&#x2317;</a></td>
         </tr>
         {% endfor %}
         </table>

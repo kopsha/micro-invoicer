@@ -86,6 +86,7 @@ class InvoiceRegister:
     next_number: int
     invoices: List[TimeInvoice] = field(default_factory=list)
 
+
 @dataclass
 class LocalStorage:
     register: InvoiceRegister
@@ -96,4 +97,3 @@ class LocalStorage:
 
     def invoices(self):
         return list(reversed(self.register.invoices))
-   

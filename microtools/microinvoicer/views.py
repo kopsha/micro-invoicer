@@ -94,18 +94,48 @@ class SellerView(BaseFormView):
 
 
 class RegisterContractView(BaseFormView):
-    """Contract details."""
+    """Add new contract to the registry."""
 
-    form_title = 'Buyer contract details'
+    form_title = 'Register new contract'
     form_class = forms.ContractForm
 
     def form_valid(self, form):
-        """Bla Bla."""
+        """Just append, no biggie"""
         db = form.user['db']
         contract = muc.create_contract(form.cleaned_data)
         db.contracts.append(contract)
         self.request.user.write_data(db)
         return super().form_valid(form)
+
+
+class ContractDetailsView(BaseFormView):
+    """Amend contract details"""
+
+    form_title = 'Contract details'
+    form_class = forms.ContractForm
+
+    def get_initial(self, **kwargs):
+        """provide contract details using the url argument as index"""
+        initial = super().get_initial()
+        db = self.request.user.read_data()
+
+        try:
+            ndx = int(self.kwargs['contract_id']) - 1
+            contract = db.contracts[ndx]
+            initial['name'] = contract.buyer.name
+            initial['owner_fullname'] = contract.buyer.owner_fullname
+            initial['registration_id'] = contract.buyer.registration_id
+            initial['fiscal_code'] = contract.buyer.fiscal_code
+            initial['address'] = contract.buyer.address
+            initial['bank_account'] = contract.buyer.bank_account
+            initial['bank_name'] = contract.buyer.bank_name
+            initial['hourly_rate'] = contract.hourly_rate
+            self.contract = contract
+
+        except (IndexError, KeyError):
+            raise Http404
+
+        return initial
 
 
 class DraftInvoiceView(BaseFormView):
