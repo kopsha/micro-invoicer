@@ -14,6 +14,7 @@ from . import micro_use_cases as muc
 
 from dataclasses import asdict, astuple
 
+
 class IndexView(TemplateView):
     """Bla Bla."""
 
@@ -92,7 +93,7 @@ class SellerView(BaseFormView):
         return super().form_valid(form)
 
 
-class ContractView(BaseFormView):
+class RegisterContractView(BaseFormView):
     """Contract details."""
 
     form_title = 'Buyer contract details'
@@ -133,7 +134,32 @@ class DraftInvoiceView(BaseFormView):
         return super().form_valid(form)
 
 
-class TimeInvoiceView(DeletionMixin, BaseFormView):
+class DiscardInvoiceView(BaseFormView):
+    """
+    Uppon confirmation it removes the top invoice from the registry.
+    """
+
+    form_title = 'You are about to remove fiscal data. Please confirm.'
+    form_class = forms.DiscardInvoiceForm
+    template_name = "discard_invoice.html"
+
+    def get_context_data(self, **kwargs):
+        """Appends last invoice details to context data"""
+        context = super().get_context_data(**kwargs)
+        invoices = self.request.user.read_data().invoices()
+        context['invoice'] = invoices[0] if invoices else None
+
+        return context
+
+    def form_valid(self, form):
+        """User has confirmed, we can trash the last invoice."""
+        db = self.request.user.read_data()
+        db = muc.discard_last_invoice(db)
+        self.request.user.write_data(db)
+        return super().form_valid(form)
+
+
+class TimeInvoiceView(BaseFormView):
     """Allows to mess up with a time invoice."""
 
     form_title = 'Time Invoice'
@@ -146,7 +172,6 @@ class TimeInvoiceView(DeletionMixin, BaseFormView):
         invoices = self.request.user.read_data().invoices()
 
         try:
-            print(self.kwargs)
             ndx = int(self.kwargs['invoice_id']) - 1
             invoice = invoices[ndx]
             initial['duration'] = invoice.activity.duration
@@ -155,37 +180,24 @@ class TimeInvoiceView(DeletionMixin, BaseFormView):
             initial['xchg_rate'] = invoice.conversion_rate
             self.invoice = invoice
         except (IndexError, KeyError):
-            print('*** pfuck ***')
             raise Http404
 
         return initial
 
     def get_context_data(self, **kwargs):
-        """Appends invoice details to context data"""
+        """Appends last invoice details to context data"""
         context = super().get_context_data(**kwargs)
         if self.invoice:
-            context['my_url'] = reverse_lazy('microinvoicer_time_invoice', kwargs=self.kwargs)
+            context['update_self_url'] = reverse_lazy(
+                'microinvoicer_time_invoice', kwargs=self.kwargs)
             context['invoice'] = self.invoice
             context['task_list'] = self.invoice.activity.tasks
 
         return context
 
-    def delete(self, **kwargs):
-        print('should delete', kwargs)
-
-        return super().delete()
-
-    def form_valid(self, form):
-        """Bla Bla."""
-        db = form.user['db']
-        db = muc.draft_time_invoice(db, form.cleaned_data)
-        print(form.cleaned_data)
-        self.request.user.write_data(db)
-        return super().form_valid(form)
-
 
 class ProfileView(BaseFormView):
-    """Bla Bla."""
+    """Captain obvious knows this already."""
 
     template_name = 'profile.html'
     form_title = 'Your Profile'

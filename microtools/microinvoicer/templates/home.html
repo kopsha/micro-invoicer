@@ -7,29 +7,52 @@
     <h4>{{ seller.name }}</h4>
     <p>
         <table>
-        <tr><td></td><td></td><td></td><td></td></tr>
+        <thead>
+            <tr>
+                <td>Invoice Registry</td><td></td><td></td><td></td>
+                <td style="text-align:center">
+                    <h5><a href="{% url 'microinvoicer_draft_time' %}">&#x2A01;
+                    </a></h5>
+                </td>
+            </tr>
+        </thead>
+
         {% for invoice in invoices %}
         <tr>
-            <td><a href="{% url 'microinvoicer_time_invoice' invoice_id=forloop.counter %}">{{ invoice.series_number }}</a></td>
-            <td>{{ invoice.buyer.name }}</td>
-            <td>{{ invoice.activity.duration }} hours</td>
-            <td>{{ invoice.value|floatformat:2|intcomma }} lei</td>
+            <td style="text-align:center"><a href="{% url 'microinvoicer_time_invoice' invoice_id=forloop.counter %}">{{ invoice.series_number }}</a></td>
+            <td style="text-align:center">{{ invoice.buyer.name }}</td>
+            <td style="text-align:center">{{ invoice.activity.duration }} hours</td>
+            <td style="text-align:center">{{ invoice.value|floatformat:2|intcomma }} lei</td>
+            {% if forloop.first %}
+                <td style="text-align:center"><a href="{% url 'microinvoicer_pop_invoice' %}">&#x274C;</a></td style="text-align:center">
+            {% else %}
+                <td></td>
+            {% endif %}            
         </tr>
         {% endfor %}
         </table>
-        <small>{{ invoices|length|intword }} invoice{{ invoices|length|pluralize}} found, you can create <a href="{% url 'microinvoicer_draft_time' %}">time</a> or <a href="{% url 'microinvoicer_draft_material' %}">material</a> invoices.</small>
+        <small>{{ invoices|length|intword }} invoice{{ invoices|length|pluralize}} found</small>
     </p>
     <p>
         <table>
-        <tr><td></td><td></td></tr>
+        <tr>
+            <td>Registered clients</td>
+            <td></td>
+            <td style="text-align:center"><h5>
+                <a href="{% url 'microinvoicer_register_contract' %}">
+                &#x2A01;
+                </a>
+            </h5></td>
+        </tr>
         {% for contract in contracts %}
         <tr>
-            <td>{{ contract.buyer.name }}</td>
-            <td>{{ contract.hourly_rate|floatformat:2|intcomma }} euro / hour</td>
+            <td style="text-align:center">{{ contract.buyer.name }}</td>
+            <td style="text-align:center">{{ contract.hourly_rate|floatformat:2|intcomma }} euro / hour</td>
+            <td></td>
         </tr>
         {% endfor %}
         </table>
-        <small align="right">{{ contracts|length|intword }} contract{{ contracts|length|pluralize}} found, you can always <a href="{% url 'microinvoicer_contract' %}">create</a> one.</small>
+        <small align="right">{{ contracts|length|intword }} contract{{ contracts|length|pluralize}} found</small>
     </p>
 {% else %}
     <h4>No fiscal information about seller available.</h4>

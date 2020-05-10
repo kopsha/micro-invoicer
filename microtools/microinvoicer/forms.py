@@ -64,10 +64,10 @@ class ProfileForm(FiscalEntityForm):
 
         # company fields
         if self.user['db']:
-            for f,value in asdict(self.user['db'].register.seller).items():
+            for f, value in asdict(self.user['db'].register.seller).items():
                 self.fields[f].initial = value
 
-        editables = ['address', 'bank_name', 'bank_account',]
+        editables = ['address', 'bank_name', 'bank_account', ]
         for f in self.base_fields:
             self.fields[f].disabled = True if f not in editables else False
 
@@ -80,11 +80,11 @@ class SellerForm(FiscalEntityForm):
         super().__init__(*args, **kwargs)
         db = self.user['db']
         if db:
-            for f,value in asdict(db.register.seller).items():
+            for f, value in asdict(db.register.seller).items():
                 self.fields[f].initial = value
             self.fields['invoice_series'].initial = db.register.invoice_series
             self.fields['start_no'].initial = db.register.next_number
-        
+
         if not self.fields['owner_fullname'].initial:
             self.fields['owner_fullname'].initial = self.user['full_name']
 
@@ -108,5 +108,9 @@ class InvoiceForm(BaseUserForm):
         super().__init__(*args, **kwargs)
         self.fields['contract_id'].choices = (
             (i, f'{c.buyer.name}, {c.hourly_rate} euro / hour')
-                for i, c in enumerate(self.user['db'].contracts)
+            for i, c in enumerate(self.user['db'].contracts)
         )
+
+
+class DiscardInvoiceForm(BaseUserForm):
+    confirmed = forms.BooleanField(required=True, label='Do it!', initial=False)

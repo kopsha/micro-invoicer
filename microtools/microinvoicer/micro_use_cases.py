@@ -12,10 +12,11 @@ from typing import List
 
 from .micro_models import *
 
+
 def previous_month():
     today = date.today()
     last_month = today.replace(day=1) - timedelta(days=1)
-    last_month = last_month.replace(day=1)    
+    last_month = last_month.replace(day=1)
     return last_month
 
 
@@ -58,6 +59,7 @@ def create_time_invoice(db, form_data):
     }
     return TimeInvoice(**invoice_fields)
 
+
 def draft_time_invoice(db, form_data):
     invoice = create_time_invoice(db, form_data)
     db.register.next_number += 1
@@ -69,6 +71,13 @@ def draft_time_invoice(db, form_data):
     # pdf.render_invoice(invoice, file_save_invoice_name)
 
     return db
+
+
+def discard_last_invoice(db):
+    discared_invoice = db.register.invoices.pop()
+    # TODO: this object could be added to a trash bin
+    return db
+
 
 def pick_task_names(flavor, count):
     taskname_pool = [
@@ -99,6 +108,7 @@ def pick_task_names(flavor, count):
     tasks = [name.format(flavor=flavor) for name in random.sample(taskname_pool, k=count)]
     return tasks
 
+
 def split_duration(duration, count):
     left = duration
     splits = []
@@ -109,11 +119,12 @@ def split_duration(duration, count):
         min_split = min(4, max_split-1)
         current_split = random.randrange(min_split, stop=max_split)
         splits.append(current_split)
-        left -=current_split
+        left -= current_split
 
     splits.append(left)
 
     return splits
+
 
 def compute_start_dates(start_date, durations):
     dates = []
@@ -126,8 +137,9 @@ def compute_start_dates(start_date, durations):
 
     return dates
 
+
 def create_random_tasks(activity, how_many, hours):
-    
+
     names = pick_task_names(flavor=activity.flavor, count=how_many)
     durations = split_duration(duration=hours, count=how_many)
     dates = compute_start_dates(activity.start_date, durations)
@@ -136,6 +148,7 @@ def create_random_tasks(activity, how_many, hours):
     tasks = [Task(*t) for t in zip(names, dates, durations, projects)]
 
     return tasks
+
 
 def create_random_activity(contract_id, hours, flavor, project_id):
     start_date = previous_month()
@@ -159,10 +172,10 @@ def loads(content):
         }
         obj = {}
 
-        for key,value in pairs:
+        for key, value in pairs:
             if key in factory_map:
                 if isinstance(value, list):
-                    obj[key] = [factory_map[key](**item) for item in value ]
+                    obj[key] = [factory_map[key](**item) for item in value]
                 else:
                     obj[key] = factory_map[key](**value)
             else:

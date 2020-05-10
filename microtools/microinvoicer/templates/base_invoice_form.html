@@ -2,10 +2,11 @@
 {% load material_form %}
 
 {% block content %}
+<div class="row">{% block more_content %}{% endblock %}</div>
 <div class="row">
     <div class="{%block formclass %}col s12 m8 l8 offset-l2 offset-m2{% endblock %}">
         <div class="card">
-            <form method="post" action={{ my_url }}>
+            <form method="post" action={{ update_self_url }}>
                 <div class="card-content">
                     <span class="card-title grey-text text-darken-2">
                     {% block formtitle %}{{ form_title }}{% endblock %}</span>
@@ -14,9 +15,18 @@
                     {% block formcontent %}{% endblock %}
                     {% endform %}
                 </div>
+                <div class="card-action">
+                    {% block actions %}
+                    <div class="right-align">
+                        {% block formbuttons %}
+                        <button class="btn btn-primary" type="submit" style="background-color: rgba(0, 0, 0, 0.87)"> &gt;&gt; </button>
+                        {% endblock %}
+                    </div>
+                    {% endblock %}
+                </div>
             </form>
         </div>
+        
     </div>
 </div>
-<div class="row">{% block more_content %}{% endblock %}</div>
 {% endblock %}
