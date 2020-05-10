@@ -108,17 +108,6 @@ class RegisterContractView(BaseFormView):
         return super().form_valid(form)
 
 
-class ContractsView(LoginRequiredMixin, ListView):
-    """Contracts manager."""
-
-    template_name = 'contract_list.html'
-
-    def get_queryset(self):
-        """Bla Bla."""
-        db = self.request.user.read_data()
-        return db.flatten_contracts()
-
-
 class DraftInvoiceView(BaseFormView):
     """Creates a new draft invoice."""
 

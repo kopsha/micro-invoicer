@@ -10,7 +10,6 @@ urlpatterns = [
     path('profile/', views.ProfileView.as_view(), name='microinvoicer_profile'),
     path('setup/', views.SellerView.as_view(), name='microinvoicer_setup'),
     path('register_contract/', views.RegisterContractView.as_view(), name='microinvoicer_register_contract'),
-    path('contracts/', views.ContractsView.as_view(), name='microinvoicer_contracts'),
     path('draft_time/', views.DraftInvoiceView.as_view(), name='microinvoicer_draft_time'),
     path('draft_material/', views.DraftInvoiceView.as_view(), name='microinvoicer_draft_material'),
     path('time_invoice/<invoice_id>', views.TimeInvoiceView.as_view(), name='microinvoicer_time_invoice'),
