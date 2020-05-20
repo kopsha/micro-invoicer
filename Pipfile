@@ -8,12 +8,10 @@ verify_ssl = true
 [packages]
 sqlparse = "==0.2.4"
 pytest = "*"
-fpdf = "*"
 django = "*"
 django-registration = "*"
 django-material = "*"
-djongo = {git = "https://github.com/vladrotea/djongo"}
-zlip = "*"
+reportlab = "*"
 
 [requires]
 python_version = "3.7"

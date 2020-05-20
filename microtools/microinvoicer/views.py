@@ -230,6 +230,7 @@ class TimeInvoiceView(BaseFormView):
                 'microinvoicer_time_invoice', kwargs=self.kwargs)
             context['invoice'] = self.invoice
             context['task_list'] = self.invoice.activity.tasks
+            context['invoice_id'] = self.kwargs.get('invoice_id')
 
         return context
 
