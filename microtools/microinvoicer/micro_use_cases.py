@@ -11,6 +11,7 @@ from datetime import datetime, date, timedelta
 from typing import List
 
 from .micro_models import *
+from . import micro_render
 
 
 def previous_month():
@@ -78,6 +79,11 @@ def discard_last_invoice(db):
     db.register.next_number -= 1
     # TODO: this object could be added to a trash bin
     return db
+
+
+def render_printable_invoice(invoice):
+    assert type(invoice) is TimeInvoice
+    return micro_render.write_invoice_pdf(invoice)
 
 
 def pick_task_names(flavor, count):
@@ -171,6 +177,10 @@ def loads(content):
             'tasks': Task,
             'invoices': TimeInvoice,
         }
+        date_fields = [
+            'start_date',
+            'date',
+        ]
         obj = {}
 
         for key, value in pairs:
@@ -179,6 +189,8 @@ def loads(content):
                     obj[key] = [factory_map[key](**item) for item in value]
                 else:
                     obj[key] = factory_map[key](**value)
+            elif key in date_fields:
+                obj[key] = date.fromisoformat(value)
             else:
                 obj[key] = value
 

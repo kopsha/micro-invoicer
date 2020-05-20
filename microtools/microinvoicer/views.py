@@ -1,8 +1,8 @@
 """How about now."""
 
-from django.http import Http404
+from django.http import Http404, FileResponse
 from django.urls import reverse_lazy
-from django.views.generic import TemplateView, ListView
+from django.views.generic import View, TemplateView, ListView
 from django.views.generic.edit import FormView, DeletionMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
@@ -234,6 +234,28 @@ class TimeInvoiceView(BaseFormView):
 
         return context
 
+
+class PrintableInvoiceView(LoginRequiredMixin, View):
+    """Download invoice as PDF file"""
+        
+    def get(self, request, *args, **kwargs):
+        """Returns content of generated pdf"""
+        db = request.user.read_data()
+        try:
+            ndx = int(self.kwargs['invoice_id']) - 1
+            invoice = db.invoices()[ndx]
+        except (IndexError, KeyError):
+            raise Http404
+
+        content = muc.render_printable_invoice(invoice)  # content is a BytesIO object 
+        response = FileResponse(
+            content,
+            filename=f'{invoice.series_number}_activity_report.pdf',
+            as_attachment=True,
+            content_type='application/pdf'
+        )
+
+        return response
 
 class ProfileView(BaseFormView):
     """Captain obvious knows this already."""
