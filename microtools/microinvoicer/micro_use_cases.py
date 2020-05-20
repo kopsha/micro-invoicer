@@ -75,6 +75,7 @@ def draft_time_invoice(db, form_data):
 
 def discard_last_invoice(db):
     discared_invoice = db.register.invoices.pop()
+    db.register.next_number -= 1
     # TODO: this object could be added to a trash bin
     return db
 
