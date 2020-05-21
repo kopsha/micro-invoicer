@@ -62,6 +62,7 @@ class TimeInvoice:
     status: InvoiceStatus
     conversion_rate: float
     hourly_rate: float
+    # TODO: add contract_id string
 
     @property
     def series_number(self):

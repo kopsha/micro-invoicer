@@ -16,13 +16,13 @@ from dataclasses import asdict, astuple
 
 
 class IndexView(TemplateView):
-    """Bla Bla."""
+    """Landing Page."""
 
     template_name = 'index.html'
 
 
 class MicroRegistrationView(RegistrationView):
-    """Bla Bla."""
+    """User registration."""
 
     template_name = 'registration_form.html'
     form_class = forms.MicroRegistrationForm
@@ -33,18 +33,18 @@ class MicroRegistrationView(RegistrationView):
 
 
 class MicroLoginView(LoginView):
-    """Bla Bla."""
+    """Classic login."""
 
     template_name = 'login.html'
 
 
 class MicroHomeView(LoginRequiredMixin, TemplateView):
-    """Bla Bla."""
+    """User Home."""
 
     template_name = 'home.html'
 
     def get_context_data(self, **kwargs):
-        """Bla Bla."""
+        """Attach all registry info."""
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
             db = self.request.user.read_data()
@@ -62,14 +62,14 @@ class BaseFormView(LoginRequiredMixin, FormView):
     success_url = reverse_lazy('microinvoicer_home')
 
     def get_context_data(self, **kwargs):
-        """Bla Bla."""
+        """Add form title."""
         context = super().get_context_data(**kwargs)
         context['form_title'] = self.form_title
 
         return context
 
     def get_form_kwargs(self):
-        """Bla Bla."""
+        """Adds user information required for later validation."""
         kwargs = super().get_form_kwargs()
         kwargs.update({'user': self.request.user})
         return kwargs
@@ -87,7 +87,7 @@ class SellerView(BaseFormView):
     form_class = forms.SellerForm
 
     def form_valid(self, form):
-        """Bla Bla."""
+        """Scratch out user database."""
         db = muc.create_empty_db(form.cleaned_data)
         self.request.user.write_data(db)
         return super().form_valid(form)
@@ -250,7 +250,7 @@ class PrintableInvoiceView(LoginRequiredMixin, View):
         content = muc.render_printable_invoice(invoice)  # content is a BytesIO object 
         response = FileResponse(
             content,
-            filename=f'{invoice.series_number}_activity_report.pdf',
+            filename=f'{invoice.series_number}.pdf',
             as_attachment=True,
             content_type='application/pdf'
         )
