@@ -131,6 +131,8 @@ class ContractDetailsView(BaseFormView):
             initial['address'] = contract.buyer.address
             initial['bank_account'] = contract.buyer.bank_account
             initial['bank_name'] = contract.buyer.bank_name
+            initial['registry_id'] = contract.registry_id
+            initial['registry_date'] = contract.registry_date
             initial['hourly_rate'] = contract.hourly_rate
             self.contract_ndx = ndx
 
@@ -212,6 +214,7 @@ class TimeInvoiceView(BaseFormView):
         try:
             ndx = int(self.kwargs['invoice_id']) - 1
             invoice = invoices[ndx]
+            initial['publish_date'] = invoice.publish_date
             initial['duration'] = invoice.activity.duration
             initial['flavor'] = invoice.activity.flavor
             initial['project_id'] = invoice.activity.project_id

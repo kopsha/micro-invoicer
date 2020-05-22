@@ -9,7 +9,7 @@
         <table>
         <thead>
             <tr>
-                <td>Invoice Registry</td><td></td><td></td><td></td>
+                <td>Invoice Registry</td><td></td><td></td><td></td><td></td>
                 <td style="text-align:center">
                     <h5><a href="{% url 'microinvoicer_draft_time' %}">&#x002B;
                     </a></h5>
@@ -20,6 +20,7 @@
         {% for invoice in invoices %}
         <tr>
             <td style="text-align:center"><a href="{% url 'microinvoicer_time_invoice' invoice_id=forloop.counter %}">{{ invoice.series_number }}</a></td>
+            <td style="text-align:center">{{ invoice.publish_date|naturalday }}</td>
             <td style="text-align:center">{{ invoice.buyer.name }}</td>
             <td style="text-align:center">{{ invoice.activity.duration }} hours</td>
             <td style="text-align:center">{{ invoice.value|floatformat:2|intcomma }} lei</td>

@@ -4,6 +4,8 @@ from django_registration.forms import RegistrationForm
 from material import Layout, Row
 from django.forms.models import model_to_dict
 
+from datetime import date
+
 from .models import MicroUser
 
 
@@ -90,10 +92,13 @@ class SellerForm(FiscalEntityForm):
 
 
 class ContractForm(FiscalEntityForm):
+    registry_id = forms.CharField(required=True, max_length=8, strip=True, label='Registry number')
+    registry_date = forms.DateField(required=True, label='Registry date')
     hourly_rate = forms.DecimalField(required=True, decimal_places=2)
 
 
 class InvoiceForm(BaseUserForm):
+    publish_date = forms.DateField(required=True, initial=date.today, label='Invoice date')
     contract_id = forms.ChoiceField(required=True, label='Choose contract')
     duration = forms.IntegerField(required=True, min_value=1, label_suffix='hours')
     flavor = forms.CharField(required=True, max_length=80, strip=True)

@@ -34,8 +34,15 @@ def create_empty_db(form_data):
 
 def create_contract(form_data):
     hourly_rate = form_data.pop('hourly_rate')
+    registry_id = form_data.pop('registry_id')
+    registry_date = form_data.pop('registry_date')
     buyer = FiscalEntity(**form_data)
-    contract = ServiceContract(buyer=buyer, hourly_rate=hourly_rate)
+    contract = ServiceContract(
+        buyer=buyer,
+        registry_id=registry_id,
+        registry_date=registry_date,
+        hourly_rate=hourly_rate
+    )
 
     return contract
 
@@ -45,7 +52,6 @@ def create_time_invoice(db, form_data):
     duration = form_data.pop('duration')
     flavor = form_data.pop('flavor')
     project_id = form_data.pop('project_id')
-    xchg_rate = form_data.pop('xchg_rate')
 
     contract = db.contracts[int(contract_id)]
     invoice_fields = {
@@ -56,7 +62,10 @@ def create_time_invoice(db, form_data):
         'buyer': contract.buyer,
         'hourly_rate': contract.hourly_rate,
         'activity': create_random_activity(contract_id, duration, flavor, project_id),
-        'conversion_rate': xchg_rate,
+        'conversion_rate': form_data.pop('xchg_rate'),
+        'publish_date': form_data.pop('publish_date'),
+        'contract_registry_id': contract.registry_id,
+        'contract_registry_date': contract.registry_date,
     }
     return TimeInvoice(**invoice_fields)
 
@@ -65,11 +74,6 @@ def draft_time_invoice(db, form_data):
     invoice = create_time_invoice(db, form_data)
     db.register.next_number += 1
     db.register.invoices.append(invoice)
-
-    # file_save_activity_report_name = "demo_pdf_activity_report.pdf"
-    # file_save_invoice_name = "demo_pdf_invoice.pdf"
-    # pdf.render_activity_report(invoice, file_save_activity_report_name)
-    # pdf.render_invoice(invoice, file_save_invoice_name)
 
     return db
 
@@ -177,9 +181,13 @@ def loads(content):
             'tasks': Task,
             'invoices': TimeInvoice,
         }
+        # ATTENTION: if you rename any fields check this part too
         date_fields = [
             'start_date',
             'date',
+            'registry_date',
+            'publish_date',
+            'contract_registry_date',
         ]
         obj = {}
 

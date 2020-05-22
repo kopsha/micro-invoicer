@@ -20,7 +20,7 @@ right_margin = page_width - 1.1
 font_tiny = 8
 font_small = 10
 font_normal = 11
-font_subtitle = 15
+font_subtitle = 14
 font_title = 18
 
 def to_cm(xu, yu):
@@ -86,14 +86,16 @@ def render_title(pdf_canvas, title):
 
 	return cy
 
-def render_subtitle(pdf_canvas, text, from_y):
+def render_invoice_subtitle(pdf_canvas, invoice, from_y):
 	# Assume A4 pagesize in portrait mode 
 	pdf_canvas.setFont('Helvetica', font_subtitle)
 
 	cx = page_width/2
-
 	cy = from_y - (row_height + 2 * row_space)
-	pdf_canvas.drawCentredString(*to_cm(cx,cy), text)
+
+	pdf_canvas.drawCentredString(*to_cm(cx,cy), f'nr. {invoice.series_number}')
+	cy -= row_height
+	pdf_canvas.drawCentredString(*to_cm(cx,cy), f'din {invoice.publish_date.strftime("%d-%b-%Y")}')
 	cy -= row_height*2
 
 	return cy
@@ -130,7 +132,7 @@ def render_invoice_items(pdf_canvas, invoice, from_y):
 	pdf_canvas.setFont('Helvetica', font_normal)
 	pdf_canvas.drawCentredString(2.5*cm, cy*cm, '1')
 	pdf_canvas.drawCentredString(6*cm, (cy + row_height*0.4)*cm, 'Furnizare servicii software,')
-	pdf_canvas.drawCentredString(6*cm, (cy - row_height*0.45)*cm, ' cf. contract .... din .. ... ....')
+	pdf_canvas.drawCentredString(6*cm, (cy - row_height*0.45)*cm, f' cf. contract {invoice.contract_registry_id} din {invoice.contract_registry_date.strftime("%d-%b-%Y")}')
 
 	pdf_canvas.drawCentredString(11*cm, cy*cm, locale.str(invoice.activity.duration))
 	pdf_canvas.drawCentredString(13*cm, cy*cm, 'ore')
@@ -262,12 +264,11 @@ def render_activity_page(pdf, invoice):
 
 
 def render_invoice_page(pdf, invoice):
-	title = f'FACTURA {invoice.series_number}'
-	subtitle = 'din ' + invoice.activity.start_date.strftime("%d-%b-%Y")
+	title = f'FACTURA'
 
 	render_header(pdf, invoice)
 	bottom = render_title(pdf, title)
-	bottom = render_subtitle(pdf, subtitle, from_y=bottom)
+	bottom = render_invoice_subtitle(pdf, invoice, from_y=bottom)
 	bottom = render_invoice_items(pdf, invoice, from_y=bottom)
 
 	render_watermark(pdf)
