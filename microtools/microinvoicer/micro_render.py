@@ -21,30 +21,10 @@ font_tiny = 8
 font_small = 10
 font_normal = 11
 font_subtitle = 14
-font_title = 18
+font_title = 20
 
 def to_cm(xu, yu):
 	return (xu*cm,yu*cm)
-
-
-def translate_month(date):
-	all_months = [
-		'Ianuarie',
-		'Februarie',
-		'Martie',
-		'Aprilie',
-		'Mai',
-		'Iunie',
-		'Iulie',
-		'August',
-		'Septembrie',
-		'Octombrie',
-		'Noiembrie',
-		'Decembrie'
-	]
-
-	return all_months[date.month-1]
-
 
 def render_header(pdf_canvas, invoice):
 	# Assume A4 pagesize in portrait mode 
@@ -86,6 +66,19 @@ def render_title(pdf_canvas, title):
 
 	return cy
 
+def render_activity_subtitle(pdf_canvas, activity, from_y):
+	# Assume A4 pagesize in portrait mode 
+	pdf_canvas.setFont('Helvetica', font_subtitle)
+
+	cx = page_width/2
+	cy = from_y - (row_height + 2 * row_space)
+
+	pdf_canvas.drawString(*to_cm(cx + row_space,cy), activity.start_date.strftime("%B %Y"))
+	cy -= row_height*2
+
+	return cy
+
+
 def render_invoice_subtitle(pdf_canvas, invoice, from_y):
 	# Assume A4 pagesize in portrait mode 
 	pdf_canvas.setFont('Helvetica', font_subtitle)
@@ -93,9 +86,11 @@ def render_invoice_subtitle(pdf_canvas, invoice, from_y):
 	cx = page_width/2
 	cy = from_y - (row_height + 2 * row_space)
 
-	pdf_canvas.drawCentredString(*to_cm(cx,cy), f'nr. {invoice.series_number}')
+	pdf_canvas.drawRightString(*to_cm(cx - row_space,cy), 'nr:')
+	pdf_canvas.drawString(*to_cm(cx + row_space,cy), invoice.series_number)
 	cy -= row_height
-	pdf_canvas.drawCentredString(*to_cm(cx,cy), f'din {invoice.publish_date.strftime("%d-%b-%Y")}')
+	pdf_canvas.drawRightString(*to_cm(cx - row_space,cy), 'din:')
+	pdf_canvas.drawString(*to_cm(cx + row_space,cy), invoice.publish_date.strftime("%d-%b-%Y"))
 	cy -= row_height*2
 
 	return cy
@@ -177,7 +172,7 @@ def render_tasks_table(pdf_canvas, activity, from_y):
 		('Ore', 18),
 	]
 	pdf_canvas.setFont('Helvetica', font_small)
-	cy = from_y - 4 * (row_height + row_space)
+	cy = from_y - 2 * (row_height + row_space)
 
 
 	for h,x in headings:
@@ -245,21 +240,20 @@ def render_signatures(pdf_canvas, invoice, from_y=(page_height/2)):
 
 
 def render_watermark(pdf):
-	pdf.setFont('Helvetica', font_tiny)
-	pdf.drawRightString( *to_cm(right_margin, bottom_margin), 'rendered by micro-tools.fortech.ro' )
-
+	import os
+	pdf.setFont('Courier', font_tiny)
+	pdf.drawRightString( *to_cm(right_margin, bottom_margin), '.. micro-tools.fortech.ro ..' )
 
 def render_activity_page(pdf, invoice):
-	start_date = invoice.activity.start_date
-	month_name = f'{translate_month(start_date)} {start_date.strftime("%Y")}'
-	title = f'Raport de activitate: {month_name}'
+	title = 'Raport de activitate'
 
 	render_header(pdf, invoice)
 	bottom = render_title(pdf, title)
+	bottom = render_activity_subtitle(pdf, invoice.activity, from_y=bottom)
 	bottom = render_tasks_table(pdf, invoice.activity, from_y=bottom)
 	bottom = render_signatures(pdf, invoice, from_y=bottom)
-
 	render_watermark(pdf)
+
 	pdf.showPage()
 
 
@@ -275,15 +269,16 @@ def render_invoice_page(pdf, invoice):
 	pdf.showPage()
 
 def write_invoice_pdf(invoice):
-	write_to = BytesIO()
-	pdf = canvas.Canvas(filename=write_to, pagesize=A4)
-
 	locale.setlocale(locale.LC_ALL, 'ro_RO')
+
+	write_buffer = BytesIO()
+	pdf = canvas.Canvas(filename=write_buffer, pagesize=A4)
+	pdf.setAuthor('python@micro-tools.fortech.ro')
 
 	render_invoice_page(pdf, invoice)
 	render_activity_page(pdf, invoice)
 
 	pdf.save()
-	write_to.seek(0)
+	write_buffer.seek(0)
 	
-	return write_to
+	return write_buffer
