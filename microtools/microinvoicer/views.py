@@ -162,8 +162,22 @@ class ContractDetailsView(BaseFormView):
 class DraftInvoiceView(BaseFormView):
     """Creates a new draft invoice."""
 
-    form_title = 'Generate new draft invoice'
+    form_title = 'Create a new invoice'
     form_class = forms.InvoiceForm
+
+    def get_initial(self, **kwargs):
+        """provide sensible defaults for a new invoice"""
+        initial = super().get_initial()
+        db = self.request.user.read_data()
+
+        all_invoices = db.invoices()
+        if all_invoices:
+            last_invoice = all_invoices[0]
+            initial['duration'] = last_invoice.activity.duration
+            initial['flavor'] = last_invoice.activity.flavor
+            initial['project_id'] = last_invoice.activity.project_id
+
+        return initial
 
     def form_valid(self, form):
         """Bla Bla."""
