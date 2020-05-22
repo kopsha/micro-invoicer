@@ -19,6 +19,21 @@ def previous_month():
     return last_month
 
 
+def corrupted_storage():
+    form_data = {
+        'invoice_series': '(corrupted)',
+        'start_no': 1,
+        'name': 'Account corrupted. Please reset your profile.',
+        'owner_fullname': '(corrupted)',
+        'registration_id': '(corrupted)',
+        'fiscal_code': '(corrupted)',
+        'address': '(corrupted)',
+        'bank_account': '(corrupted)',
+        'bank_name': '(corrupted)',
+    }
+    return create_empty_db(form_data)
+
+
 def create_empty_db(form_data):
     invoice_series = form_data.pop('invoice_series')
     start_no = form_data.pop('start_no')
@@ -202,10 +217,7 @@ def loads(content):
 
         return obj
 
-    try:
-        data = json.loads(content, object_pairs_hook=from_dict)
-    except json.JSONDecodeError:
-        return None
+    data = json.loads(content, object_pairs_hook=from_dict)
 
     return LocalStorage(register=data['register'], contracts=data['contracts'])
 

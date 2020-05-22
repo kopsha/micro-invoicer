@@ -16,15 +16,6 @@ from .managers import MicroUserManager
 from . import micro_use_cases as muc
 
 
-def static_vars(**kwargs):
-    """static variable decorator"""
-    def decorate(func):
-        for k in kwargs:
-            setattr(func, k, kwargs[k])
-        return func
-    return decorate
-
-
 class MicroUser(AbstractBaseUser, PermissionsMixin):
     """
     For our purposes, it makes much more sense in my opinion to use an email
@@ -43,6 +34,7 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
     crc = models.CharField(_('crc32'), max_length=10, blank=False, default='0x0')
 
     objects = MicroUserManager()
+    crypto_engine=Fernet(settings.MICRO_USER_SECRET)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
@@ -50,10 +42,6 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = _('micro user')
         verbose_name_plural = _('micro users')
-
-    @static_vars(engine=Fernet(settings.MICRO_USER_SECRET))
-    def crypto_engine(self):
-        return self.crypto_engine.engine
 
     def get_full_name(self):
         full_name = f'{self.first_name} {self.last_name}'
@@ -65,30 +53,28 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
     def email_user(self, subject, message, from_email=None, **kwargs):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
+
     def write_data(self, db):
         plain_data = muc.dumps(db)
         self.crc = muc.to_crc32(plain_data)
-        self.datastore = self.crypto_engine().encrypt(plain_data.encode('utf-8')).decode('utf-8')
+        self.datastore = MicroUser.crypto_engine.encrypt(plain_data.encode('utf-8')).decode('utf-8')
         self.save()
         print(self.datastore.data)
 
     def read_data(self):
         try:
             data = self.datastore.encode('utf-8')
-            plain_data = str(self.crypto_engine().decrypt(data), 'utf-8')
+            plain_data = str(MicroUser.crypto_engine.decrypt(data), 'utf-8')
         except InvalidToken:
-            plain_data = str(self.datastore)
-            print('\t >> [warning] cannot decrypt user data, reason: data is invalid.')
+            print('\t >> [warning] cannot decrypt invalid user data. raw data dump:')
+            print(f'{data!r}')
+            empty_db = muc.corrupted_storage()
+            plain_data = muc.dumps(empty_db)
 
         crc = muc.to_crc32(plain_data)
-
         if crc != self.crc:
             print('\t >> [warning] crc check failed. did someone messed with your data?')
-            print(f'\t >> [warning] computed _{crc}_ vs _{self.crc}_ stored. raw data dump:')
-            print(plain_data)
-
-            plain_data = ''
-            self.write_data(plain_data)
+            print(f'\t >> [warning] computed _{crc}_ vs _{self.crc}_ stored.')
 
         db = muc.loads(plain_data)
 

@@ -81,7 +81,7 @@ class SellerForm(FiscalEntityForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         db = self.user['db']
-        if db:
+        if db.register.seller.registration_id not in {'(corrupted)'}:
             for f, value in asdict(db.register.seller).items():
                 self.fields[f].initial = value
             self.fields['invoice_series'].initial = db.register.invoice_series
