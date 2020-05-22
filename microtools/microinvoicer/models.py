@@ -6,17 +6,23 @@ from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.models import PermissionManager
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
+from django.conf import settings
+
+from cryptography.fernet import InvalidToken
+from cryptography.fernet import Fernet
 
 
 from .managers import MicroUserManager
 from . import micro_use_cases as muc
 
 
-class MicroUserData(models.Model):
-    data = models.TextField()
-
-    class Meta:
-        abstract = True
+def static_vars(**kwargs):
+    """static variable decorator"""
+    def decorate(func):
+        for k in kwargs:
+            setattr(func, k, kwargs[k])
+        return func
+    return decorate
 
 
 class MicroUser(AbstractBaseUser, PermissionsMixin):
@@ -45,6 +51,10 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
         verbose_name = _('micro user')
         verbose_name_plural = _('micro users')
 
+    @static_vars(engine=Fernet(settings.MICRO_USER_SECRET))
+    def crypto_engine(self):
+        return self.crypto_engine.engine
+
     def get_full_name(self):
         full_name = f'{self.first_name} {self.last_name}'
         return full_name.strip()
@@ -56,26 +66,30 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
     def write_data(self, db):
-        # TODO: add some validation / exception handling
-        self.datastore = muc.dumps(db)
-        self.crc = muc.to_crc32(self.datastore)
+        plain_data = muc.dumps(db)
+        self.crc = muc.to_crc32(plain_data)
+        self.datastore = self.crypto_engine().encrypt(plain_data.encode('utf-8')).decode('utf-8')
         self.save()
         print(self.datastore.data)
 
     def read_data(self):
-        # TODO: add some validation / exception handling
-        crc = muc.to_crc32(self.datastore)
+        try:
+            data = self.datastore.encode('utf-8')
+            plain_data = str(self.crypto_engine().decrypt(data), 'utf-8')
+        except InvalidToken:
+            plain_data = str(self.datastore)
+            print('\t >> [warning] cannot decrypt user data, reason: data is invalid.')
+
+        crc = muc.to_crc32(plain_data)
 
         if crc != self.crc:
             print('\t >> [warning] crc check failed. did someone messed with your data?')
-            print(f'{self.datastore!r}')
-            print(f'computed _{crc}_ vs _{self.crc}_ stored')
+            print(f'\t >> [warning] computed _{crc}_ vs _{self.crc}_ stored. raw data dump:')
+            print(plain_data)
 
-            self.datastore = ''
-            self.crc = muc.to_crc32(self.datastore)
-            self.save()
+            plain_data = ''
+            self.write_data(plain_data)
 
-        db = muc.loads(self.datastore)
+        db = muc.loads(plain_data)
 
         return db
-

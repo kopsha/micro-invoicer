@@ -4,8 +4,6 @@ import random
 import decimal
 import zlib
 
-#import pdf_rendering as pdf
-
 from dataclasses import dataclass, asdict, field
 from datetime import datetime, date, timedelta
 from typing import List
@@ -227,7 +225,7 @@ def dumps(db):
 
 
 def to_crc32(data):
-    return hex(zlib.crc32(bytearray(data, 'utf-8')) & 0xffffffff)
+    return hex(zlib.crc32(data.encode('utf-8')) & 0xffffffff)
 
 
 if __name__ == '__main__':
