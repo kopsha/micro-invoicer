@@ -242,7 +242,7 @@ def render_signatures(pdf_canvas, invoice, from_y=(page_height/2)):
 def render_watermark(pdf):
 	import os
 	pdf.setFont('Courier', font_tiny)
-	pdf.drawRightString( *to_cm(right_margin, bottom_margin), '.. micro-tools.fortech.ro ..' )
+	pdf.drawRightString( *to_cm(right_margin, bottom_margin), '.. micro-tools.fibonet.ro ..' )
 
 def render_activity_page(pdf, invoice):
 	title = 'Raport de activitate'
