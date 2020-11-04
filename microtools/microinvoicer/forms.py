@@ -4,6 +4,8 @@ from django_registration.forms import RegistrationForm
 from material import Layout, Row
 from django.forms.models import model_to_dict
 
+from datetime import date
+
 from .models import MicroUser
 
 
@@ -64,10 +66,11 @@ class ProfileForm(FiscalEntityForm):
 
         # company fields
         if self.user['db']:
-            for f,value in asdict(self.user['db'].register.seller).items():
+            for f, value in asdict(self.user['db'].register.seller).items():
                 self.fields[f].initial = value
 
-        editables = ['address', 'bank_name', 'bank_account',]
+        # ATTENTION: please match this with use cases, sometime
+        editables = ['address', 'bank_name', 'bank_account', ]
         for f in self.base_fields:
             self.fields[f].disabled = True if f not in editables else False
 
@@ -79,21 +82,24 @@ class SellerForm(FiscalEntityForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         db = self.user['db']
-        if db:
-            for f,value in asdict(db.register.seller).items():
+        if db.register.seller.registration_id not in {'(corrupted)'}:
+            for f, value in asdict(db.register.seller).items():
                 self.fields[f].initial = value
             self.fields['invoice_series'].initial = db.register.invoice_series
             self.fields['start_no'].initial = db.register.next_number
-        
+
         if not self.fields['owner_fullname'].initial:
             self.fields['owner_fullname'].initial = self.user['full_name']
 
 
 class ContractForm(FiscalEntityForm):
+    registry_id = forms.CharField(required=True, max_length=8, strip=True, label='Registry number')
+    registry_date = forms.DateField(required=True, label='Registry date')
     hourly_rate = forms.DecimalField(required=True, decimal_places=2)
 
 
 class InvoiceForm(BaseUserForm):
+    publish_date = forms.DateField(required=True, initial=date.today, label='Invoice date')
     contract_id = forms.ChoiceField(required=True, label='Choose contract')
     duration = forms.IntegerField(required=True, min_value=1, label_suffix='hours')
     flavor = forms.CharField(required=True, max_length=80, strip=True)
@@ -106,8 +112,11 @@ class InvoiceForm(BaseUserForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.user['db']:
-            self.fields['contract_id'].choices = (
-                (i, f'{c.buyer.name}, {c.hourly_rate} euro / hour')
-                    for i, c in enumerate(self.user['db'].contracts)
-            )
+        self.fields['contract_id'].choices = (
+            (i, f'{c.buyer.name}, {c.hourly_rate} euro / hour')
+            for i, c in enumerate(self.user['db'].contracts)
+        )
+
+
+class DiscardInvoiceForm(BaseUserForm):
+    confirmed = forms.BooleanField(required=True, label='Do it!', initial=False)

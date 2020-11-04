@@ -20,7 +20,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'hnqebe791126!4lo&uan$!15tsbe_zubw599$8#5y4=#(v*b%a'
+SECRET_KEY = os.environ.get('MICRO_SERVER_SECRET', 'fake-key please update on deployment')
+MICRO_USER_SECRET = os.environ.get('MICRO_USER_SECRET', b'fake-key please update on deployment')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -81,8 +82,8 @@ WSGI_APPLICATION = 'microtools.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
-        'NAME': 'microtools'
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 

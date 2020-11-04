@@ -1,0 +1,18 @@
+{% extends "base_invoice_form.html" %}
+{% load humanize %}
+
+
+{% block more_content %}
+
+<div class="row">
+    <h4 align="center">Throwing away {{ invoice.series_number }}</h4>
+    <br>
+    <h5 align="center">
+        {{ invoice.activity.duration }} <sub><small>hours</small></sub>
+        x {{ invoice.hourly_rate|floatformat:0 }} <sub><small>euro/hour</small></sub>
+        [ x {{ invoice.conversion_rate|floatformat:4 }} <sub><small>lei/euro</small></sub> ]
+        = {{ invoice.value|floatformat:2|intcomma }} <sub><small>lei</small></sub>
+    </h5>
+    <br>
+</div>
+{% endblock %}

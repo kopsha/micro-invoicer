@@ -5,7 +5,7 @@
 <div class="row">
     <div class="{%block formclass %}col s12 m8 l8 offset-l2 offset-m2{% endblock %}">
         <div class="card">
-            <form method="post" action='.'>
+            <form method="post" action={{ update_self_url }}>
                 <div class="card-content">
                     <span class="card-title grey-text text-darken-2">{% block formtitle %}{{ form_title }}{% endblock %}</span>
                     {% csrf_token %}

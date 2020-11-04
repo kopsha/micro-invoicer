@@ -22,6 +22,8 @@ class FiscalEntity:
 class ServiceContract:
     buyer: FiscalEntity
     hourly_rate: float
+    registry_id: str
+    registry_date: date
 
 
 @dataclass
@@ -62,6 +64,9 @@ class TimeInvoice:
     status: InvoiceStatus
     conversion_rate: float
     hourly_rate: float
+    publish_date: date
+    contract_registry_id: str
+    contract_registry_date: date
 
     @property
     def series_number(self):
@@ -86,6 +91,7 @@ class InvoiceRegister:
     next_number: int
     invoices: List[TimeInvoice] = field(default_factory=list)
 
+
 @dataclass
 class LocalStorage:
     register: InvoiceRegister
@@ -96,4 +102,3 @@ class LocalStorage:
 
     def invoices(self):
         return list(reversed(self.register.invoices))
-   
