@@ -1,12 +1,11 @@
-import enum
+import copy
 import json
 import random
 import decimal
 import zlib
 
-from dataclasses import dataclass, asdict, field
-from datetime import datetime, date, timedelta
-from typing import List
+from dataclasses import asdict
+from datetime import date, timedelta
 
 from .micro_models import *
 from . import micro_render
@@ -41,6 +40,15 @@ def create_empty_db(form_data):
     seller = FiscalEntity(**form_data)
     registry = InvoiceRegister(seller=seller, invoice_series=invoice_series, next_number=start_no)
     db = LocalStorage(registry)
+
+    return db
+
+
+def update_seller_profile(db, data):
+    db = copy.deepcopy(db)
+    db.register.seller.address = data.get('address', '')
+    db.register.seller.bank_name = data.get('bank_name', '')
+    db.register.seller.bank_account = data.get('bank_account', '')
 
     return db
 

@@ -2,8 +2,8 @@
 
 from django.http import Http404, FileResponse
 from django.urls import reverse_lazy
-from django.views.generic import View, TemplateView, ListView
-from django.views.generic.edit import FormView, DeletionMixin
+from django.views.generic import View, TemplateView
+from django.views.generic.edit import FormView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
 
@@ -11,8 +11,6 @@ from django_registration.backends.one_step.views import RegistrationView
 
 from . import forms
 from . import micro_use_cases as muc
-
-from dataclasses import asdict, astuple
 
 
 class IndexView(TemplateView):
@@ -90,6 +88,25 @@ class SellerView(BaseFormView):
         """Scratch out user database."""
         db = muc.create_empty_db(form.cleaned_data)
         self.request.user.write_data(db)
+        return super().form_valid(form)
+
+
+class ProfileView(BaseFormView):
+    """Captain obvious knows this already."""
+
+    template_name = 'profile.html'
+    form_title = 'Your Profile'
+    form_class = forms.ProfileForm
+
+    def form_valid(self, form):
+        """Update profile info only."""
+        db = self.request.user.read_data()
+        db = muc.update_seller_profile(db, form.cleaned_data)
+        self.request.user.write_data(db)
+
+        print(form.cleaned_data)
+        print(db.register.seller)
+
         return super().form_valid(form)
 
 
@@ -254,7 +271,7 @@ class TimeInvoiceView(BaseFormView):
 
 class PrintableInvoiceView(LoginRequiredMixin, View):
     """Download invoice as PDF file"""
-        
+
     def get(self, request, *args, **kwargs):
         """Returns content of generated pdf"""
         db = request.user.read_data()
@@ -264,7 +281,7 @@ class PrintableInvoiceView(LoginRequiredMixin, View):
         except (IndexError, KeyError):
             raise Http404
 
-        content = muc.render_printable_invoice(invoice)  # content is a BytesIO object 
+        content = muc.render_printable_invoice(invoice)  # content is a BytesIO object
         response = FileResponse(
             content,
             filename=f'{invoice.series_number}.pdf',
@@ -273,10 +290,3 @@ class PrintableInvoiceView(LoginRequiredMixin, View):
         )
 
         return response
-
-class ProfileView(BaseFormView):
-    """Captain obvious knows this already."""
-
-    template_name = 'profile.html'
-    form_title = 'Your Profile'
-    form_class = forms.ProfileForm

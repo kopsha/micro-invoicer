@@ -53,7 +53,6 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
     def email_user(self, subject, message, from_email=None, **kwargs):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
-
     def write_data(self, db):
         plain_data = muc.dumps(db)
         self.crc = muc.to_crc32(plain_data)

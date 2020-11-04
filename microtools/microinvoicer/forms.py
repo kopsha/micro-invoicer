@@ -69,6 +69,7 @@ class ProfileForm(FiscalEntityForm):
             for f, value in asdict(self.user['db'].register.seller).items():
                 self.fields[f].initial = value
 
+        # ATTENTION: please match this with use cases, sometime
         editables = ['address', 'bank_name', 'bank_account', ]
         for f in self.base_fields:
             self.fields[f].disabled = True if f not in editables else False
