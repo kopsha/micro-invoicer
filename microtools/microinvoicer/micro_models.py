@@ -98,7 +98,7 @@ class LocalStorage:
     contracts: List[ServiceContract] = field(default_factory=list)
 
     def flatten_contracts(self):
-        return [asdict(c) for c in reversed(self.contracts)]
+        return [asdict(c) for c in self.contracts]
 
     def invoices(self):
         return list(reversed(self.register.invoices))

@@ -28,7 +28,7 @@
                 <td style="text-align:center"><a href="{% url 'microinvoicer_pop_invoice' %}">&#x274C;</a></td style="text-align:center">
             {% else %}
                 <td></td>
-            {% endif %}            
+            {% endif %}
         </tr>
         {% endfor %}
         </table>
@@ -45,11 +45,11 @@
                 </a>
             </h5></td>
         </tr>
-        {% for contract in contracts %}
+        {% for contract in contracts reversed %}
         <tr>
             <td style="text-align:center">{{ contract.buyer.name }}</td>
             <td style="text-align:center">{{ contract.hourly_rate|floatformat:2|intcomma }} euro / hour</td>
-            <td style="text-align:center"><a href="{% url 'microinvoicer_contract' contract_id=forloop.counter %}">&#x2317;</a></td>
+            <td style="text-align:center"><a href="{% url 'microinvoicer_contract' contract_id=forloop.revcounter %}">&#x2317;</a></td>
         </tr>
         {% endfor %}
         </table>
