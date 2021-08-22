@@ -70,7 +70,7 @@ class TimeInvoice:
 
     @property
     def series_number(self):
-        return f'{self.series}-{self.number:04}'
+        return f"{self.series}-{self.number:04}"
 
     @property
     def unit_price(self):
@@ -81,7 +81,7 @@ class TimeInvoice:
         return self.unit_price * self.activity.duration
 
     def __repr__(self):
-        return f'{self.series_number:>11} : {self.buyer.name:32} : {self.activity.duration:7.0f} ore : {self.value:11.02f} lei'
+        return f"{self.series_number:>11} : {self.buyer.name:32} : {self.activity.duration:7.0f} ore : {self.value:11.02f} lei"
 
 
 @dataclass

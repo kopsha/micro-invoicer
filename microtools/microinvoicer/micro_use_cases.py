@@ -20,22 +20,22 @@ def previous_month():
 
 def corrupted_storage():
     form_data = {
-        'invoice_series': '(corrupted)',
-        'start_no': 1,
-        'name': 'Account corrupted. Please reset your profile.',
-        'owner_fullname': '(corrupted)',
-        'registration_id': '(corrupted)',
-        'fiscal_code': '(corrupted)',
-        'address': '(corrupted)',
-        'bank_account': '(corrupted)',
-        'bank_name': '(corrupted)',
+        "invoice_series": "(corrupted)",
+        "start_no": 1,
+        "name": "Account corrupted. Please reset your profile.",
+        "owner_fullname": "(corrupted)",
+        "registration_id": "(corrupted)",
+        "fiscal_code": "(corrupted)",
+        "address": "(corrupted)",
+        "bank_account": "(corrupted)",
+        "bank_name": "(corrupted)",
     }
     return create_empty_db(form_data)
 
 
 def create_empty_db(form_data):
-    invoice_series = form_data.pop('invoice_series')
-    start_no = form_data.pop('start_no')
+    invoice_series = form_data.pop("invoice_series")
+    start_no = form_data.pop("start_no")
 
     seller = FiscalEntity(**form_data)
     registry = InvoiceRegister(seller=seller, invoice_series=invoice_series, next_number=start_no)
@@ -46,47 +46,44 @@ def create_empty_db(form_data):
 
 def update_seller_profile(db, data):
     db = copy.deepcopy(db)
-    db.register.seller.address = data.get('address', '')
-    db.register.seller.bank_name = data.get('bank_name', '')
-    db.register.seller.bank_account = data.get('bank_account', '')
+    db.register.seller.address = data.get("address", "")
+    db.register.seller.bank_name = data.get("bank_name", "")
+    db.register.seller.bank_account = data.get("bank_account", "")
 
     return db
 
 
 def create_contract(form_data):
-    hourly_rate = form_data.pop('hourly_rate')
-    registry_id = form_data.pop('registry_id')
-    registry_date = form_data.pop('registry_date')
+    hourly_rate = form_data.pop("hourly_rate")
+    registry_id = form_data.pop("registry_id")
+    registry_date = form_data.pop("registry_date")
     buyer = FiscalEntity(**form_data)
     contract = ServiceContract(
-        buyer=buyer,
-        registry_id=registry_id,
-        registry_date=registry_date,
-        hourly_rate=hourly_rate
+        buyer=buyer, registry_id=registry_id, registry_date=registry_date, hourly_rate=hourly_rate
     )
 
     return contract
 
 
 def create_time_invoice(db, form_data):
-    contract_id = form_data.pop('contract_id')
-    duration = form_data.pop('duration')
-    flavor = form_data.pop('flavor')
-    project_id = form_data.pop('project_id')
+    contract_id = form_data.pop("contract_id")
+    duration = form_data.pop("duration")
+    flavor = form_data.pop("flavor")
+    project_id = form_data.pop("project_id")
 
     contract = db.contracts[int(contract_id)]
     invoice_fields = {
-        'status': InvoiceStatus.DRAFT,
-        'seller': db.register.seller,
-        'series': db.register.invoice_series,
-        'number': db.register.next_number,
-        'buyer': contract.buyer,
-        'hourly_rate': contract.hourly_rate,
-        'activity': create_random_activity(contract_id, duration, flavor, project_id),
-        'conversion_rate': form_data.pop('xchg_rate'),
-        'publish_date': form_data.pop('publish_date'),
-        'contract_registry_id': contract.registry_id,
-        'contract_registry_date': contract.registry_date,
+        "status": InvoiceStatus.DRAFT,
+        "seller": db.register.seller,
+        "series": db.register.invoice_series,
+        "number": db.register.next_number,
+        "buyer": contract.buyer,
+        "hourly_rate": contract.hourly_rate,
+        "activity": create_random_activity(contract_id, duration, flavor, project_id),
+        "conversion_rate": form_data.pop("xchg_rate"),
+        "publish_date": form_data.pop("publish_date"),
+        "contract_registry_id": contract.registry_id,
+        "contract_registry_date": contract.registry_date,
     }
     return TimeInvoice(**invoice_fields)
 
@@ -146,9 +143,9 @@ def split_duration(duration, count):
     splits = []
     step = 1
 
-    for step in range(count-1):
-        max_split = round(left*(0.618*(step+2)/count))
-        min_split = min(4, max_split-1)
+    for step in range(count - 1):
+        max_split = round(left * (0.618 * (step + 2) / count))
+        min_split = min(4, max_split - 1)
         current_split = random.randrange(min_split, stop=max_split)
         splits.append(current_split)
         left -= current_split
@@ -162,7 +159,7 @@ def compute_start_dates(start_date, durations):
     dates = []
     trace_date = start_date
     for duration in durations:
-        trace_date += timedelta(days=round(duration/8))
+        trace_date += timedelta(days=round(duration / 8))
         if trace_date.weekday() > 4:
             trace_date += timedelta(days=7 - trace_date.weekday())
         dates.append(trace_date)
@@ -194,21 +191,21 @@ def create_random_activity(contract_id, hours, flavor, project_id):
 def loads(content):
     def from_dict(pairs):
         factory_map = {
-            'seller': FiscalEntity,
-            'buyer': FiscalEntity,
-            'register': InvoiceRegister,
-            'activity': ActivityReport,
-            'contracts': ServiceContract,
-            'tasks': Task,
-            'invoices': TimeInvoice,
+            "seller": FiscalEntity,
+            "buyer": FiscalEntity,
+            "register": InvoiceRegister,
+            "activity": ActivityReport,
+            "contracts": ServiceContract,
+            "tasks": Task,
+            "invoices": TimeInvoice,
         }
         # ATTENTION: if you rename any fields check this part too
         date_fields = [
-            'start_date',
-            'date',
-            'registry_date',
-            'publish_date',
-            'contract_registry_date',
+            "start_date",
+            "date",
+            "registry_date",
+            "publish_date",
+            "contract_registry_date",
         ]
         obj = {}
 
@@ -227,7 +224,7 @@ def loads(content):
 
     data = json.loads(content, object_pairs_hook=from_dict)
 
-    return LocalStorage(register=data['register'], contracts=data['contracts'])
+    return LocalStorage(register=data["register"], contracts=data["contracts"])
 
 
 def dumps(db):
@@ -238,15 +235,15 @@ def dumps(db):
         if isinstance(obj, decimal.Decimal):
             return float(obj)
 
-        raise TypeError(f'Type {type(obj)} is not JSON serializable')
+        raise TypeError(f"Type {type(obj)} is not JSON serializable")
 
     content = json.dumps(asdict(db), indent=4, default=custom_serializer)
     return content
 
 
 def to_crc32(data):
-    return hex(zlib.crc32(data.encode('utf-8')) & 0xffffffff)
+    return hex(zlib.crc32(data.encode("utf-8")) & 0xFFFFFFFF)
 
 
-if __name__ == '__main__':
-    print('This is a pure module, it cannot be executed.')
+if __name__ == "__main__":
+    print("This is a pure module, it cannot be executed.")

@@ -16,39 +16,39 @@ from . import micro_use_cases as muc
 class IndexView(TemplateView):
     """Landing Page."""
 
-    template_name = 'index.html'
+    template_name = "index.html"
 
 
 class MicroRegistrationView(RegistrationView):
     """User registration."""
 
-    template_name = 'registration_form.html'
+    template_name = "registration_form.html"
     form_class = forms.MicroRegistrationForm
     # For now, we redirect straight to fiscal information view after signup.
     # When we'll change to two step registration, fiscal form will be shown at
     # the first login
-    success_url = reverse_lazy('microinvoicer_setup')
+    success_url = reverse_lazy("microinvoicer_setup")
 
 
 class MicroLoginView(LoginView):
     """Classic login."""
 
-    template_name = 'login.html'
+    template_name = "login.html"
 
 
 class MicroHomeView(LoginRequiredMixin, TemplateView):
     """User Home."""
 
-    template_name = 'home.html'
+    template_name = "home.html"
 
     def get_context_data(self, **kwargs):
         """Attach all registry info."""
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
             db = self.request.user.read_data()
-            context['seller'] = {'name': db.register.seller.name}
-            context['contracts'] = db.flatten_contracts()
-            context['invoices'] = db.invoices()
+            context["seller"] = {"name": db.register.seller.name}
+            context["contracts"] = db.flatten_contracts()
+            context["invoices"] = db.invoices()
 
         return context
 
@@ -56,20 +56,20 @@ class MicroHomeView(LoginRequiredMixin, TemplateView):
 class BaseFormView(LoginRequiredMixin, FormView):
     """Extend this view for any form."""
 
-    template_name = 'base_form.html'
-    success_url = reverse_lazy('microinvoicer_home')
+    template_name = "base_form.html"
+    success_url = reverse_lazy("microinvoicer_home")
 
     def get_context_data(self, **kwargs):
         """Add form title."""
         context = super().get_context_data(**kwargs)
-        context['form_title'] = self.form_title
+        context["form_title"] = self.form_title
 
         return context
 
     def get_form_kwargs(self):
         """Adds user information required for later validation."""
         kwargs = super().get_form_kwargs()
-        kwargs.update({'user': self.request.user})
+        kwargs.update({"user": self.request.user})
         return kwargs
 
 
@@ -81,7 +81,7 @@ class SellerView(BaseFormView):
     TODO: check if there was any data before
     """
 
-    form_title = 'Setup fiscal information'
+    form_title = "Setup fiscal information"
     form_class = forms.SellerForm
 
     def form_valid(self, form):
@@ -94,8 +94,8 @@ class SellerView(BaseFormView):
 class ProfileView(BaseFormView):
     """Captain obvious knows this already."""
 
-    template_name = 'profile.html'
-    form_title = 'Your Profile'
+    template_name = "profile.html"
+    form_title = "Your Profile"
     form_class = forms.ProfileForm
 
     def form_valid(self, form):
@@ -113,7 +113,7 @@ class ProfileView(BaseFormView):
 class RegisterContractView(BaseFormView):
     """Add new contract to the registry."""
 
-    form_title = 'Register new contract'
+    form_title = "Register new contract"
     form_class = forms.ContractForm
 
     def form_valid(self, form):
@@ -128,9 +128,9 @@ class RegisterContractView(BaseFormView):
 class ContractDetailsView(BaseFormView):
     """Amend contract details"""
 
-    form_title = 'Contract details'
+    form_title = "Contract details"
     form_class = forms.ContractForm
-    template_name = 'base_details_form.html'
+    template_name = "base_details_form.html"
 
     def get_initial(self, **kwargs):
         """provide contract details using the url argument as index"""
@@ -139,18 +139,18 @@ class ContractDetailsView(BaseFormView):
         self.contract_ndx = None
 
         try:
-            ndx = int(self.kwargs['contract_id']) - 1
+            ndx = int(self.kwargs["contract_id"]) - 1
             contract = db.contracts[ndx]
-            initial['name'] = contract.buyer.name
-            initial['owner_fullname'] = contract.buyer.owner_fullname
-            initial['registration_id'] = contract.buyer.registration_id
-            initial['fiscal_code'] = contract.buyer.fiscal_code
-            initial['address'] = contract.buyer.address
-            initial['bank_account'] = contract.buyer.bank_account
-            initial['bank_name'] = contract.buyer.bank_name
-            initial['registry_id'] = contract.registry_id
-            initial['registry_date'] = contract.registry_date
-            initial['hourly_rate'] = contract.hourly_rate
+            initial["name"] = contract.buyer.name
+            initial["owner_fullname"] = contract.buyer.owner_fullname
+            initial["registration_id"] = contract.buyer.registration_id
+            initial["fiscal_code"] = contract.buyer.fiscal_code
+            initial["address"] = contract.buyer.address
+            initial["bank_account"] = contract.buyer.bank_account
+            initial["bank_name"] = contract.buyer.bank_name
+            initial["registry_id"] = contract.registry_id
+            initial["registry_date"] = contract.registry_date
+            initial["hourly_rate"] = contract.hourly_rate
             self.contract_ndx = ndx
 
         except (IndexError, KeyError):
@@ -161,9 +161,8 @@ class ContractDetailsView(BaseFormView):
     def get_context_data(self, **kwargs):
         """Appends last invoice details to context data"""
         context = super().get_context_data(**kwargs)
-        context['update_self_url'] = reverse_lazy(
-            'microinvoicer_contract',
-            kwargs={'contract_id': self.contract_ndx + 1}
+        context["update_self_url"] = reverse_lazy(
+            "microinvoicer_contract", kwargs={"contract_id": self.contract_ndx + 1}
         )
         return context
 
@@ -179,7 +178,7 @@ class ContractDetailsView(BaseFormView):
 class DraftInvoiceView(BaseFormView):
     """Creates a new draft invoice."""
 
-    form_title = 'Create a new invoice'
+    form_title = "Create a new invoice"
     form_class = forms.InvoiceForm
 
     def get_initial(self, **kwargs):
@@ -190,15 +189,15 @@ class DraftInvoiceView(BaseFormView):
         all_invoices = db.invoices()
         if all_invoices:
             last_invoice = all_invoices[0]
-            initial['duration'] = last_invoice.activity.duration
-            initial['flavor'] = last_invoice.activity.flavor
-            initial['project_id'] = last_invoice.activity.project_id
+            initial["duration"] = last_invoice.activity.duration
+            initial["flavor"] = last_invoice.activity.flavor
+            initial["project_id"] = last_invoice.activity.project_id
 
         return initial
 
     def form_valid(self, form):
         """Bla Bla."""
-        db = form.user['db']
+        db = form.user["db"]
         db = muc.draft_time_invoice(db, form.cleaned_data)
         self.request.user.write_data(db)
 
@@ -210,7 +209,7 @@ class DiscardInvoiceView(BaseFormView):
     Uppon confirmation it removes the top invoice from the registry.
     """
 
-    form_title = 'You are about to remove fiscal data. Please confirm.'
+    form_title = "You are about to remove fiscal data. Please confirm."
     form_class = forms.DiscardInvoiceForm
     template_name = "discard_invoice.html"
 
@@ -218,7 +217,7 @@ class DiscardInvoiceView(BaseFormView):
         """Appends last invoice details to context data"""
         context = super().get_context_data(**kwargs)
         invoices = self.request.user.read_data().invoices()
-        context['invoice'] = invoices[0] if invoices else None
+        context["invoice"] = invoices[0] if invoices else None
 
         return context
 
@@ -233,9 +232,9 @@ class DiscardInvoiceView(BaseFormView):
 class TimeInvoiceView(BaseFormView):
     """Allows to mess up with a time invoice."""
 
-    form_title = 'Time Invoice'
+    form_title = "Time Invoice"
     form_class = forms.InvoiceForm
-    template_name = 'invoice_detail.html'
+    template_name = "invoice_detail.html"
 
     def get_initial(self, **kwargs):
         """Populate invoice using the url argument as index"""
@@ -243,13 +242,13 @@ class TimeInvoiceView(BaseFormView):
         invoices = self.request.user.read_data().invoices()
 
         try:
-            ndx = int(self.kwargs['invoice_id']) - 1
+            ndx = int(self.kwargs["invoice_id"]) - 1
             invoice = invoices[ndx]
-            initial['publish_date'] = invoice.publish_date
-            initial['duration'] = invoice.activity.duration
-            initial['flavor'] = invoice.activity.flavor
-            initial['project_id'] = invoice.activity.project_id
-            initial['xchg_rate'] = invoice.conversion_rate
+            initial["publish_date"] = invoice.publish_date
+            initial["duration"] = invoice.activity.duration
+            initial["flavor"] = invoice.activity.flavor
+            initial["project_id"] = invoice.activity.project_id
+            initial["xchg_rate"] = invoice.conversion_rate
             self.invoice = invoice
         except (IndexError, KeyError):
             raise Http404
@@ -260,11 +259,10 @@ class TimeInvoiceView(BaseFormView):
         """Appends last invoice details to context data"""
         context = super().get_context_data(**kwargs)
         if self.invoice:
-            context['update_self_url'] = reverse_lazy(
-                'microinvoicer_time_invoice', kwargs=self.kwargs)
-            context['invoice'] = self.invoice
-            context['task_list'] = self.invoice.activity.tasks
-            context['invoice_id'] = self.kwargs.get('invoice_id')
+            context["update_self_url"] = reverse_lazy("microinvoicer_time_invoice", kwargs=self.kwargs)
+            context["invoice"] = self.invoice
+            context["task_list"] = self.invoice.activity.tasks
+            context["invoice_id"] = self.kwargs.get("invoice_id")
 
         return context
 
@@ -276,7 +274,7 @@ class PrintableInvoiceView(LoginRequiredMixin, View):
         """Returns content of generated pdf"""
         db = request.user.read_data()
         try:
-            ndx = int(self.kwargs['invoice_id']) - 1
+            ndx = int(self.kwargs["invoice_id"]) - 1
             invoice = db.invoices()[ndx]
         except (IndexError, KeyError):
             raise Http404
@@ -284,9 +282,9 @@ class PrintableInvoiceView(LoginRequiredMixin, View):
         content = muc.render_printable_invoice(invoice)  # content is a BytesIO object
         response = FileResponse(
             content,
-            filename=f'{invoice.series_number}.pdf',
+            filename=f"{invoice.series_number}.pdf",
             as_attachment=True,
-            content_type='application/pdf'
+            content_type="application/pdf",
         )
 
         return response
