@@ -2,8 +2,19 @@
 
 Making invoices has never been easier
 
-## Conceptualized API as use cases
 
+## Back to basics
+
+[ ] Migrate to Django models
+[ ] Add more registries (e.g. internal and external)
+[ ] Contracts can be fixed (monthly) or timed
+[ ] Invoices can be timed or fixed
+[ ] Issue invoices in more currencies
+[ ] Render invoices in english, try [wkhtmltopdf](https://wkhtmltopdf.org/)
+[ ] New invoice type for materials
+
+
+## Conceptualized API as use cases
 
 registry
 * created with (seller, series, start_no)
@@ -152,7 +163,7 @@ For the next one, you only need to update this json file and run the script with
 At some point, you may want to inspect the current registry and all you have to do is to run the script without arguments.
 
 ```console
-micro-invoicer $ python mini_invoicer.py 
+micro-invoicer $ python mini_invoicer.py
 ********************************************************************************
 * Mini Invoicer                                                                *
 ********************************************************************************
@@ -185,4 +196,4 @@ You can see the full list of arguments with `--help`.
  /contracts      | Contracts        | contract_list.html     | contracts manager
  /draft_time     | Time Invoice     | base_form.html         | create time invoice
  /draft_material | Material Invoice | base_form.html         | create materials invoice
- 
+
