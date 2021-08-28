@@ -9,6 +9,11 @@ urlpatterns = [
     path("logout/", auth_views.LogoutView.as_view(), name="microinvoicer_logout"),
     path("profile/", views.ProfileView.as_view(), name="microinvoicer_profile"),
     path("setup/", views.SellerView.as_view(), name="microinvoicer_setup"),
+
+    path("registry/add", views.RegistryCreateView.as_view(), name="registry-add"),
+    path("registry/<int:pk>", views.RegistryUpdateView.as_view(), name="registry-update"),
+    path("registry/<int:pk>/delete", views.RegistryDeleteView.as_view(), name="registry-del"),
+
     path(
         "register_contract/", views.RegisterContractView.as_view(), name="microinvoicer_register_contract"
     ),
@@ -22,6 +27,6 @@ urlpatterns = [
         name="microinvoicer_printable_invoice",
     ),
     path("pop_invoice/", views.DiscardInvoiceView.as_view(), name="microinvoicer_pop_invoice"),
-    path("home/", views.MicroHomeView.as_view(), name="microinvoicer_home"),
+    path("home/", views.MicroHomeView.as_view(), name="home"),
     path("", views.IndexView.as_view(), name="index"),
 ]

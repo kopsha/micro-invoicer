@@ -1,0 +1,12 @@
+<div class="container" id="dashboard">
+    {% for registry in registries %}
+        <div class="row valign-wrapper">
+            <h5><a style="text-transform: uppercase;" href='{% url "registry-update" pk=registry.id %}'>
+                {{ registry.display_name }}
+            </a></h5>
+        </div>
+    {% endfor %}
+    <div class="row right-align">
+        <a class="btn btn-small align-right" href="{% url "registry-add" %}">Create</a>
+    </div>
+</div>

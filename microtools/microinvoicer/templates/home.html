@@ -5,6 +5,10 @@
 
 {% if seller %}
     <h4>{{ seller.name }}</h4>
+    <hr>
+    {% block dashboard %}{% include "dashboard.html" %}{% endblock %}
+    {% comment %} discard bellow {% endcomment %}
+    <hr>
     <p>
         <table>
         <thead>

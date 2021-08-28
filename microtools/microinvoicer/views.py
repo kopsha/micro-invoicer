@@ -3,13 +3,13 @@
 from django.http import Http404, FileResponse
 from django.urls import reverse_lazy
 from django.views.generic import View, TemplateView
-from django.views.generic.edit import FormView
+from django.views.generic.edit import FormView, CreateView, DeleteView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
 
 from django_registration.backends.one_step.views import RegistrationView
 
-from . import forms
+from . import forms, models
 from . import micro_use_cases as muc
 
 
@@ -45,6 +45,8 @@ class MicroHomeView(LoginRequiredMixin, TemplateView):
         """Attach all registry info."""
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
+            context["registries"] = self.request.user.microregistry_set.all()
+
             db = self.request.user.read_data()
             context["seller"] = {"name": db.register.seller.name}
             context["contracts"] = db.flatten_contracts()
@@ -57,7 +59,7 @@ class BaseFormView(LoginRequiredMixin, FormView):
     """Extend this view for any form."""
 
     template_name = "base_form.html"
-    success_url = reverse_lazy("microinvoicer_home")
+    success_url = reverse_lazy("home")
 
     def get_context_data(self, **kwargs):
         """Add form title."""
@@ -108,6 +110,41 @@ class ProfileView(BaseFormView):
         print(db.register.seller)
 
         return super().form_valid(form)
+
+
+class MicroFormMixin(LoginRequiredMixin):
+    """Common requirements for model views"""
+
+    template_name = "base_form.html"
+    success_url = reverse_lazy("home")
+
+    def get_context_data(self, **kwargs):
+        """Add form title."""
+        context = super().get_context_data(**kwargs)
+        context["form_title"] = self.form_title
+        return context
+
+
+
+class RegistryCreateView(MicroFormMixin, CreateView):
+    model = models.MicroRegistry
+    fields = ["display_name", "invoice_series", "next_invoice_no"]
+    form_title = "Define new registry"
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+class RegistryUpdateView(MicroFormMixin, UpdateView):
+    model = models.MicroRegistry
+    fields = ["display_name", "invoice_series", "next_invoice_no"]
+    form_title = "Update registry"
+
+
+class RegistryDeleteView(MicroFormMixin, DeleteView):
+    model = models.MicroRegistry
+    form_title = "Throwing away"
+    template_name = "microregistry_confirm_delete.html"
 
 
 class RegisterContractView(BaseFormView):
