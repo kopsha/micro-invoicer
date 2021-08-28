@@ -13,8 +13,20 @@ from .managers import MicroUserManager
 from . import micro_use_cases as muc
 
 
+LONG_TEXT = 255
 SHORT_TEXT = 40
 REALLY_SHORT = 16
+
+
+class FiscalEntity(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=LONG_TEXT)
+    owner_fullname = models.CharField(max_length=LONG_TEXT)
+    registration_id = models.CharField(max_length=SHORT_TEXT)
+    fiscal_code = models.CharField(max_length=SHORT_TEXT)
+    address = models.TextField()
+    bank_account = models.CharField(max_length=SHORT_TEXT)
+    bank_name = models.CharField(max_length=LONG_TEXT)
 
 
 class MicroUser(AbstractBaseUser, PermissionsMixin):
@@ -34,6 +46,8 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(default=timezone.now)
     datastore = models.TextField(blank=True, default="")
     crc = models.CharField(max_length=10, default="0x0")
+
+    seller = models.OneToOneField(FiscalEntity, null=True, on_delete=models.CASCADE)
 
     objects = MicroUserManager()
     crypto_engine = Fernet(settings.MICRO_USER_SECRET)
@@ -75,6 +89,7 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
         db = muc.loads(plain_data)
 
         return db
+
 
 class MicroRegistry(models.Model):
     id = models.AutoField(primary_key=True)
