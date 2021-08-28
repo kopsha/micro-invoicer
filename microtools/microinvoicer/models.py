@@ -50,7 +50,6 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
     seller = models.OneToOneField(FiscalEntity, null=True, on_delete=models.CASCADE)
 
     objects = MicroUserManager()
-    crypto_engine = Fernet(settings.MICRO_USER_SECRET)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
@@ -68,13 +67,13 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
     def write_data(self, db):
         plain_data = muc.dumps(db)
         self.crc = muc.to_crc32(plain_data)
-        self.datastore = MicroUser.crypto_engine.encrypt(plain_data.encode("utf-8")).decode("utf-8")
+        self.datastore = settings.CRYPTO_ENGINE.encrypt(plain_data.encode("utf-8")).decode("utf-8")
         self.save()
 
     def read_data(self):
         try:
             data = self.datastore.encode("utf-8")
-            plain_data = str(MicroUser.crypto_engine.decrypt(data), "utf-8")
+            plain_data = str(settings.CRYPTO_ENGINE.decrypt(data), "utf-8")
         except InvalidToken:
             print("\t >> [warning] cannot decrypt invalid user data. raw data dump:")
             print(f"{data!r}")

@@ -6,6 +6,7 @@ from django.views.generic import View, TemplateView
 from django.views.generic.edit import FormView, CreateView, DeleteView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
+from django.forms.models import model_to_dict
 
 from django_registration.backends.one_step.views import RegistrationView
 
@@ -15,30 +16,26 @@ from . import micro_use_cases as muc
 
 class IndexView(TemplateView):
     """Landing Page."""
-
     template_name = "index.html"
 
 
 class MicroRegistrationView(RegistrationView):
     """User registration."""
-
     template_name = "registration_form.html"
     form_class = forms.MicroRegistrationForm
     # For now, we redirect straight to fiscal information view after signup.
     # When we'll change to two step registration, fiscal form will be shown at
     # the first login
-    success_url = reverse_lazy("microinvoicer_setup")
+    success_url = reverse_lazy("setup")
 
 
 class MicroLoginView(LoginView):
     """Classic login."""
-
     template_name = "login.html"
 
 
 class MicroHomeView(LoginRequiredMixin, TemplateView):
     """User Home."""
-
     template_name = "home.html"
 
     def get_context_data(self, **kwargs):
@@ -55,63 +52,6 @@ class MicroHomeView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class BaseFormView(LoginRequiredMixin, FormView):
-    """Extend this view for any form."""
-
-    template_name = "base_form.html"
-    success_url = reverse_lazy("home")
-
-    def get_context_data(self, **kwargs):
-        """Add form title."""
-        context = super().get_context_data(**kwargs)
-        context["form_title"] = self.form_title
-
-        return context
-
-    def get_form_kwargs(self):
-        """Adds user information required for later validation."""
-        kwargs = super().get_form_kwargs()
-        kwargs.update({"user": self.request.user})
-        return kwargs
-
-
-class SellerView(BaseFormView):
-    """
-    Updates user's fiscal information.
-
-    ATTENTION: any previous user data will be erased
-    TODO: check if there was any data before
-    """
-
-    form_title = "Setup fiscal information"
-    form_class = forms.SellerForm
-
-    def form_valid(self, form):
-        """Scratch out user database."""
-        db = muc.create_empty_db(form.cleaned_data)
-        self.request.user.write_data(db)
-        return super().form_valid(form)
-
-
-class ProfileView(BaseFormView):
-    """Captain obvious knows this already."""
-
-    template_name = "profile.html"
-    form_title = "Your Profile"
-    form_class = forms.ProfileForm
-
-    def form_valid(self, form):
-        """Update profile info only."""
-        db = self.request.user.read_data()
-        db = muc.update_seller_profile(db, form.cleaned_data)
-        self.request.user.write_data(db)
-
-        print(form.cleaned_data)
-        print(db.register.seller)
-
-        return super().form_valid(form)
-
-
 class MicroFormMixin(LoginRequiredMixin):
     """Common requirements for model views"""
 
@@ -124,6 +64,54 @@ class MicroFormMixin(LoginRequiredMixin):
         context["form_title"] = self.form_title
         return context
 
+
+class ProfileUpdateView(MicroFormMixin, UpdateView):
+    """Updates only some seller fields"""
+
+    model = models.MicroUser
+    form_class = forms.ProfileUpdateForm
+    template_name = "profile.html"
+    form_title = "Your Profile"
+
+    def get_object(self):
+        return self.request.user
+
+    def get_initial(self):
+        initial = super().get_initial()
+        if seller_instance := self.request.user.seller:
+            seller = model_to_dict(seller_instance, fields=[
+                "name", "owner_fullname", "registration_id", "fiscal_code",
+                "address", "bank_account", "bank_name"
+            ])
+            initial.update(seller)
+        return initial
+
+    def form_valid(self, form, ):
+        """Update only seller info"""
+        seller = self.object.seller
+        seller.address = form.cleaned_data["address"]
+        seller.bank_account = form.cleaned_data["bank_account"]
+        seller.bank_name = form.cleaned_data["bank_name"]
+        seller.save()
+        return super().form_valid(form)
+
+
+class ProfileSetupView(ProfileUpdateView):
+    """
+    Updates all user's fiscal information.
+    """
+    form_class = forms.ProfileSetupForm
+    form_title = "Setup fiscal information"
+
+    def form_valid(self, form):
+        seller_data = {
+            field: form.cleaned_data[field]
+            for field in models.FiscalEntity._meta.get_fields()
+        }
+        seller = models.FiscalEntity(seller_data)
+        seller.save()
+        self.object.seller = seller
+        return super().form_valid(form)
 
 
 class RegistryCreateView(MicroFormMixin, CreateView):
@@ -145,6 +133,28 @@ class RegistryDeleteView(MicroFormMixin, DeleteView):
     model = models.MicroRegistry
     form_title = "Throwing away"
     template_name = "microregistry_confirm_delete.html"
+
+
+###############################################
+
+class BaseFormView(LoginRequiredMixin, FormView):
+    """Extend this view for any form."""
+
+    template_name = "base_form.html"
+    success_url = reverse_lazy("home")
+
+    def get_context_data(self, **kwargs):
+        """Add form title."""
+        context = super().get_context_data(**kwargs)
+        context["form_title"] = self.form_title
+
+        return context
+
+    def get_form_kwargs(self):
+        """Adds user information required for later validation."""
+        kwargs = super().get_form_kwargs()
+        kwargs.update({"user": self.request.user})
+        return kwargs
 
 
 class RegisterContractView(BaseFormView):

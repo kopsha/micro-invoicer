@@ -7,8 +7,9 @@ urlpatterns = [
     path("register/", views.MicroRegistrationView.as_view(), name="microinvoicer_register"),
     path("login/", views.MicroLoginView.as_view(), name="microinvoicer_login"),
     path("logout/", auth_views.LogoutView.as_view(), name="microinvoicer_logout"),
-    path("profile/", views.ProfileView.as_view(), name="microinvoicer_profile"),
-    path("setup/", views.SellerView.as_view(), name="microinvoicer_setup"),
+
+    path("profile", views.ProfileUpdateView.as_view(), name="profile-update"),
+    path("setup", views.ProfileSetupView.as_view(), name="setup"),
 
     path("registry/add", views.RegistryCreateView.as_view(), name="registry-add"),
     path("registry/<int:pk>", views.RegistryUpdateView.as_view(), name="registry-update"),
