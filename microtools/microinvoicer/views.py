@@ -42,7 +42,7 @@ class MicroHomeView(LoginRequiredMixin, TemplateView):
         """Attach all registry info."""
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
-            context["registries"] = self.request.user.registries.all()
+            context["registries"] = self.request.user.registries.prefetch_related("contracts").all()
 
             db = self.request.user.read_data()
             context["seller"] = {"name": db.register.seller.name}
@@ -86,7 +86,7 @@ class ProfileUpdateView(MicroFormMixin, UpdateView):
             initial.update(seller)
         return initial
 
-    def form_valid(self, form, ):
+    def form_valid(self, form):
         """Update only seller info"""
         seller = self.object.seller
         seller.address = form.cleaned_data["address"]
@@ -116,8 +116,8 @@ class ProfileSetupView(ProfileUpdateView):
 
 class RegistryCreateView(MicroFormMixin, CreateView):
     model = models.MicroRegistry
-    fields = ["display_name", "invoice_series", "next_invoice_no"]
     form_title = "Define new registry"
+    fields = ["display_name", "invoice_series", "next_invoice_no"]
 
     def form_valid(self, form):
         form.instance.user = self.request.user
@@ -125,14 +125,69 @@ class RegistryCreateView(MicroFormMixin, CreateView):
 
 class RegistryUpdateView(MicroFormMixin, UpdateView):
     model = models.MicroRegistry
-    fields = ["display_name", "invoice_series", "next_invoice_no"]
     form_title = "Update registry"
+    fields = ["display_name", "invoice_series", "next_invoice_no"]
 
 
 class RegistryDeleteView(MicroFormMixin, DeleteView):
     model = models.MicroRegistry
-    form_title = "Throwing away"
-    template_name = "microregistry_confirm_delete.html"
+    form_title = "Throwing away whole registry"
+    template_name = "confirm_delete.html"
+
+
+class ContractCreateView(MicroFormMixin, CreateView):
+    model = models.ServiceContract
+    form_title = "Register new contract"
+    form_class = forms.ServiceContractForm
+
+    def form_valid(self, form):
+        """Create buyer instance before saving contract"""
+        buyer_data = {
+            field: form.cleaned_data[field]
+            for field in form.cleaned_data
+            if field in forms.FiscalEntityForm.declared_fields.keys()
+        }
+        buyer = models.FiscalEntity(**buyer_data)
+        buyer.save()
+
+        form.instance.buyer = buyer
+        form.instance.registry = models.MicroRegistry.objects.get(pk=self.kwargs["registry_id"])
+
+        return super().form_valid(form)
+
+
+class ContractUpdateView(MicroFormMixin, UpdateView):
+    model = models.ServiceContract
+    form_title = "Modify contract"
+    form_class = forms.ServiceContractForm
+
+    def get_initial(self):
+        initial = super().get_initial()
+        if buyer_instance := self.object.buyer:
+            buyer_data = model_to_dict(buyer_instance, fields=[
+                "name", "owner_fullname", "registration_id", "fiscal_code",
+                "address", "bank_account", "bank_name"
+            ])
+            initial.update(buyer_data)
+        return initial
+
+    def form_valid(self, form):
+        """Update buyer instance before saving contract"""
+        buyer_data = {
+            field: form.cleaned_data[field]
+            for field in form.cleaned_data
+            if field in forms.FiscalEntityForm.declared_fields.keys()
+        }
+        form.instance.buyer.__dict__.update(**buyer_data)
+        form.instance.buyer.save()
+
+        return super().form_valid(form)
+
+
+class ContractDeleteView(MicroFormMixin, DeleteView):
+    model = models.ServiceContract
+    form_title = "Throwing away contract"
+    template_name = "confirm_delete.html"
 
 
 ###############################################
@@ -155,71 +210,6 @@ class BaseFormView(LoginRequiredMixin, FormView):
         kwargs = super().get_form_kwargs()
         kwargs.update({"user": self.request.user})
         return kwargs
-
-
-class RegisterContractView(BaseFormView):
-    """Add new contract to the registry."""
-
-    form_title = "Register new contract"
-    form_class = forms.ContractForm
-
-    def form_valid(self, form):
-        """Just append, no biggie"""
-        db = self.request.user.read_data()
-        contract = muc.create_contract(form.cleaned_data)
-        db.contracts.append(contract)
-        self.request.user.write_data(db)
-        return super().form_valid(form)
-
-
-class ContractDetailsView(BaseFormView):
-    """Amend contract details"""
-
-    form_title = "Contract details"
-    form_class = forms.ContractForm
-    template_name = "base_details_form.html"
-
-    def get_initial(self, **kwargs):
-        """provide contract details using the url argument as index"""
-        initial = super().get_initial()
-        db = self.request.user.read_data()
-        self.contract_ndx = None
-
-        try:
-            ndx = int(self.kwargs["contract_id"]) - 1
-            contract = db.contracts[ndx]
-            initial["name"] = contract.buyer.name
-            initial["owner_fullname"] = contract.buyer.owner_fullname
-            initial["registration_id"] = contract.buyer.registration_id
-            initial["fiscal_code"] = contract.buyer.fiscal_code
-            initial["address"] = contract.buyer.address
-            initial["bank_account"] = contract.buyer.bank_account
-            initial["bank_name"] = contract.buyer.bank_name
-            initial["registry_id"] = contract.registry_id
-            initial["registry_date"] = contract.registry_date
-            initial["hourly_rate"] = contract.hourly_rate
-            self.contract_ndx = ndx
-
-        except (IndexError, KeyError):
-            raise Http404
-
-        return initial
-
-    def get_context_data(self, **kwargs):
-        """Appends last invoice details to context data"""
-        context = super().get_context_data(**kwargs)
-        context["update_self_url"] = reverse_lazy(
-            "microinvoicer_contract", kwargs={"contract_id": self.contract_ndx + 1}
-        )
-        return context
-
-    def form_valid(self, form):
-        """Something has changed, must update db."""
-        assert self.contract_ndx is not None
-        db = self.request.user.read_data()
-        db.contracts[self.contract_ndx] = muc.create_contract(form.cleaned_data)
-        self.request.user.write_data(db)
-        return super().form_valid(form)
 
 
 class DraftInvoiceView(BaseFormView):

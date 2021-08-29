@@ -40,6 +40,13 @@ class FiscalEntity(models.Model):
     bank_name = models.CharField(max_length=LONG_TEXT)
 
 
+    def __repr__(self) -> str:
+        return f"{self.name} [CIF: {self.fiscal_code}]"
+
+    def __str__(self):
+        return repr(self)
+
+
 class MicroUser(AbstractBaseUser, PermissionsMixin):
     """
     For our purposes, it makes much more sense in my opinion to use an email
@@ -109,6 +116,12 @@ class MicroRegistry(models.Model):
     invoice_series = models.CharField(max_length=REALLY_SHORT)
     next_invoice_no = models.IntegerField()
 
+    def __repr__(self) -> str:
+        return f"{self.display_name}, series {self.invoice_series}, {self.contracts.count()} contracts and ..."
+
+    def __str__(self):
+        return repr(self)
+
 
 class ServiceContract(models.Model):
     id = models.AutoField(primary_key=True)
@@ -121,3 +134,9 @@ class ServiceContract(models.Model):
     unit_rate = models.DecimalField(max_digits=16, decimal_places=2)
 
     registry = models.ForeignKey(MicroRegistry, related_name="contracts", on_delete=models.CASCADE)
+
+    def __repr__(self) -> str:
+        return f"{self.buyer!r}, no {self.registration_no} from {self.registration_date}"
+
+    def __str__(self):
+        return repr(self)

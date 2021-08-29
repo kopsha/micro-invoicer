@@ -1,12 +1,33 @@
-<div class="container" id="dashboard">
+{% load humanize %}
+
+<div class="row" id="dashboard">
     {% for registry in registries %}
-        <div class="row valign-wrapper">
-            <h5><a style="text-transform: uppercase;" href='{% url "registry-update" pk=registry.id %}'>
-                {{ registry.display_name }}
-            </a></h5>
-        </div>
+        <h5><a style="text-transform: uppercase;" href='{% url "registry-update" pk=registry.id %}'>
+            {{ registry.display_name }}
+        </a></h5>
+
+        <table>
+        <tr>
+            <td>Contracts</td>
+            <td></td>
+            <td class="center-align"><h5>
+                <a href="{% url 'registry-contract-add' registry_id=registry.id %}">
+                &#x002B;
+                </a>
+            </h5></td>
+        </tr>
+        {% for contract in registry.contracts.all reversed %}
+        <tr>
+            <td class="center-align">{{ contract.buyer.name }}</td>
+            <td class="center-align">{{ contract.unit_rate|floatformat:2|intcomma }} {{ contract.currency }} / {{ contract.unit }}</td>
+            <td class="center-align"><a href="{% url 'registry-contract-update' registry_id=registry.id pk=contract.id %}">&#x2317;</a></td>
+        </tr>
+        {% endfor %}
+        </table>
+        <small align="right">{{ contracts|length|intword }} contract{{ contracts|length|pluralize}} found</small>
+
     {% endfor %}
     <div class="row right-align">
-        <a class="btn btn-small align-right" href="{% url "registry-add" %}">Create</a>
+        <a class="btn btn-small align-right" href="{% url "registry-add" %}">Add new registry</a>
     </div>
 </div>

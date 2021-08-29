@@ -29,6 +29,16 @@ class EditablesMixin:
                 self.fields[field].disabled = True
 
 
+class FiscalEntityForm(forms.ModelForm):
+    name = forms.CharField(max_length=models.LONG_TEXT, label="Company name")
+    owner_fullname = forms.CharField(max_length=models.LONG_TEXT)
+    registration_id = forms.CharField(max_length=models.SHORT_TEXT)
+    fiscal_code = forms.CharField(max_length=models.SHORT_TEXT)
+    address = forms.CharField(widget=forms.Textarea)
+    bank_account = forms.CharField(max_length=models.SHORT_TEXT)
+    bank_name = forms.CharField(max_length=models.LONG_TEXT)
+
+
 class ProfileUpdateForm(EditablesMixin, forms.ModelForm):
     class Meta:
         model = models.MicroUser
@@ -60,6 +70,33 @@ class ProfileSetupForm(ProfileUpdateForm):
     }
 
 
+class ServiceContractForm(FiscalEntityForm):
+    class Meta:
+        model = models.ServiceContract
+        fields = [
+            "registration_no",
+            "registration_date",
+            "unit_rate",
+            "currency",
+            "unit",
+            "invoice_currency",
+        ]
+
+    def __init__(self, *args, **kwargs):
+        """reorder fields to get buyer details on top"""
+        super().__init__(*args, **kwargs)
+        buyer_fields = {
+            key: value
+            for key, value in self.fields.items()
+            if key not in self.Meta.fields
+        }
+        self_fields = {
+            key: value
+            for key, value in self.fields.items()
+            if key in self.Meta.fields
+        }
+        self.fields = dict(**buyer_fields, **self_fields)
+
 ########################################################
 
 class BaseUserForm(forms.Form):
@@ -71,16 +108,6 @@ class BaseUserForm(forms.Form):
             "db": user.read_data(),
         }
         super().__init__(*args, **kwargs)
-
-
-class FiscalEntityForm(BaseUserForm):
-    name = forms.CharField(max_length=80, required=True, strip=True, label="Company name")
-    owner_fullname = forms.CharField(max_length=80, required=True, strip=True)
-    registration_id = forms.CharField(max_length=20, required=True, strip=True)
-    fiscal_code = forms.CharField(max_length=15, required=True, strip=True)
-    address = forms.CharField(max_length=240, required=True, strip=True)
-    bank_account = forms.CharField(max_length=32, required=True, strip=True)
-    bank_name = forms.CharField(max_length=80, required=True, strip=True)
 
 
 class ContractForm(FiscalEntityForm):

@@ -13,12 +13,12 @@ urlpatterns = [
 
     path("registry/add", views.RegistryCreateView.as_view(), name="registry-add"),
     path("registry/<int:pk>", views.RegistryUpdateView.as_view(), name="registry-update"),
-    path("registry/<int:pk>/delete", views.RegistryDeleteView.as_view(), name="registry-del"),
+    path("registry/<int:pk>/delete", views.RegistryDeleteView.as_view(), name="registry-delete"),
 
-    path(
-        "register_contract/", views.RegisterContractView.as_view(), name="microinvoicer_register_contract"
-    ),
-    path("contract/<contract_id>", views.ContractDetailsView.as_view(), name="microinvoicer_contract"),
+    path("registry/<registry_id>/contract/add", views.ContractCreateView.as_view(), name="registry-contract-add"),
+    path("registry/<registry_id>/contract/<pk>", views.ContractUpdateView.as_view(), name="registry-contract-update"),
+    path("registry/<registry_id>/contract/<pk>/delete", views.ContractDeleteView.as_view(), name="registry-contract-delete"),
+
     path("draft_time/", views.DraftInvoiceView.as_view(), name="microinvoicer_draft_time"),
     path("draft_material/", views.DraftInvoiceView.as_view(), name="microinvoicer_draft_material"),
     path("time_invoice/<invoice_id>", views.TimeInvoiceView.as_view(), name="microinvoicer_time_invoice"),
