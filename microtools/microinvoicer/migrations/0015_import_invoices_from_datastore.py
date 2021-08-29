@@ -31,7 +31,9 @@ def import_invoices(apps, schema_editor):
     ServiceContract = apps.get_model("microinvoicer", "ServiceContract")
     TimeInvoice = apps.get_model("microinvoicer", "TimeInvoice")
     print("")
+
     for user in MicroUser.objects.all():
+        counter = 0
         registry = user.registries.first()
         print(f"Account: {user.seller.name}")
         raw_data = read_data(user)
@@ -74,9 +76,10 @@ def import_invoices(apps, schema_editor):
                 unit_rate=raw_invoice["hourly_rate"],
                 quantity=duration,
             )
+            invoice.save()
+            counter += 1
+        print(f"Imported {counter} invoices for {user.seller.name}")
 
-        # user.save()  # just to be sure
-    raise RuntimeError("wait")
 
 class Migration(migrations.Migration):
 
