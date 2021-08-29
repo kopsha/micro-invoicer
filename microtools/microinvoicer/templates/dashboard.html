@@ -27,6 +27,7 @@
         <small align="right">{{ contracts|length|intword }} contract{{ contracts|length|pluralize}} found</small>
 
     {% endfor %}
+    <hr>
     <div class="row right-align">
         <a class="btn btn-small align-right" href="{% url "registry-add" %}">Add new registry</a>
     </div>

@@ -28,9 +28,15 @@ class InvoicingUnits(models.TextChoices):
     MONTHLY = "mo", "Month"
     HOURLY = "hr", "Hour"
 
+class InvoiceStatus(models.IntegerChoices):
+    DRAFT = 0, "Draft"
+    PUBLISHED = 1, "Published"
+    STORNO = 2, "Storno"
+
 
 class FiscalEntity(models.Model):
     id = models.AutoField(primary_key=True)
+
     name = models.CharField(max_length=LONG_TEXT)
     owner_fullname = models.CharField(max_length=LONG_TEXT)
     registration_id = models.CharField(max_length=SHORT_TEXT)
@@ -38,7 +44,6 @@ class FiscalEntity(models.Model):
     address = models.TextField()
     bank_account = models.CharField(max_length=SHORT_TEXT)
     bank_name = models.CharField(max_length=LONG_TEXT)
-
 
     def __repr__(self) -> str:
         return f"{self.name} [CIF: {self.fiscal_code}]"
@@ -48,14 +53,10 @@ class FiscalEntity(models.Model):
 
 
 class MicroUser(AbstractBaseUser, PermissionsMixin):
-    """
-    For our purposes, it makes much more sense in my opinion to use an email
-    address rather than a username
-
-    AbstractBaseUser seems to offer the most flexibility in this regards, as
-    we can change the mappings later on
-    """
+    """User account, which holds the service provider (seller) entity"""
     id = models.AutoField(primary_key=True)
+    seller = models.OneToOneField(FiscalEntity, null=True, on_delete=models.CASCADE)
+
     first_name = models.CharField(max_length=SHORT_TEXT)
     last_name = models.CharField(max_length=SHORT_TEXT)
     email = models.EmailField(unique=True)
@@ -64,8 +65,6 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(default=timezone.now)
     datastore = models.TextField(blank=True, default="")
     crc = models.CharField(max_length=10, default="0x0")
-
-    seller = models.OneToOneField(FiscalEntity, null=True, on_delete=models.CASCADE)
 
     objects = MicroUserManager()
 
@@ -126,17 +125,38 @@ class MicroRegistry(models.Model):
 class ServiceContract(models.Model):
     id = models.AutoField(primary_key=True)
     buyer = models.OneToOneField(FiscalEntity, on_delete=models.CASCADE)
+    registry = models.ForeignKey(MicroRegistry, related_name="contracts", on_delete=models.CASCADE)
+
     registration_no = models.CharField(max_length=SHORT_TEXT)
     registration_date = models.DateField()
     currency = models.CharField(max_length=3, choices=AvailableCurrencies.choices)
-    invoice_currency = models.CharField(max_length=3, choices=AvailableCurrencies.choices)
     unit = models.CharField(max_length=2, choices=InvoicingUnits.choices)
     unit_rate = models.DecimalField(max_digits=16, decimal_places=2)
+    invoicing_currency = models.CharField(max_length=3, choices=AvailableCurrencies.choices)
+    invoicing_description = models.CharField(max_length=LONG_TEXT)
 
-    registry = models.ForeignKey(MicroRegistry, related_name="contracts", on_delete=models.CASCADE)
 
     def __repr__(self) -> str:
         return f"{self.buyer!r}, no {self.registration_no} from {self.registration_date}"
 
     def __str__(self):
         return repr(self)
+
+class TimeInvoice(models.Model):
+    id = models.AutoField(primary_key=True)
+    registry = models.ForeignKey(MicroRegistry, related_name="invoices", on_delete=models.CASCADE)
+    seller = models.OneToOneField(FiscalEntity, related_name="+", on_delete=models.RESTRICT)
+    buyer = models.OneToOneField(FiscalEntity, related_name="+", on_delete=models.RESTRICT)
+    contract = models.OneToOneField(ServiceContract, related_name="+", on_delete=models.RESTRICT)
+
+    series = models.CharField(max_length=REALLY_SHORT)
+    number = models.IntegerField()
+    status = models.IntegerField(choices=InvoiceStatus.choices)
+    description = models.CharField(max_length=LONG_TEXT)
+    issue_date = models.DateField()
+    currency = models.CharField(max_length=3, choices=AvailableCurrencies.choices)
+    conversion_rate = models.DecimalField(max_digits=16, decimal_places=4, null=True)  # contract currency to invoice currency
+    unit = models.CharField(max_length=2, choices=InvoicingUnits.choices)
+    unit_rate = models.DecimalField(max_digits=16, decimal_places=2)
+    quantity = models.IntegerField()
+    # timesheet: ActivityReport
