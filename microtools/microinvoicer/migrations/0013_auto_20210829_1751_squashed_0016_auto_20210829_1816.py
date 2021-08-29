@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
                 ('buyer', models.OneToOneField(on_delete=django.db.models.deletion.RESTRICT, related_name='+', to='microinvoicer.fiscalentity')),
                 ('registry', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='invoices', to='microinvoicer.microregistry')),
                 ('seller', models.OneToOneField(on_delete=django.db.models.deletion.RESTRICT, related_name='+', to='microinvoicer.fiscalentity')),
-                ('contract', models.OneToOneField(default=None, on_delete=django.db.models.deletion.RESTRICT, related_name='+', to='microinvoicer.servicecontract')),
+                ('contract', models.OneToOneField(on_delete=django.db.models.deletion.RESTRICT, related_name='+', to='microinvoicer.servicecontract')),
             ],
         ),
     ]
