@@ -19,9 +19,9 @@ REALLY_SHORT = 16
 
 
 class AvailableCurrencies(models.TextChoices):
-    EUR = "EUR", "Euros"
-    USD = "USD", "US Dollars"
-    RON = "RON", "Lei"
+    EUR = "eur", "Euros"
+    USD = "usd", "US Dollars"
+    RON = "ron", "Lei"
 
 
 class InvoicingUnits(models.TextChoices):
@@ -103,7 +103,7 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
 
 class MicroRegistry(models.Model):
     id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(MicroUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(MicroUser, related_name="registries", on_delete=models.CASCADE)
 
     display_name = models.CharField(max_length=SHORT_TEXT)
     invoice_series = models.CharField(max_length=REALLY_SHORT)
@@ -115,8 +115,8 @@ class ServiceContract(models.Model):
     buyer = models.OneToOneField(FiscalEntity, on_delete=models.CASCADE)
     registration_no = models.CharField(max_length=SHORT_TEXT)
     registration_date = models.DateField()
-    currency: models.CharField(max_length="3", choices=AvailableCurrencies.choices)
-    invoice_currency: models.CharField(max_length="3", choices=AvailableCurrencies.choices)
+    currency = models.CharField(max_length=3, choices=AvailableCurrencies.choices)
+    invoice_currency = models.CharField(max_length=3, choices=AvailableCurrencies.choices)
     unit = models.CharField(max_length=2, choices=InvoicingUnits.choices)
     unit_rate = models.DecimalField(max_digits=16, decimal_places=2)
 

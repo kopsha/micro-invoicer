@@ -42,7 +42,7 @@ class MicroHomeView(LoginRequiredMixin, TemplateView):
         """Attach all registry info."""
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
-            context["registries"] = self.request.user.microregistry_set.all()
+            context["registries"] = self.request.user.registries.all()
 
             db = self.request.user.read_data()
             context["seller"] = {"name": db.register.seller.name}
