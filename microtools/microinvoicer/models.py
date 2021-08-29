@@ -124,7 +124,7 @@ class MicroRegistry(models.Model):
 
 class ServiceContract(models.Model):
     id = models.AutoField(primary_key=True)
-    buyer = models.OneToOneField(FiscalEntity, on_delete=models.CASCADE)
+    buyer = models.ForeignKey(FiscalEntity, related_name="+", on_delete=models.RESTRICT)
     registry = models.ForeignKey(MicroRegistry, related_name="contracts", on_delete=models.CASCADE)
 
     registration_no = models.CharField(max_length=SHORT_TEXT)
@@ -145,9 +145,9 @@ class ServiceContract(models.Model):
 class TimeInvoice(models.Model):
     id = models.AutoField(primary_key=True)
     registry = models.ForeignKey(MicroRegistry, related_name="invoices", on_delete=models.CASCADE)
-    seller = models.OneToOneField(FiscalEntity, related_name="+", on_delete=models.RESTRICT)
-    buyer = models.OneToOneField(FiscalEntity, related_name="+", on_delete=models.RESTRICT)
-    contract = models.OneToOneField(ServiceContract, related_name="+", on_delete=models.RESTRICT)
+    seller = models.ForeignKey(FiscalEntity, related_name="+", on_delete=models.RESTRICT)
+    buyer = models.ForeignKey(FiscalEntity, related_name="+", on_delete=models.RESTRICT)
+    contract = models.ForeignKey(ServiceContract, related_name="+", on_delete=models.RESTRICT)
 
     series = models.CharField(max_length=REALLY_SHORT)
     number = models.IntegerField()
@@ -159,4 +159,3 @@ class TimeInvoice(models.Model):
     unit = models.CharField(max_length=2, choices=InvoicingUnits.choices)
     unit_rate = models.DecimalField(max_digits=16, decimal_places=2)
     quantity = models.IntegerField()
-    # timesheet: ActivityReport
