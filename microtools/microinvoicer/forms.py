@@ -1,5 +1,6 @@
 from dataclasses import asdict
 from django import forms
+from django.utils.translation import override
 from django_registration.forms import RegistrationForm
 from material import Layout, Row
 
@@ -98,6 +99,19 @@ class ServiceContractForm(FiscalEntityForm):
         }
         self.fields = dict(**buyer_fields, **self_fields)
 
+
+class TimeInvoiceForm(forms.ModelForm):
+    class Meta:
+        model = models.TimeInvoice
+        fields = ["contract", "issue_date", "quantity", "conversion_rate"]
+
+    override_description = forms.CharField(required=False)
+
+    def __init__(self, *args, **kwargs):
+       registry = kwargs.pop('registry')
+       super().__init__(*args, **kwargs)
+       self.fields["contract"].queryset = models.ServiceContract.objects.filter(registry=registry)
+
 ########################################################
 
 class BaseUserForm(forms.Form):
@@ -109,12 +123,6 @@ class BaseUserForm(forms.Form):
             "db": user.read_data(),
         }
         super().__init__(*args, **kwargs)
-
-
-class ContractForm(FiscalEntityForm):
-    registry_id = forms.CharField(required=True, max_length=8, strip=True, label="Registry number")
-    registry_date = forms.DateField(required=True, label="Registry date")
-    hourly_rate = forms.DecimalField(required=True, decimal_places=2)
 
 
 class InvoiceForm(BaseUserForm):

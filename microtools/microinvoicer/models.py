@@ -46,7 +46,7 @@ class FiscalEntity(models.Model):
     bank_name = models.CharField(max_length=LONG_TEXT)
 
     def __repr__(self) -> str:
-        return f"{self.name} [CIF: {self.fiscal_code}]"
+        return f"{self.name}"
 
     def __str__(self):
         return repr(self)
@@ -135,12 +135,12 @@ class ServiceContract(models.Model):
     invoicing_currency = models.CharField(max_length=3, choices=AvailableCurrencies.choices)
     invoicing_description = models.CharField(max_length=LONG_TEXT)
 
-
     def __repr__(self) -> str:
-        return f"{self.buyer!r}, no {self.registration_no} from {self.registration_date}"
+        return f"{self.buyer!r}, {self.unit_rate} {self.currency}/{self.unit}"
 
     def __str__(self):
         return repr(self)
+
 
 class TimeInvoice(models.Model):
     id = models.AutoField(primary_key=True)
@@ -153,9 +153,10 @@ class TimeInvoice(models.Model):
     number = models.IntegerField()
     status = models.IntegerField(choices=InvoiceStatus.choices)
     description = models.CharField(max_length=LONG_TEXT)
-    issue_date = models.DateField()
     currency = models.CharField(max_length=3, choices=AvailableCurrencies.choices)
     conversion_rate = models.DecimalField(max_digits=16, decimal_places=4, null=True)  # contract currency to invoice currency
     unit = models.CharField(max_length=2, choices=InvoicingUnits.choices)
     unit_rate = models.DecimalField(max_digits=16, decimal_places=2)
+
+    issue_date = models.DateField()
     quantity = models.IntegerField()

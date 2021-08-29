@@ -1,5 +1,6 @@
 """How about now."""
-
+from datetime import date
+from django.apps import registry
 from django.http import Http404, FileResponse
 from django.urls import reverse_lazy
 from django.views.generic import View, TemplateView
@@ -188,6 +189,55 @@ class ContractDeleteView(MicroFormMixin, DeleteView):
     model = models.ServiceContract
     form_title = "Throwing away contract"
     template_name = "confirm_delete.html"
+
+
+class TimeInvoiceCreateView(MicroFormMixin, CreateView):
+    model = models.TimeInvoice
+    form_title = "Issue new time invoice"
+    form_class = forms.TimeInvoiceForm
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["registry"] = self.kwargs["registry"]
+        return kwargs
+
+    def get_initial(self, **kwargs):
+        """provide sensible defaults for a new invoice"""
+        initial = super().get_initial()
+        initial["issue_date"] = date.today
+        registry = models.MicroRegistry.objects.get(pk=self.kwargs["registry_id"])
+        self.kwargs["registry"] = registry
+        last_invoice = registry.invoices.last()
+        if last_invoice:
+            initial["contract"] = last_invoice.contract
+            initial["quantity"] = last_invoice.quantity
+
+        return initial
+
+    def form_valid(self, form):
+        """Fill in the missing fields"""
+        registry = self.kwargs["registry"]
+        contract = form.instance.contract
+
+        form.instance.registry = registry
+        form.instance.seller = registry.user.seller
+        form.instance.buyer = contract.buyer
+        form.instance.series = registry.invoice_series
+        form.instance.number = registry.next_invoice_no
+        form.instance.status = models.InvoiceStatus.PUBLISHED
+        form.instance.currency = contract.invoicing_currency
+        form.instance.unit = contract.unit
+        form.instance.unit_rate = contract.unit_rate
+
+        if form.cleaned_data["override_description"]:
+            form.instance.description = form.cleaned_data["override_description"]
+        else:
+            form.instance.description = contract.invoicing_description
+
+        response = super().form_valid(form)
+        registry.next_invoice_no += 1
+        registry.save()
+        return response
 
 
 ###############################################

@@ -19,7 +19,8 @@ urlpatterns = [
     path("registry/<registry_id>/contract/<pk>", views.ContractUpdateView.as_view(), name="registry-contract-update"),
     path("registry/<registry_id>/contract/<pk>/delete", views.ContractDeleteView.as_view(), name="registry-contract-delete"),
 
-    path("draft_time/", views.DraftInvoiceView.as_view(), name="microinvoicer_draft_time"),
+    path("registry/<registry_id>/invoice/add", views.TimeInvoiceCreateView.as_view(), name="registry-invoice-add"),
+
     path("draft_material/", views.DraftInvoiceView.as_view(), name="microinvoicer_draft_material"),
     path("time_invoice/<invoice_id>", views.TimeInvoiceView.as_view(), name="microinvoicer_time_invoice"),
     path(
