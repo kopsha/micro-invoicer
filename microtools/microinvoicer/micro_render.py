@@ -137,8 +137,9 @@ def render_invoice_items(pdf_canvas, invoice, from_y):
             desc_line_2 = invoice.description[split_at + 1 :]
     elif not invoice.description:
         desc_line_1 = "Furnizare servicii software,"
-        desc_line_2 = (
-            f"cf. contract {invoice.contract.registration_no} / {invoice.contract.registration_date}"
+        desc_line_2 = "cf. contract {} / {}".format(
+            invoice.contract.registration_no,
+            invoice.contract.registration_date.strftime("%d-%b-%Y")
         )
 
     pdf_canvas.setFont("Helvetica", font_normal)
