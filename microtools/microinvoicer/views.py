@@ -1,20 +1,17 @@
 """How about now."""
 from datetime import date
-from django.apps import registry
-from django.http import Http404, FileResponse
+from django.http import FileResponse
 from django.urls import reverse_lazy
-from django.views.generic import View, TemplateView
+from django.views.generic import TemplateView
 from django.views.generic.detail import DetailView
-from django.views.generic.edit import FormView, CreateView, DeleteView, UpdateView
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
 from django.forms.models import model_to_dict
-
 from django_registration.backends.one_step.views import RegistrationView
 
 from . import forms, models
-from . import micro_use_cases as muc
-
+from . import micro_render
 
 class IndexView(TemplateView):
     """Landing Page."""
@@ -44,12 +41,9 @@ class MicroHomeView(LoginRequiredMixin, TemplateView):
         """Attach all registry info."""
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
-            context["registries"] = self.request.user.registries.prefetch_related("contracts", "invoices").all()
-
-            db = self.request.user.read_data()
-            context["seller"] = {"name": db.register.seller.name}
-            context["contracts"] = db.flatten_contracts()
-            context["invoices"] = db.invoices()
+            user = self.request.user
+            context["registries"] = user.registries.prefetch_related("contracts", "invoices").all()
+            context["seller"] = user.seller
 
         return context
 
@@ -124,6 +118,7 @@ class RegistryCreateView(MicroFormMixin, CreateView):
     def form_valid(self, form):
         form.instance.user = self.request.user
         return super().form_valid(form)
+
 
 class RegistryUpdateView(MicroFormMixin, UpdateView):
     model = models.MicroRegistry
@@ -241,14 +236,6 @@ class TimeInvoiceCreateView(MicroFormMixin, CreateView):
         return response
 
 
-class TimeInvoiceDetailView(LoginRequiredMixin, DetailView):
-    model = models.TimeInvoice
-    template_name = "invoice_detail.html"
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs)
-
-
 class TimeInvoiceDeleteView(MicroFormMixin, DeleteView):
     model = models.TimeInvoice
     form_title = "Throwing away invoice"
@@ -261,133 +248,26 @@ class TimeInvoiceDeleteView(MicroFormMixin, DeleteView):
         return super().delete(request, *args, **kwargs)
 
 
-###############################################
-
-class BaseFormView(LoginRequiredMixin, FormView):
-    """Extend this view for any form."""
-
-    template_name = "base_form.html"
-    success_url = reverse_lazy("home")
-
-    def get_context_data(self, **kwargs):
-        """Add form title."""
-        context = super().get_context_data(**kwargs)
-        context["form_title"] = self.form_title
-
-        return context
-
-    def get_form_kwargs(self):
-        """Adds user information required for later validation."""
-        kwargs = super().get_form_kwargs()
-        kwargs.update({"user": self.request.user})
-        return kwargs
-
-
-class DraftInvoiceView(BaseFormView):
-    """Creates a new draft invoice."""
-
-    form_title = "Create a new invoice"
-    form_class = forms.InvoiceForm
-
-    def get_initial(self, **kwargs):
-        """provide sensible defaults for a new invoice"""
-        initial = super().get_initial()
-        db = self.request.user.read_data()
-
-        all_invoices = db.invoices()
-        if all_invoices:
-            last_invoice = all_invoices[0]
-            initial["duration"] = last_invoice.activity.duration
-            initial["flavor"] = last_invoice.activity.flavor
-            initial["project_id"] = last_invoice.activity.project_id
-
-        return initial
-
-    def form_valid(self, form):
-        """Bla Bla."""
-        db = form.user["db"]
-        db = muc.draft_time_invoice(db, form.cleaned_data)
-        self.request.user.write_data(db)
-
-        return super().form_valid(form)
-
-
-class DiscardInvoiceView(BaseFormView):
-    """
-    Uppon confirmation it removes the top invoice from the registry.
-    """
-
-    form_title = "You are about to remove fiscal data. Please confirm."
-    form_class = forms.DiscardInvoiceForm
-    template_name = "discard_invoice.html"
-
-    def get_context_data(self, **kwargs):
-        """Appends last invoice details to context data"""
-        context = super().get_context_data(**kwargs)
-        invoices = self.request.user.read_data().invoices()
-        context["invoice"] = invoices[0] if invoices else None
-
-        return context
-
-    def form_valid(self, form):
-        """User has confirmed, we can trash the last invoice."""
-        db = self.request.user.read_data()
-        db = muc.discard_last_invoice(db)
-        self.request.user.write_data(db)
-        return super().form_valid(form)
-
-
-class TimeInvoiceView(BaseFormView):
-    """Allows to mess up with a time invoice."""
-
-    form_title = "Time Invoice"
-    form_class = forms.InvoiceForm
+class TimeInvoiceDetailView(LoginRequiredMixin, DetailView):
+    model = models.TimeInvoice
     template_name = "invoice_detail.html"
 
-    def get_initial(self, **kwargs):
-        """Populate invoice using the url argument as index"""
-        initial = super().get_initial()
-        invoices = self.request.user.read_data().invoices()
-
-        try:
-            ndx = int(self.kwargs["invoice_id"]) - 1
-            invoice = invoices[ndx]
-            initial["publish_date"] = invoice.publish_date
-            initial["duration"] = invoice.activity.duration
-            initial["flavor"] = invoice.activity.flavor
-            initial["project_id"] = invoice.activity.project_id
-            initial["xchg_rate"] = invoice.conversion_rate
-            self.invoice = invoice
-        except (IndexError, KeyError):
-            raise Http404
-
-        return initial
-
     def get_context_data(self, **kwargs):
-        """Appends last invoice details to context data"""
-        context = super().get_context_data(**kwargs)
-        if self.invoice:
-            context["update_self_url"] = reverse_lazy("microinvoicer_time_invoice", kwargs=self.kwargs)
-            context["invoice"] = self.invoice
-            context["task_list"] = self.invoice.activity.tasks
-            context["invoice_id"] = self.kwargs.get("invoice_id")
-
-        return context
+        return super().get_context_data(**kwargs)
 
 
-class PrintableInvoiceView(LoginRequiredMixin, View):
+
+# TODO: the last part of the masterpiece
+class TimeInvoicePrintView(LoginRequiredMixin, DetailView):
     """Download invoice as PDF file"""
+    model = models.TimeInvoice
+    response_class = FileResponse
 
-    def get(self, request, *args, **kwargs):
+    def render_to_response(self, context, **response_kwargs):
         """Returns content of generated pdf"""
-        db = request.user.read_data()
-        try:
-            ndx = int(self.kwargs["invoice_id"]) - 1
-            invoice = db.invoices()[ndx]
-        except (IndexError, KeyError):
-            raise Http404
-
-        content = muc.render_printable_invoice(invoice)  # content is a BytesIO object
+        print(context, response_kwargs)
+        invoice = context["object"]
+        content = micro_render.write_invoice_pdf(invoice)  # content is a BytesIO object
         response = FileResponse(
             content,
             filename=f"{invoice.series_number}.pdf",

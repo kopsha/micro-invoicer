@@ -6,7 +6,7 @@ from io import BytesIO
 import locale
 import time
 
-from .micro_models import *
+from . import models
 
 
 page_width, page_height = (21.0, 29.7)
@@ -94,7 +94,7 @@ def render_invoice_subtitle(pdf_canvas, invoice, from_y):
     pdf_canvas.drawString(*to_cm(cx + row_space, cy), invoice.series_number)
     cy -= row_height
     pdf_canvas.drawRightString(*to_cm(cx - row_space, cy), "din:")
-    pdf_canvas.drawString(*to_cm(cx + row_space, cy), invoice.publish_date.strftime("%d-%b-%Y"))
+    pdf_canvas.drawString(*to_cm(cx + row_space, cy), invoice.issue_date.strftime("%d-%b-%Y"))
     cy -= row_height * 2
 
     return cy
@@ -133,14 +133,14 @@ def render_invoice_items(pdf_canvas, invoice, from_y):
     pdf_canvas.drawCentredString(
         6 * cm,
         (cy - row_height * 0.45) * cm,
-        f' cf. contract {invoice.contract_registry_id} din {invoice.contract_registry_date.strftime("%d-%b-%Y")}',
+        invoice.description,
     )
 
-    pdf_canvas.drawCentredString(11 * cm, cy * cm, locale.str(invoice.activity.duration))
+    pdf_canvas.drawCentredString(11 * cm, cy * cm, locale.str(invoice.quantity))
     pdf_canvas.drawCentredString(13 * cm, cy * cm, "ore")
 
     pdf_canvas.drawCentredString(
-        15.5 * cm, cy * cm, locale.currency(invoice.hourly_rate * invoice.conversion_rate)
+        15.5 * cm, cy * cm, locale.currency(invoice.unit_rate * invoice.conversion_rate)
     )
     pdf_canvas.drawCentredString(18.35 * cm, cy * cm, locale.currency(invoice.value, grouping=True))
 
@@ -294,7 +294,7 @@ def write_invoice_pdf(invoice):
     pdf.setAuthor("python@micro-tools.fortech.ro")
 
     render_invoice_page(pdf, invoice)
-    render_activity_page(pdf, invoice)
+    # render_activity_page(pdf, invoice)
 
     pdf.save()
     write_buffer.seek(0)

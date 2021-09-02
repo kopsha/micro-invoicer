@@ -7,7 +7,6 @@ from django.utils import timezone
 from django.conf import settings
 
 from cryptography.fernet import InvalidToken
-from cryptography.fernet import Fernet
 
 from .managers import MicroUserManager
 from . import micro_use_cases as muc
@@ -27,6 +26,7 @@ class AvailableCurrencies(models.TextChoices):
 class InvoicingUnits(models.TextChoices):
     MONTHLY = "mo", "Month"
     HOURLY = "hr", "Hour"
+
 
 class InvoiceStatus(models.IntegerChoices):
     DRAFT = 0, "Draft"
@@ -80,31 +80,6 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
 
     def email_user(self, subject, message, from_email=None, **kwargs):
         send_mail(subject, message, from_email, [self.email], **kwargs)
-
-    def write_data(self, db):
-        plain_data = muc.dumps(db)
-        self.crc = muc.to_crc32(plain_data)
-        self.datastore = settings.CRYPTO_ENGINE.encrypt(plain_data.encode("utf-8")).decode("utf-8")
-        self.save()
-
-    def read_data(self):
-        try:
-            data = self.datastore.encode("utf-8")
-            plain_data = str(settings.CRYPTO_ENGINE.decrypt(data), "utf-8")
-        except InvalidToken:
-            print("\t >> [warning] cannot decrypt invalid user data. raw data dump:")
-            print(f"{data!r}")
-            empty_db = muc.corrupted_storage()
-            plain_data = muc.dumps(empty_db)
-
-        crc = muc.to_crc32(plain_data)
-        if crc != self.crc:
-            print("\t >> [warning] crc check failed. did someone messed with your data?")
-            print(f"\t >> [warning] computed _{crc}_ vs _{self.crc}_ stored.")
-
-        db = muc.loads(plain_data)
-
-        return db
 
 
 class MicroRegistry(models.Model):

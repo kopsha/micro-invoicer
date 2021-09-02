@@ -22,15 +22,8 @@ urlpatterns = [
     path("registry/<registry_id>/invoice/add", views.TimeInvoiceCreateView.as_view(), name="registry-invoice-add"),
     path("registry/<registry_id>/invoice/<pk>/detail", views.TimeInvoiceDetailView.as_view(), name="registry-invoice-detail"),
     path("registry/<registry_id>/invoice/<pk>/delete", views.TimeInvoiceDeleteView.as_view(), name="registry-invoice-delete"),
+    path("registry/<registry_id>/invoice/<pk>/print", views.TimeInvoicePrintView.as_view(), name="registry-invoice-print"),
 
-    path("draft_material/", views.DraftInvoiceView.as_view(), name="microinvoicer_draft_material"),
-    path("time_invoice/<invoice_id>", views.TimeInvoiceView.as_view(), name="microinvoicer_time_invoice"),
-    path(
-        "printable_invoice/<invoice_id>",
-        views.PrintableInvoiceView.as_view(),
-        name="microinvoicer_printable_invoice",
-    ),
-    path("pop_invoice/", views.DiscardInvoiceView.as_view(), name="microinvoicer_pop_invoice"),
     path("home/", views.MicroHomeView.as_view(), name="home"),
     path("", views.IndexView.as_view(), name="index"),
 ]

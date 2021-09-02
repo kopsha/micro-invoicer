@@ -1,11 +1,6 @@
-from dataclasses import asdict
 from django import forms
-from django.utils.translation import override
 from django_registration.forms import RegistrationForm
 from material import Layout, Row
-
-from datetime import date
-
 from . import models
 
 
@@ -111,39 +106,3 @@ class TimeInvoiceForm(forms.ModelForm):
        registry = kwargs.pop('registry')
        super().__init__(*args, **kwargs)
        self.fields["contract"].queryset = models.ServiceContract.objects.filter(registry=registry)
-
-########################################################
-
-class BaseUserForm(forms.Form):
-    def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user")
-        self.user = {
-            "full_name": user.get_full_name(),
-            "email": user.email,
-            "db": user.read_data(),
-        }
-        super().__init__(*args, **kwargs)
-
-
-class InvoiceForm(BaseUserForm):
-    publish_date = forms.DateField(required=True, initial=date.today, label="Invoice date")
-    contract_id = forms.ChoiceField(required=True, label="Choose contract")
-    duration = forms.IntegerField(required=True, min_value=1, label_suffix="hours")
-    flavor = forms.CharField(required=True, max_length=80, strip=True)
-    project_id = forms.CharField(required=True, max_length=80, strip=True)
-    xchg_rate = forms.DecimalField(
-        label="Exchange rate",
-        label_suffix="lei / euro",
-        decimal_places=4,
-    )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["contract_id"].choices = (
-            (i, f"{c.buyer.name}, {c.hourly_rate} euro / hour")
-            for i, c in enumerate(self.user["db"].contracts)
-        )
-
-
-class DiscardInvoiceForm(BaseUserForm):
-    confirmed = forms.BooleanField(required=True, label="Do it!", initial=False)

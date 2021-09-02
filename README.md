@@ -8,7 +8,7 @@ Making invoices has never been easier
 * [ ] Migrate to Django models
 * [x] Add more registries (e.g. internal and external)
 * [x] Contracts can be fixed (monthly) or timed
-* [ ] Invoices can be timed or fixed
+* [x] Invoices can be timed or fixed
 * [ ] Issue invoices in more currencies
 * [ ] Render invoices in english, try [wkhtmltopdf](https://wkhtmltopdf.org/)
 * [ ] New invoice type for materials

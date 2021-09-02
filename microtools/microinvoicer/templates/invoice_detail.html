@@ -27,7 +27,7 @@
 <div class="row">
     <div class="card">
         <div class="card-content">
-            <a href="{% url 'microinvoicer_printable_invoice' invoice_id=object.id %}" download>
+            <a href="{% url 'registry-invoice-print' registry_id=object.registry.id pk=object.id %}" download>
                 Download <strong>Invoice</strong> as PDF
             </a>
         </div>
