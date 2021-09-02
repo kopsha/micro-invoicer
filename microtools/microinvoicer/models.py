@@ -54,6 +54,7 @@ class FiscalEntity(models.Model):
 
 class MicroUser(AbstractBaseUser, PermissionsMixin):
     """User account, which holds the service provider (seller) entity"""
+
     id = models.AutoField(primary_key=True)
     seller = models.OneToOneField(FiscalEntity, null=True, on_delete=models.CASCADE)
 
@@ -91,7 +92,9 @@ class MicroRegistry(models.Model):
     next_invoice_no = models.IntegerField()
 
     def __repr__(self) -> str:
-        return f"{self.display_name}, series {self.invoice_series}, {self.contracts.count()} contracts and ..."
+        return (
+            f"{self.display_name}, series {self.invoice_series}, {self.contracts.count()} contracts and ..."
+        )
 
     def __str__(self):
         return repr(self)
@@ -129,7 +132,9 @@ class TimeInvoice(models.Model):
     status = models.IntegerField(choices=InvoiceStatus.choices)
     description = models.CharField(max_length=LONG_TEXT)
     currency = models.CharField(max_length=3, choices=AvailableCurrencies.choices)
-    conversion_rate = models.DecimalField(max_digits=16, decimal_places=4, null=True)  # contract currency to invoice currency
+    conversion_rate = models.DecimalField(
+        max_digits=16, decimal_places=4, null=True
+    )  # contract currency to invoice currency
     unit = models.CharField(max_length=2, choices=InvoicingUnits.choices)
     unit_rate = models.DecimalField(max_digits=16, decimal_places=2)
 

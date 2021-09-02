@@ -82,16 +82,8 @@ class ServiceContractForm(FiscalEntityForm):
     def __init__(self, *args, **kwargs):
         """reorder fields to get buyer details on top"""
         super().__init__(*args, **kwargs)
-        buyer_fields = {
-            key: value
-            for key, value in self.fields.items()
-            if key not in self.Meta.fields
-        }
-        self_fields = {
-            key: value
-            for key, value in self.fields.items()
-            if key in self.Meta.fields
-        }
+        buyer_fields = {key: value for key, value in self.fields.items() if key not in self.Meta.fields}
+        self_fields = {key: value for key, value in self.fields.items() if key in self.Meta.fields}
         self.fields = dict(**buyer_fields, **self_fields)
 
 
@@ -103,6 +95,6 @@ class TimeInvoiceForm(forms.ModelForm):
     override_description = forms.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
-       registry = kwargs.pop('registry')
-       super().__init__(*args, **kwargs)
-       self.fields["contract"].queryset = models.ServiceContract.objects.filter(registry=registry)
+        registry = kwargs.pop("registry")
+        super().__init__(*args, **kwargs)
+        self.fields["contract"].queryset = models.ServiceContract.objects.filter(registry=registry)

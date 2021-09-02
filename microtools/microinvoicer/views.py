@@ -13,13 +13,16 @@ from django_registration.backends.one_step.views import RegistrationView
 from . import forms, models
 from . import micro_render
 
+
 class IndexView(TemplateView):
     """Landing Page."""
+
     template_name = "index.html"
 
 
 class MicroRegistrationView(RegistrationView):
     """User registration."""
+
     template_name = "registration_form.html"
     form_class = forms.MicroRegistrationForm
     # For now, we redirect straight to fiscal information view after signup.
@@ -30,11 +33,13 @@ class MicroRegistrationView(RegistrationView):
 
 class MicroLoginView(LoginView):
     """Classic login."""
+
     template_name = "login.html"
 
 
 class MicroHomeView(LoginRequiredMixin, TemplateView):
     """User Home."""
+
     template_name = "home.html"
 
     def get_context_data(self, **kwargs):
@@ -75,10 +80,18 @@ class ProfileUpdateView(MicroFormMixin, UpdateView):
     def get_initial(self):
         initial = super().get_initial()
         if seller_instance := self.request.user.seller:
-            seller = model_to_dict(seller_instance, fields=[
-                "name", "owner_fullname", "registration_id", "fiscal_code",
-                "address", "bank_account", "bank_name"
-            ])
+            seller = model_to_dict(
+                seller_instance,
+                fields=[
+                    "name",
+                    "owner_fullname",
+                    "registration_id",
+                    "fiscal_code",
+                    "address",
+                    "bank_account",
+                    "bank_name",
+                ],
+            )
             initial.update(seller)
         return initial
 
@@ -96,14 +109,12 @@ class ProfileSetupView(ProfileUpdateView):
     """
     Updates all user's fiscal information.
     """
+
     form_class = forms.ProfileSetupForm
     form_title = "Setup fiscal information"
 
     def form_valid(self, form):
-        seller_data = {
-            field: form.cleaned_data[field]
-            for field in models.FiscalEntity._meta.get_fields()
-        }
+        seller_data = {field: form.cleaned_data[field] for field in models.FiscalEntity._meta.get_fields()}
         seller = models.FiscalEntity(seller_data)
         seller.save()
         self.object.seller = seller
@@ -161,10 +172,18 @@ class ContractUpdateView(MicroFormMixin, UpdateView):
     def get_initial(self):
         initial = super().get_initial()
         if buyer_instance := self.object.buyer:
-            buyer_data = model_to_dict(buyer_instance, fields=[
-                "name", "owner_fullname", "registration_id", "fiscal_code",
-                "address", "bank_account", "bank_name"
-            ])
+            buyer_data = model_to_dict(
+                buyer_instance,
+                fields=[
+                    "name",
+                    "owner_fullname",
+                    "registration_id",
+                    "fiscal_code",
+                    "address",
+                    "bank_account",
+                    "bank_name",
+                ],
+            )
             initial.update(buyer_data)
         return initial
 
@@ -256,16 +275,15 @@ class TimeInvoiceDetailView(LoginRequiredMixin, DetailView):
         return super().get_context_data(**kwargs)
 
 
-
-# TODO: the last part of the masterpiece
+# TODO: render external invoice in english
 class TimeInvoicePrintView(LoginRequiredMixin, DetailView):
     """Download invoice as PDF file"""
+
     model = models.TimeInvoice
     response_class = FileResponse
 
     def render_to_response(self, context, **response_kwargs):
         """Returns content of generated pdf"""
-        print(context, response_kwargs)
         invoice = context["object"]
         content = micro_render.write_invoice_pdf(invoice)  # content is a BytesIO object
         response = FileResponse(
@@ -274,5 +292,4 @@ class TimeInvoicePrintView(LoginRequiredMixin, DetailView):
             as_attachment=True,
             content_type="application/pdf",
         )
-
         return response

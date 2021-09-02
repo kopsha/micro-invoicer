@@ -127,14 +127,24 @@ def render_invoice_items(pdf_canvas, invoice, from_y):
         pdf_canvas.drawCentredString(x * cm, cy * cm, h)
     cy = draw_ruler(cy)
 
+    # try to split description in two lines
+    desc_line_1 = invoice.description
+    desc_line_2 = ""
+    if len(invoice.description) > 27:
+        split_at = invoice.description.find(" ", 27)
+        if split_at > 0:
+            desc_line_1 = invoice.description[:split_at]
+            desc_line_2 = invoice.description[split_at + 1 :]
+    elif not invoice.description:
+        desc_line_1 = "Furnizare servicii software,"
+        desc_line_2 = (
+            f"cf. contract {invoice.contract.registration_no} / {invoice.contract.registration_date}"
+        )
+
     pdf_canvas.setFont("Helvetica", font_normal)
     pdf_canvas.drawCentredString(2.5 * cm, cy * cm, "1")
-    pdf_canvas.drawCentredString(6 * cm, (cy + row_height * 0.4) * cm, "Furnizare servicii software,")
-    pdf_canvas.drawCentredString(
-        6 * cm,
-        (cy - row_height * 0.45) * cm,
-        invoice.description,
-    )
+    pdf_canvas.drawCentredString(6 * cm, (cy + row_height * 0.4) * cm, desc_line_1)
+    pdf_canvas.drawCentredString(6 * cm, (cy - row_height * 0.45) * cm, desc_line_2)
 
     pdf_canvas.drawCentredString(11 * cm, cy * cm, locale.str(invoice.quantity))
     pdf_canvas.drawCentredString(13 * cm, cy * cm, "ore")
