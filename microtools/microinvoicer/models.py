@@ -160,3 +160,21 @@ class TimeInvoice(models.Model):
 
     issue_date = models.DateField()
     quantity = models.IntegerField()
+
+    @property
+    def series_number(self):
+        return f"{self.series}-{self.number:04}"
+
+    @property
+    def value(self):
+        return self.unit_rate * self.quantity * self.conversion_rate
+
+    @property
+    def contract_currency(self):
+        return self.contract.currency
+
+    def __repr__(self) -> str:
+        return f"{self.series_number} for {self.buyer}"
+
+    def __str__(self):
+        return repr(self)

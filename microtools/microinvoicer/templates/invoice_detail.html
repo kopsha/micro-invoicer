@@ -5,58 +5,30 @@
 <div class="row">
     <p>
         <small>[buyer]</small><br>
-        <strong><u>{{ invoice.buyer.name }}</u></strong><br>
-        {{ invoice.buyer.address }}<br>
+        <strong><u>{{ object.buyer.name }}</u></strong><br>
+        {{ object.buyer.address }}<br>
     </p>
-    <h4 align="center">Invoice {{ invoice.series_number }}</h4><br>
+    <h4 align="center">Invoice {{ object.series_number }}</h4><br>
+    <p class="right-align">issued on <strong>{{ object.issue_date|naturalday }}</strong></p>
     <div class="card">
         <div class="card-content">
             <h5 align="center">
-                {{ invoice.activity.duration }} <sub><small>hours</small></sub>
-                x {{ invoice.hourly_rate|floatformat:0 }} <sub><small>euro/hour</small></sub>
-                [ x {{ invoice.conversion_rate|floatformat:4 }} <sub><small>lei/euro</small></sub> ]
-                = {{ invoice.value|floatformat:2|intcomma }} <sub><small>lei</small></sub>
+                {{ object.quantity }} <sub><small>{{ object.unit }}</small></sub>
+                x {{ object.unit_rate|floatformat:0 }} <sub><small>{{ object.contract_currency }}/{{ object.unit }}</small></sub>
+                {% if object.conversion_rate != 1 %}
+                [ x {{ object.conversion_rate|floatformat:4 }} <sub><small>{{ object.currency }}/{{ object.contract_currency }}</small></sub> ]
+                {% endif %}
+                = {{ object.value|floatformat:2|intcomma }} <sub><small>{{ object.currency }}</small></sub>
             </h5>
-
         </div>
     </div>
     <br>
-
-    <p align="center">Attached report details</p>
-    <div class="card">
-        <div class="card-content">
-            <table>
-            <thead>
-                <tr align="center">
-                    <td style="text-align:center">project id</td>
-                    <td>activity</td>
-                    <td style="text-align:center">Hours</td>
-                </tr>
-            </thead>
-
-            {% for task in task_list %}
-                <tr>
-                    <td style="text-align:center">{{ task.project_id }}</td>
-                    <td>{{ task.name }}</td>
-                    <td style="text-align:center">{{ task.duration }}</td>
-                </tr>
-            {% empty %}
-                <tr>This is odd: no invoiced items found.</tr>
-            {% endfor %}
-            <tr>
-                <td></td>
-                <td style="text-align:right"><small>total</small></td>
-                <td style="text-align:center"><strong>{{ invoice.activity.duration }}</strong></td>
-            </tr>
-            </table>
-        </div>
-    </div>
 </div>
 <div class="row">
     <div class="card">
         <div class="card-content">
-            <a href="{% url 'microinvoicer_printable_invoice' invoice_id=invoice_id %}" download>
-                Download <strong>Invoice</strong> and <strong>Activity Report</strong> as PDF
+            <a href="{% url 'microinvoicer_printable_invoice' invoice_id=object.id %}" download>
+                Download <strong>Invoice</strong> as PDF
             </a>
         </div>
     </div>

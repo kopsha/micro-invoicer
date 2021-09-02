@@ -4,6 +4,7 @@ from django.apps import registry
 from django.http import Http404, FileResponse
 from django.urls import reverse_lazy
 from django.views.generic import View, TemplateView
+from django.views.generic.detail import DetailView
 from django.views.generic.edit import FormView, CreateView, DeleteView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
@@ -43,7 +44,7 @@ class MicroHomeView(LoginRequiredMixin, TemplateView):
         """Attach all registry info."""
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
-            context["registries"] = self.request.user.registries.prefetch_related("contracts").all()
+            context["registries"] = self.request.user.registries.prefetch_related("contracts", "invoices").all()
 
             db = self.request.user.read_data()
             context["seller"] = {"name": db.register.seller.name}
@@ -238,6 +239,26 @@ class TimeInvoiceCreateView(MicroFormMixin, CreateView):
         registry.next_invoice_no += 1
         registry.save()
         return response
+
+
+class TimeInvoiceDetailView(LoginRequiredMixin, DetailView):
+    model = models.TimeInvoice
+    template_name = "invoice_detail.html"
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**kwargs)
+
+
+class TimeInvoiceDeleteView(MicroFormMixin, DeleteView):
+    model = models.TimeInvoice
+    form_title = "Throwing away invoice"
+    template_name = "confirm_delete.html"
+
+    def delete(self, request, *args, **kwargs):
+        invoice = self.get_object()
+        invoice.registry.next_invoice_no -= 1
+        invoice.registry.save()
+        return super().delete(request, *args, **kwargs)
 
 
 ###############################################

@@ -10,12 +10,31 @@
         <tr>
             <td>Invoices</td>
             <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
             <td class="center-align"><h5>
                 <a href="{% url 'registry-invoice-add' registry_id=registry.id %}">
                 &#x002B;
                 </a>
             </h5></td>
         </tr>
+        {% for invoice in registry.invoices.all reversed %}
+        <tr>
+            <td style="text-align:center"><a href="{% url 'registry-invoice-detail' registry_id=registry.id pk=invoice.id %}">{{ invoice.series_number }}</a></td>
+            <td style="text-align:center">{{ invoice.issue_date|naturalday }}</td>
+            <td style="text-align:center">{{ invoice.buyer.name }}</td>
+            <td style="text-align:center">{{ invoice.quantity }} {{invoice.unit}}</td>
+            <td style="text-align:center">{{ invoice.value|floatformat:2|intcomma }} {{ invoice.currency }}</td>
+            {% if forloop.first %}
+                <td style="text-align:center"><a href="{% url 'registry-invoice-delete'  registry_id=registry.id pk=invoice.id %}">&#x274C;</a></td style="text-align:center">
+            {% else %}
+                <td></td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+        </table>
+        <small>{{ invoices|length|intword }} invoice{{ invoices|length|pluralize}} found</small>
 
 
         <table>

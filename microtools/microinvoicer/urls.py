@@ -20,6 +20,8 @@ urlpatterns = [
     path("registry/<registry_id>/contract/<pk>/delete", views.ContractDeleteView.as_view(), name="registry-contract-delete"),
 
     path("registry/<registry_id>/invoice/add", views.TimeInvoiceCreateView.as_view(), name="registry-invoice-add"),
+    path("registry/<registry_id>/invoice/<pk>/detail", views.TimeInvoiceDetailView.as_view(), name="registry-invoice-detail"),
+    path("registry/<registry_id>/invoice/<pk>/delete", views.TimeInvoiceDeleteView.as_view(), name="registry-invoice-delete"),
 
     path("draft_material/", views.DraftInvoiceView.as_view(), name="microinvoicer_draft_material"),
     path("time_invoice/<invoice_id>", views.TimeInvoiceView.as_view(), name="microinvoicer_time_invoice"),
