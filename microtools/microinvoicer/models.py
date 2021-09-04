@@ -82,7 +82,7 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
 class MicroRegistry(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(MicroUser, related_name="registries", on_delete=models.CASCADE)
-    seller = models.ForeignKey(FiscalEntity, null=True, related_name="+", on_delete=models.CASCADE)
+    seller = models.ForeignKey(FiscalEntity, related_name="+", on_delete=models.CASCADE)
 
     display_name = models.CharField(max_length=SHORT_TEXT)
     invoice_series = models.CharField(max_length=REALLY_SHORT)
