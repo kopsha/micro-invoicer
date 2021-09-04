@@ -4,11 +4,59 @@ from reportlab.lib.pagesizes import A4
 from io import BytesIO
 
 import locale
-import time
-
-from . import models
 
 
+def render_pdf(invoice, fake_timesheet=False):
+    write_buffer = BytesIO()
+    pdf = canvas.Canvas(filename=write_buffer, pagesize=A4)
+    pdf.setAuthor("microtools@fibonet.ro")
+
+    country = invoice.buyer.country
+    if country == "RO":
+        locale.setlocale(locale.LC_ALL, "ro_RO")
+        render_invoice_ro(pdf, invoice)
+        if fake_timesheet:
+            render_activity_page(pdf, invoice)
+    elif country == "CH":
+        locale.setlocale(locale.LC_ALL, "en_IE")
+        render_invoice_en(pdf, invoice)
+    else:
+        raise RuntimeError(f"Locale settings not defined for {country}")
+
+
+    pdf.save()
+    write_buffer.seek(0)
+
+    return write_buffer
+
+
+def render_invoice_ro(pdf, invoice):
+    title = f"FACTURA"
+
+    header = create_ro_header_data(invoice)
+    render_header(pdf, header)
+    bottom = render_title(pdf, title)
+    bottom = render_invoice_subtitle(pdf, invoice, from_y=bottom)
+    bottom = render_invoice_items(pdf, invoice, from_y=bottom)
+
+    render_watermark(pdf)
+    pdf.showPage()
+
+
+def render_invoice_en(pdf, invoice):
+    title = f"INVOICE"
+
+    header = create_en_header_data(invoice)
+    render_header(pdf, header)
+    bottom = render_title(pdf, title)
+    bottom = render_invoice_subtitle(pdf, invoice, from_y=bottom)
+    bottom = render_invoice_items(pdf, invoice, from_y=bottom)
+
+    render_watermark(pdf)
+    pdf.showPage()
+
+
+# some local settings, keep lowercase
 page_width, page_height = (21.0, 29.7)
 row_height = 0.5
 row_space = 0.1
@@ -28,10 +76,9 @@ def to_cm(xu, yu):
     return (xu * cm, yu * cm)
 
 
-def render_header(pdf_canvas, invoice):
-    # Assume A4 pagesize in portrait mode
-    pdf_canvas.setFont("Helvetica", font_small)
-    header_left = [
+def create_ro_header_data(invoice):
+    header = dict()
+    header["left"] = [
         f"Furnizor: {invoice.seller.name}",
         f"Nr. ORC: {invoice.seller.registration_id}",
         f"CUI: {invoice.seller.fiscal_code}",
@@ -39,7 +86,7 @@ def render_header(pdf_canvas, invoice):
         f"Cont IBAN: {invoice.seller.bank_account}",
         f"Banca: {invoice.seller.bank_name}",
     ]
-    header_right = [
+    header["right"] = [
         f"Beneficiar: {invoice.buyer.name}",
         f"Nr. ORC: {invoice.buyer.registration_id}",
         f"CIF: {invoice.buyer.fiscal_code}",
@@ -47,13 +94,42 @@ def render_header(pdf_canvas, invoice):
         f"Cont IBAN: {invoice.buyer.bank_account}",
         f"Banca: {invoice.buyer.bank_name}",
     ]
+    return header
 
-    for i, textline in enumerate(header_left):
+
+def create_en_header_data(invoice):
+    header = dict()
+    header["left"] = [
+        f"Seller: {invoice.seller.name}",
+        f"Comm.Reg.: {invoice.seller.registration_id}",
+        f"Tax Code: {invoice.seller.fiscal_code}",
+        f"Address: {invoice.seller.address}",
+        f"Country: {invoice.seller.country}",
+        f"Bank account: {invoice.seller.bank_account}",
+        f"Bank name: {invoice.seller.bank_name}",
+    ]
+    header["right"] = [
+        f"Beneficiar: {invoice.buyer.name}",
+        f"Comm.Reg.: {invoice.buyer.registration_id}",
+        f"Tax Code: {invoice.buyer.fiscal_code}",
+        f"Address: {invoice.buyer.address}",
+        f"Country: {invoice.buyer.country}",
+        f"Bank account: {invoice.buyer.bank_account}",
+        f"Bank name: {invoice.buyer.bank_name}",
+    ]
+    return header
+
+
+def render_header(pdf_canvas, header):
+    # Assume A4 pagesize in portrait mode
+    pdf_canvas.setFont("Helvetica", font_small)
+
+    for i, textline in enumerate(header["left"]):
         cx = left_margin
         cy = top_margin - i * row_height
         pdf_canvas.drawString(*to_cm(cx, cy), textline)
 
-    for i, textline in enumerate(header_right):
+    for i, textline in enumerate(header["right"]):
         cx = right_margin
         cy = top_margin - i * row_height
         pdf_canvas.drawRightString(*to_cm(cx, cy), textline)
@@ -284,34 +360,6 @@ def render_activity_page(pdf, invoice):
 
     pdf.showPage()
 
-
-def render_invoice_page(pdf, invoice):
-    title = f"FACTURA"
-
-    render_header(pdf, invoice)
-    bottom = render_title(pdf, title)
-    bottom = render_invoice_subtitle(pdf, invoice, from_y=bottom)
-    bottom = render_invoice_items(pdf, invoice, from_y=bottom)
-
-    render_watermark(pdf)
-    pdf.showPage()
-
-
-def render_pdf(invoice, fake_timesheet=False, language="ro"):
-    locale.setlocale(locale.LC_ALL, "ro_RO")
-
-    write_buffer = BytesIO()
-    pdf = canvas.Canvas(filename=write_buffer, pagesize=A4)
-    pdf.setAuthor("microtools@fibonet.ro")
-
-    render_invoice_page(pdf, invoice)
-    if fake_timesheet:
-        render_activity_page(pdf, invoice)
-
-    pdf.save()
-    write_buffer.seek(0)
-
-    return write_buffer
 
 if __name__ == "__main__":
     print("This is a pure module, it cannot be executed.")
