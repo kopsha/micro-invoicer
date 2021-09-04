@@ -53,7 +53,6 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
     """User account, which holds the service provider (seller) entity"""
 
     id = models.AutoField(primary_key=True)
-    seller = models.OneToOneField(FiscalEntity, null=True, on_delete=models.CASCADE)
 
     first_name = models.CharField(max_length=SHORT_TEXT)
     last_name = models.CharField(max_length=SHORT_TEXT)

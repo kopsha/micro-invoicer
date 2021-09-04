@@ -37,28 +37,10 @@ class FiscalEntityForm(forms.ModelForm):
     bank_name = forms.CharField(max_length=models.LONG_TEXT)
 
 
-class ProfileUpdateForm(EditablesMixin, FiscalEntityForm):
+class RegistryForm(FiscalEntityForm):
     class Meta:
-        model = models.MicroUser
-        fields = ["email", "first_name", "last_name"]
-
-    editables = {"address", "country", "bank_account", "bank_name"}
-
-
-class ProfileSetupForm(ProfileUpdateForm):
-    editables = {
-        "email",
-        "first_name",
-        "last_name",
-        "name",
-        "owner_fullname",
-        "registration_id",
-        "fiscal_code",
-        "address",
-        "country",
-        "bank_name",
-        "bank_account",
-    }
+        model = models.MicroRegistry
+        fields = ["display_name", "invoice_series", "next_invoice_no"]
 
 
 class ServiceContractForm(FiscalEntityForm):

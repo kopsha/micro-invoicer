@@ -3,11 +3,20 @@
 
 {% block content %}
 <div class="row">
-    <p>
-        <small>[buyer]</small><br>
-        <strong><u>{{ object.buyer.name }}</u></strong><br>
-        {{ object.buyer.address }}<br>
-    </p>
+    <div class="row">
+        <div class="col s6">
+            <small>[seller]</small><br>
+            <strong><u>{{ object.seller.name }}</u></strong><br>
+            {{ object.seller.address }}<br>
+            {{ object.seller.country.name }}<br>
+        </div>
+        <div class="col s6 right-align">
+            <small>[buyer]</small><br>
+            <strong><u>{{ object.buyer.name }}</u></strong><br>
+            {{ object.buyer.address }}<br>
+            {{ object.buyer.country.name }}<br>
+        </div>
+    </div>
     <h4 align="center">Invoice {{ object.series_number }}</h4><br>
     <p class="right-align">issued on <strong>{{ object.issue_date|naturalday }}</strong></p>
     <div class="card">
@@ -25,12 +34,8 @@
     <br>
 </div>
 <div class="row">
-    <div class="card">
-        <div class="card-content">
-            <a href="{% url 'registry-invoice-print' registry_id=object.registry.id pk=object.id %}" download>
-                Download <strong>Invoice</strong> as PDF
-            </a>
-        </div>
-    </div>
+    <a class="btn-large" href="{% url 'registry-invoice-print' registry_id=object.registry.id pk=object.id %}" download>
+        Download PDF
+    </a>
 </div>
 {% endblock %}
