@@ -6,7 +6,6 @@ from microinvoicer import micro_use_cases as muc
 
 from django.conf import settings
 from django.db import migrations
-from cryptography.fernet import InvalidToken
 import json
 
 
@@ -18,7 +17,7 @@ def import_sellers(apps, schema_editor):
         try:
             encrypted_data = user.datastore.encode("utf-8")
             plain_data = str(settings.CRYPTO_ENGINE.decrypt(encrypted_data), "utf-8")
-        except InvalidToken:
+        except:
             print("\t >> [warning] cannot decrypt invalid user data. raw data dump:")
             print(f"{encrypted_data!r}")
             plain_data = ""

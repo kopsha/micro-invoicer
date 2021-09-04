@@ -10,7 +10,6 @@ Making invoices has never been easier
 * [x] Contracts can be fixed (monthly) or timed
 * [x] Invoices can be timed or fixed
 * [ ] Issue invoices in more currencies
-* [ ] Render invoices in english, try [wkhtmltopdf](https://wkhtmltopdf.org/)
 * [ ] New invoice type for materials
 
 

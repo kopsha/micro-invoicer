@@ -4,9 +4,6 @@ from django.core.mail import send_mail
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.utils import timezone
-from django.conf import settings
-
-from cryptography.fernet import InvalidToken
 
 from .managers import MicroUserManager
 from . import micro_use_cases as muc
