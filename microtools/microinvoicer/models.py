@@ -108,7 +108,9 @@ class ServiceContract(models.Model):
     unit = models.CharField(max_length=2, choices=InvoicingUnits.choices)
     unit_rate = models.DecimalField(max_digits=16, decimal_places=2)
     invoicing_currency = models.CharField(max_length=3, choices=AvailableCurrencies.choices)
-    invoicing_description = models.CharField("Service description template", max_length=LONG_TEXT, blank=True)
+    invoicing_description = models.CharField(
+        "Service description template", max_length=LONG_TEXT, blank=True
+    )
 
     def __repr__(self) -> str:
         return f"{self.buyer!r}, {self.unit_rate} {self.currency}/{self.unit}"

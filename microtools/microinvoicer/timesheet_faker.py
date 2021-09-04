@@ -17,8 +17,7 @@ FAKE_TASKS_POOL = [
     "system api design",
     "system api implementation",
     "system api integration",
-    "performance profiling"
-    "{flavor} generic mock setup",
+    "performance profiling" "{flavor} generic mock setup",
     "{flavor} state manager",
     "{flavor} components architecture",
     "{flavor} android communication layer",
@@ -77,10 +76,7 @@ def create_random_tasks(activity, how_many, hours):
 
 
 def pick_task_names(flavor, count):
-    tasks = [
-        name.format(flavor=flavor).capitalize()
-        for name in random.sample(FAKE_TASKS_POOL, k=count)
-    ]
+    tasks = [name.format(flavor=flavor).capitalize() for name in random.sample(FAKE_TASKS_POOL, k=count)]
     return tasks
 
 

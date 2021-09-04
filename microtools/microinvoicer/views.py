@@ -46,7 +46,9 @@ class MicroHomeView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
             user = self.request.user
-            context["registries"] = user.registries.prefetch_related("seller", "contracts", "invoices").all()
+            context["registries"] = user.registries.prefetch_related(
+                "seller", "contracts", "invoices"
+            ).all()
 
         return context
 
@@ -130,6 +132,7 @@ class RegistryUpdateView(MicroFormMixin, UpdateView):
             )
             initial.update(seller_data)
         return initial
+
 
 class RegistryDeleteView(MicroFormMixin, DeleteView):
     model = models.MicroRegistry
