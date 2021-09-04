@@ -24,7 +24,7 @@
             <h5 align="center">
                 {{ object.quantity }} <sub><small>{{ object.unit }}</small></sub>
                 x {{ object.unit_rate|floatformat:0 }} <sub><small>{{ object.contract_currency }}/{{ object.unit }}</small></sub>
-                {% if object.conversion_rate != 1 %}
+                {% if object.conversion_rate %}
                 [ x {{ object.conversion_rate|floatformat:4 }} <sub><small>{{ object.currency }}/{{ object.contract_currency }}</small></sub> ]
                 {% endif %}
                 = {{ object.value|floatformat:2|intcomma }} <sub><small>{{ object.currency }}</small></sub>

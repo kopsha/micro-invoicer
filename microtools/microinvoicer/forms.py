@@ -65,11 +65,12 @@ class ServiceContractForm(FiscalEntityForm):
 
 
 class TimeInvoiceForm(forms.ModelForm):
+    conversion_rate = forms.DecimalField(required=False, help_text="to local currency (if applicable)")
+    override_description = forms.CharField(required=False, help_text="(optional)")
+
     class Meta:
         model = models.TimeInvoice
         fields = ["contract", "issue_date", "quantity", "conversion_rate"]
-
-    override_description = forms.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
         registry = kwargs.pop("registry")

@@ -144,7 +144,8 @@ class TimeInvoice(models.Model):
 
     @property
     def value(self):
-        return self.unit_rate * self.quantity * self.conversion_rate
+        conversion = self.conversion_rate or 1
+        return self.unit_rate * self.quantity * conversion
 
     @property
     def contract_currency(self):
