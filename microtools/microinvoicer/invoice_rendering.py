@@ -297,17 +297,21 @@ def render_invoice_page(pdf, invoice):
     pdf.showPage()
 
 
-def write_invoice_pdf(invoice):
+def render_pdf(invoice, fake_timesheet=False, language="ro"):
     locale.setlocale(locale.LC_ALL, "ro_RO")
 
     write_buffer = BytesIO()
     pdf = canvas.Canvas(filename=write_buffer, pagesize=A4)
-    pdf.setAuthor("python@micro-tools.fortech.ro")
+    pdf.setAuthor("microtools@fibonet.ro")
 
     render_invoice_page(pdf, invoice)
-    # render_activity_page(pdf, invoice)
+    if fake_timesheet:
+        render_activity_page(pdf, invoice)
 
     pdf.save()
     write_buffer.seek(0)
 
     return write_buffer
+
+if __name__ == "__main__":
+    print("This is a pure module, it cannot be executed.")

@@ -10,8 +10,7 @@ from django.contrib.auth.views import LoginView
 from django.forms.models import model_to_dict
 from django_registration.backends.one_step.views import RegistrationView
 
-from . import forms, models
-from . import micro_render
+from . import forms, models, invoice_rendering
 
 
 class IndexView(TemplateView):
@@ -285,7 +284,7 @@ class TimeInvoicePrintView(LoginRequiredMixin, DetailView):
     def render_to_response(self, context, **response_kwargs):
         """Returns content of generated pdf"""
         invoice = context["object"]
-        content = micro_render.write_invoice_pdf(invoice)  # content is a BytesIO object
+        content = invoice_rendering.render_pdf(invoice)  # content is a BytesIO object
         response = FileResponse(
             content,
             filename=f"{invoice.series_number}.pdf",
