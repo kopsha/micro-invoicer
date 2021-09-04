@@ -5,11 +5,11 @@ Making invoices has never been easier
 
 ## Back to basics
 
-* [ ] Migrate to Django models
+* [x] Migrate to Django models
 * [x] Add more registries (e.g. internal and external)
 * [x] Contracts can be fixed (monthly) or timed
 * [x] Invoices can be timed or fixed
-* [ ] Issue invoices in more currencies
+* [x] Issue invoices in more currencies
 * [ ] New invoice type for materials
 
 

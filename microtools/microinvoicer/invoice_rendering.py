@@ -1,15 +1,46 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import locale
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm
 from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from io import BytesIO
 
-import locale
+pdfmetrics.registerFont(TTFont("Helvetica Neue", "HelveticaNeue.ttc"))
+# some local settings, keep lowercase
+page_width, page_height = (21.0, 29.7)
+row_height = 0.5
+row_space = 0.1
+top_margin = page_height - 1.1
+bottom_margin = 0.7
+left_margin = 1.9
+right_margin = page_width - 1.1
+
+font_tiny = 8
+font_small = 10
+font_normal = 11
+font_subtitle = 14
+font_title = 20
+
+
+def local_translate(original, international):
+    translation = {
+        "mo": ("luni", "month(s)"),
+        "hr": ("ore", "hour(s)")
+    }
+    return translation.get(original, original)[international]
 
 
 def render_pdf(invoice, fake_timesheet=False):
     write_buffer = BytesIO()
     pdf = canvas.Canvas(filename=write_buffer, pagesize=A4)
-    pdf.setAuthor("microtools@fibonet.ro")
+    pdf.setAuthor("{} [{}]".format(invoice.seller.owner_fullname, invoice.seller.name))
+    pdf.setTitle(f"Invoice {invoice.series_number}")
+    pdf.setSubject("acc. contract {} / {}".format(invoice.contract.registration_no, invoice.contract.registration_date.strftime("%d-%b-%Y")))
+    pdf.setCreator("microtools@fibonet.ro")
 
     country = invoice.buyer.country
     if country == "RO":
@@ -49,27 +80,11 @@ def render_invoice_en(pdf, invoice):
     header = create_en_header_data(invoice)
     render_header(pdf, header)
     bottom = render_title(pdf, title)
-    bottom = render_invoice_subtitle(pdf, invoice, from_y=bottom)
-    bottom = render_invoice_items(pdf, invoice, from_y=bottom)
+    bottom = render_invoice_subtitle(pdf, invoice, from_y=bottom, international=True)
+    bottom = render_invoice_items(pdf, invoice, from_y=bottom, international=True)
 
     render_watermark(pdf)
     pdf.showPage()
-
-
-# some local settings, keep lowercase
-page_width, page_height = (21.0, 29.7)
-row_height = 0.5
-row_space = 0.1
-top_margin = page_height - 1.1
-bottom_margin = 0.7
-left_margin = 1.9
-right_margin = page_width - 1.1
-
-font_tiny = 8
-font_small = 10
-font_normal = 11
-font_subtitle = 14
-font_title = 20
 
 
 def to_cm(xu, yu):
@@ -79,20 +94,22 @@ def to_cm(xu, yu):
 def create_ro_header_data(invoice):
     header = dict()
     header["left"] = [
-        f"Furnizor: {invoice.seller.name}",
-        f"Nr. ORC: {invoice.seller.registration_id}",
-        f"CUI: {invoice.seller.fiscal_code}",
-        f"Sediul: {invoice.seller.address}",
-        f"Cont IBAN: {invoice.seller.bank_account}",
-        f"Banca: {invoice.seller.bank_name}",
+        "Furnizor:",
+        invoice.seller.name,
+        invoice.seller.registration_id,
+        invoice.seller.fiscal_code,
+        invoice.seller.address,
+        invoice.seller.bank_account,
+        invoice.seller.bank_name,
     ]
     header["right"] = [
-        f"Beneficiar: {invoice.buyer.name}",
-        f"Nr. ORC: {invoice.buyer.registration_id}",
-        f"CIF: {invoice.buyer.fiscal_code}",
-        f"Sediul: {invoice.buyer.address}",
-        f"Cont IBAN: {invoice.buyer.bank_account}",
-        f"Banca: {invoice.buyer.bank_name}",
+        "Beneficiar:",
+        invoice.buyer.name,
+        invoice.buyer.registration_id,
+        invoice.buyer.fiscal_code,
+        invoice.buyer.address,
+        invoice.buyer.bank_account,
+        invoice.buyer.bank_name,
     ]
     return header
 
@@ -100,36 +117,38 @@ def create_ro_header_data(invoice):
 def create_en_header_data(invoice):
     header = dict()
     header["left"] = [
-        f"Seller: {invoice.seller.name}",
-        f"Comm.Reg.: {invoice.seller.registration_id}",
-        f"Tax Code: {invoice.seller.fiscal_code}",
-        f"Address: {invoice.seller.address}",
-        f"Country: {invoice.seller.country}",
-        f"Bank account: {invoice.seller.bank_account}",
-        f"Bank name: {invoice.seller.bank_name}",
+        "Supplier:",
+        invoice.seller.name,
+        invoice.seller.registration_id,
+        invoice.seller.fiscal_code,
+        invoice.seller.address,
+        invoice.seller.country.name,
+        invoice.seller.bank_account,
+        invoice.seller.bank_name,
     ]
     header["right"] = [
-        f"Beneficiar: {invoice.buyer.name}",
-        f"Comm.Reg.: {invoice.buyer.registration_id}",
-        f"Tax Code: {invoice.buyer.fiscal_code}",
-        f"Address: {invoice.buyer.address}",
-        f"Country: {invoice.buyer.country}",
-        f"Bank account: {invoice.buyer.bank_account}",
-        f"Bank name: {invoice.buyer.bank_name}",
+        "Buyer:",
+        invoice.buyer.name,
+        invoice.buyer.registration_id,
+        invoice.buyer.fiscal_code,
+        invoice.buyer.address,
+        invoice.buyer.country.name,
+        invoice.buyer.bank_account,
+        invoice.buyer.bank_name,
     ]
     return header
 
 
 def render_header(pdf_canvas, header):
     # Assume A4 pagesize in portrait mode
-    pdf_canvas.setFont("Helvetica", font_small)
-
     for i, textline in enumerate(header["left"]):
+        pdf_canvas.setFont("Helvetica Neue" if i != 1 else "Helvetica-Bold", font_small)
         cx = left_margin
         cy = top_margin - i * row_height
         pdf_canvas.drawString(*to_cm(cx, cy), textline)
 
     for i, textline in enumerate(header["right"]):
+        pdf_canvas.setFont("Helvetica Neue" if i != 1 else "Helvetica-Bold", font_small)
         cx = right_margin
         cy = top_margin - i * row_height
         pdf_canvas.drawRightString(*to_cm(cx, cy), textline)
@@ -137,7 +156,7 @@ def render_header(pdf_canvas, header):
 
 def render_title(pdf_canvas, title):
     # Assume A4 pagesize in portrait mode
-    pdf_canvas.setFont("Helvetica", font_title)
+    pdf_canvas.setFont("Helvetica Neue", font_title)
 
     cx = page_width / 2
     cy = page_height - 8
@@ -148,7 +167,7 @@ def render_title(pdf_canvas, title):
 
 def render_activity_subtitle(pdf_canvas, activity, from_y):
     # Assume A4 pagesize in portrait mode
-    pdf_canvas.setFont("Helvetica", font_subtitle)
+    pdf_canvas.setFont("Helvetica Neue", font_subtitle)
 
     cx = page_width / 2
     cy = from_y - (row_height + 2 * row_space)
@@ -159,24 +178,24 @@ def render_activity_subtitle(pdf_canvas, activity, from_y):
     return cy
 
 
-def render_invoice_subtitle(pdf_canvas, invoice, from_y):
+def render_invoice_subtitle(pdf_canvas, invoice, from_y, international=False):
     # Assume A4 pagesize in portrait mode
-    pdf_canvas.setFont("Helvetica", font_subtitle)
+    pdf_canvas.setFont("Helvetica Neue", font_subtitle)
 
     cx = page_width / 2
     cy = from_y - (row_height + 2 * row_space)
 
-    pdf_canvas.drawRightString(*to_cm(cx - row_space, cy), "nr:")
+    pdf_canvas.drawRightString(*to_cm(cx - row_space, cy), "no:" if international else "nr:")
     pdf_canvas.drawString(*to_cm(cx + row_space, cy), invoice.series_number)
     cy -= row_height
-    pdf_canvas.drawRightString(*to_cm(cx - row_space, cy), "din:")
+    pdf_canvas.drawRightString(*to_cm(cx - row_space, cy), "date:" if international else "din:")
     pdf_canvas.drawString(*to_cm(cx + row_space, cy), invoice.issue_date.strftime("%d-%b-%Y"))
     cy -= row_height * 2
 
     return cy
 
 
-def render_invoice_items(pdf_canvas, invoice, from_y):
+def render_invoice_items(pdf_canvas, invoice, from_y, international=False):
     def draw_ruler(cy):
         pdf_canvas.setStrokeColorRGB(0, 0, 0)
         pdf_canvas.line(*to_cm(left_margin, cy - row_height / 2), *to_cm(right_margin, cy - row_height / 2))
@@ -190,12 +209,12 @@ def render_invoice_items(pdf_canvas, invoice, from_y):
 
     cy = from_y - (row_height + 12 * row_space)
     headings = [
-        ("Nr.", 2.5),
-        ("Denumirea produsului / serviciului", 6),
-        ("Cant.", 11),
-        ("U.M.", 13),
-        ("Pret unitar", 15.5),
-        ("Valoarea", 18.35),
+        ("No" if international else "Nr.", 2.5),
+        ("Service description" if international else "Denumirea serviciului", 6),
+        ("Qty" if international else "Cant.", 11),
+        ("Unit" if international else "U.M.", 13),
+        ("Unit price" if international else "Pret unitar", 15.5),
+        ("Amount" if international else "Valoarea", 18.35),
     ]
 
     cy -= row_height / 2
@@ -212,52 +231,61 @@ def render_invoice_items(pdf_canvas, invoice, from_y):
             desc_line_1 = invoice.description[:split_at]
             desc_line_2 = invoice.description[split_at + 1 :]
     elif not invoice.description:
-        desc_line_1 = "Furnizare servicii software,"
-        desc_line_2 = "cf. contract {} / {}".format(
-            invoice.contract.registration_no,
-            invoice.contract.registration_date.strftime("%d-%b-%Y")
-        )
+        desc_line_1 = "Software development services," if international else "Furnizare servicii software,"
+        desc_line_2 = "acc. contract " if international else "cf. contract "
+        desc_line_2 += "{} / {}".format(invoice.contract.registration_no, invoice.contract.registration_date.strftime("%d-%b-%Y"))
 
-    pdf_canvas.setFont("Helvetica", font_normal)
+    print(desc_line_1)
+    print(desc_line_2)
+
+    pdf_canvas.setFont("Helvetica Neue", font_normal)
     pdf_canvas.drawCentredString(2.5 * cm, cy * cm, "1")
     pdf_canvas.drawCentredString(6 * cm, (cy + row_height * 0.4) * cm, desc_line_1)
     pdf_canvas.drawCentredString(6 * cm, (cy - row_height * 0.45) * cm, desc_line_2)
 
     pdf_canvas.drawCentredString(11 * cm, cy * cm, locale.str(invoice.quantity))
-    pdf_canvas.drawCentredString(13 * cm, cy * cm, "ore")
+    unit = local_translate(invoice.unit, international)
+    pdf_canvas.drawCentredString(13 * cm, cy * cm, unit)
 
     pdf_canvas.drawCentredString(
-        15.5 * cm, cy * cm, locale.currency(invoice.unit_rate * invoice.conversion_rate)
+        15.5 * cm, cy * cm, locale.currency(invoice.unit_rate * (invoice.conversion_rate or 1), grouping=True, international=international)
     )
-    pdf_canvas.drawCentredString(18.35 * cm, cy * cm, locale.currency(invoice.value, grouping=True))
+    pdf_canvas.drawCentredString(18.35 * cm, cy * cm, locale.currency(invoice.value, grouping=True, international=international))
 
     cy -= row_height / 2
     cy = draw_ruler(cy)
 
     pdf_canvas.setFont("Helvetica-Bold", font_small)
-    pdf_canvas.drawCentredString(15.5 * cm, cy * cm, "Total de plata")
+    pdf_canvas.drawCentredString(15.5 * cm, cy * cm, "Total" if international else "Total de plata")
     pdf_canvas.setFont("Helvetica-Bold", font_normal)
-    pdf_canvas.drawCentredString(18.35 * cm, cy * cm, locale.currency(invoice.value, grouping=True))
+    pdf_canvas.drawCentredString(18.35 * cm, cy * cm, locale.currency(invoice.value, grouping=True, international=international))
 
     cy -= row_height * 2
-    pdf_canvas.setFont("Helvetica", font_small)
-    pdf_canvas.drawString(4 * cm, cy * cm, "Curs BNR")
-    pdf_canvas.drawString(
-        4 * cm,
-        (cy - row_height) * cm,
-        f'1 Euro = {locale.format_string("%.4f", invoice.conversion_rate)} lei',
-    )
+    if invoice.conversion_rate:
+        pdf_canvas.setFont("Helvetica Neue", font_small)
+        pdf_canvas.drawString(4 * cm, cy * cm, "Curs BNR")
+        pdf_canvas.drawString(
+            4 * cm,
+            (cy - row_height) * cm,
+            f'1 Euro = {locale.format_string("%.4f", invoice.conversion_rate)} lei',
+        )
 
     cy -= row_height * 9
-    pdf_canvas.drawCentredString(4 * cm, cy * cm, "Semnatura si")
-    pdf_canvas.drawCentredString(4 * cm, (cy - row_height) * cm, "stampila furnizor")
-    pdf_canvas.drawCentredString(17 * cm, cy * cm, "Semnatura")
-    pdf_canvas.drawCentredString(17 * cm, (cy - row_height) * cm, "de primire")
+    if international:
+        pdf_canvas.setFont("Helvetica Neue", font_tiny)
+        pdf_canvas.drawCentredString(11 * cm, cy * cm, "* VAT reverse charge (dir. 2008/8/EC)")
+        pdf_canvas.drawCentredString(11 * cm, (cy - row_height) * cm, "** non-taxable in Romania art. 268 (1)")
+        pdf_canvas.drawCentredString(11 * cm, (cy - 2 * row_height) * cm, "and art. 278 (2) of Romanian Fiscal Code")
+    else:
+        pdf_canvas.drawCentredString(4 * cm, cy * cm, "Semnatura si")
+        pdf_canvas.drawCentredString(4 * cm, (cy - row_height) * cm, "stampila furnizor")
+        pdf_canvas.drawCentredString(17 * cm, cy * cm, "Semnatura")
+        pdf_canvas.drawCentredString(17 * cm, (cy - row_height) * cm, "de primire")
 
-    pdf_canvas.setFont("Helvetica", font_tiny)
-    pdf_canvas.drawCentredString(11 * cm, cy * cm, "Prezenta factura circula")
-    pdf_canvas.drawCentredString(11 * cm, (cy - row_height) * cm, "fara semnatura si stampila,")
-    pdf_canvas.drawCentredString(11 * cm, (cy - 2 * row_height) * cm, "cf. art. 319 (29) din Codul Fiscal")
+        pdf_canvas.setFont("Helvetica Neue", font_tiny)
+        pdf_canvas.drawCentredString(11 * cm, cy * cm, "Prezenta factura circula")
+        pdf_canvas.drawCentredString(11 * cm, (cy - row_height) * cm, "fara semnatura si stampila,")
+        pdf_canvas.drawCentredString(11 * cm, (cy - 2 * row_height) * cm, "cf. art. 319 (29) din Codul Fiscal")
 
     return cy
 
@@ -270,7 +298,7 @@ def render_tasks_table(pdf_canvas, activity, from_y):
         ("Descriere", 11),
         ("Ore", 18),
     ]
-    pdf_canvas.setFont("Helvetica", font_small)
+    pdf_canvas.setFont("Helvetica Neue", font_small)
     cy = from_y - 2 * (row_height + row_space)
 
     for h, x in headings:
@@ -282,7 +310,7 @@ def render_tasks_table(pdf_canvas, activity, from_y):
     )
 
     # contents
-    pdf_canvas.setFont("Helvetica", font_normal)
+    pdf_canvas.setFont("Helvetica Neue", font_normal)
     cy -= row_height * 2
 
     for task in activity.tasks:
@@ -326,7 +354,7 @@ def render_signatures(pdf_canvas, invoice, from_y=(page_height / 2)):
         "L.S.",
     ]
 
-    pdf_canvas.setFont("Helvetica", font_normal)
+    pdf_canvas.setFont("Helvetica Neue", font_normal)
 
     cy = from_y - 6 * (row_height + row_space)
     for t in footer_left:
