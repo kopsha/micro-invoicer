@@ -12,6 +12,7 @@ django = "*"
 django-registration = "*"
 django-material = "*"
 reportlab = "*"
+django-countries = "*"
 
 [requires]
 python_version = "3.9"

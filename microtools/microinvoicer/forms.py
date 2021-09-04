@@ -1,5 +1,6 @@
 from django import forms
 from django_registration.forms import RegistrationForm
+from django_countries.fields import CountryField
 from material import Layout, Row
 from . import models
 
@@ -31,24 +32,17 @@ class FiscalEntityForm(forms.ModelForm):
     registration_id = forms.CharField(max_length=models.SHORT_TEXT)
     fiscal_code = forms.CharField(max_length=models.SHORT_TEXT)
     address = forms.CharField(widget=forms.Textarea)
+    country = CountryField().formfield()
     bank_account = forms.CharField(max_length=models.SHORT_TEXT)
     bank_name = forms.CharField(max_length=models.LONG_TEXT)
 
 
-class ProfileUpdateForm(EditablesMixin, forms.ModelForm):
+class ProfileUpdateForm(EditablesMixin, FiscalEntityForm):
     class Meta:
         model = models.MicroUser
         fields = ["email", "first_name", "last_name"]
 
-    name = forms.CharField(max_length=80, required=True, strip=True, label="Company name")
-    owner_fullname = forms.CharField(max_length=80, required=True, strip=True)
-    registration_id = forms.CharField(max_length=20, required=True, strip=True)
-    fiscal_code = forms.CharField(max_length=15, required=True, strip=True)
-    address = forms.CharField(max_length=240, required=True, strip=True)
-    bank_account = forms.CharField(max_length=32, required=True, strip=True)
-    bank_name = forms.CharField(max_length=80, required=True, strip=True)
-
-    editables = {"address", "bank_account", "bank_name"}
+    editables = {"address", "country", "bank_account", "bank_name"}
 
 
 class ProfileSetupForm(ProfileUpdateForm):
@@ -61,6 +55,7 @@ class ProfileSetupForm(ProfileUpdateForm):
         "registration_id",
         "fiscal_code",
         "address",
+        "country",
         "bank_name",
         "bank_account",
     }

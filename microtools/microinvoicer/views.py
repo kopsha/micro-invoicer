@@ -87,6 +87,7 @@ class ProfileUpdateView(MicroFormMixin, UpdateView):
                     "registration_id",
                     "fiscal_code",
                     "address",
+                    "country",
                     "bank_account",
                     "bank_name",
                 ],
@@ -98,6 +99,7 @@ class ProfileUpdateView(MicroFormMixin, UpdateView):
         """Update only seller info"""
         seller = self.object.seller
         seller.address = form.cleaned_data["address"]
+        seller.country = form.cleaned_data["country"]
         seller.bank_account = form.cleaned_data["bank_account"]
         seller.bank_name = form.cleaned_data["bank_name"]
         seller.save()
@@ -179,6 +181,7 @@ class ContractUpdateView(MicroFormMixin, UpdateView):
                     "registration_id",
                     "fiscal_code",
                     "address",
+                    "country",
                     "bank_account",
                     "bank_name",
                 ],

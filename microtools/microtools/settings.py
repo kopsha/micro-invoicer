@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django_registration",
     "material",
+    "django_countries",
 ] + LOCAL_APPS
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -86,3 +87,5 @@ ACCOUNT_ACTIVATION_DAYS = 7
 STATIC_URL = "/static/"
 
 SECRET_KEY = os.environ.get("MICRO_SERVER_SECRET", "fake-key please update on deployment")
+
+COUNTRIES_ONLY = ['RO', 'CH']
