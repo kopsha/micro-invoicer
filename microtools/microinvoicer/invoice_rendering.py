@@ -237,9 +237,6 @@ def render_invoice_items(pdf_canvas, invoice, from_y, international=False):
             invoice.contract.registration_no, invoice.contract.registration_date.strftime("%d-%b-%Y")
         )
 
-    print(desc_line_1)
-    print(desc_line_2)
-
     pdf_canvas.setFont("Helvetica Neue", font_normal)
     pdf_canvas.drawCentredString(2.5 * cm, cy * cm, "1")
     pdf_canvas.drawCentredString(6 * cm, (cy + row_height * 0.4) * cm, desc_line_1)
