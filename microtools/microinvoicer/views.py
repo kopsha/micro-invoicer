@@ -10,8 +10,7 @@ from django.contrib.auth.views import LoginView
 from django.forms.models import model_to_dict
 from django_registration.backends.one_step.views import RegistrationView
 
-from . import forms, models
-from . import micro_render
+from . import forms, models, invoice_rendering
 
 
 class IndexView(TemplateView):
@@ -47,8 +46,9 @@ class MicroHomeView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
             user = self.request.user
-            context["registries"] = user.registries.prefetch_related("contracts", "invoices").all()
-            context["seller"] = user.seller
+            context["registries"] = user.registries.prefetch_related(
+                "seller", "contracts", "invoices"
+            ).all()
 
         return context
 
@@ -67,53 +67,28 @@ class MicroFormMixin(LoginRequiredMixin):
 
 
 class ProfileUpdateView(MicroFormMixin, UpdateView):
-    """Updates only some seller fields"""
-
     model = models.MicroUser
-    form_class = forms.ProfileUpdateForm
     template_name = "profile.html"
     form_title = "Your Profile"
+    fields = ["first_name", "last_name"]
 
     def get_object(self):
         return self.request.user
 
-    def get_initial(self):
-        initial = super().get_initial()
-        if seller_instance := self.request.user.seller:
-            seller = model_to_dict(
-                seller_instance,
-                fields=[
-                    "name",
-                    "owner_fullname",
-                    "registration_id",
-                    "fiscal_code",
-                    "address",
-                    "bank_account",
-                    "bank_name",
-                ],
-            )
-            initial.update(seller)
-        return initial
-
-    def form_valid(self, form):
-        """Update only seller info"""
-        seller = self.object.seller
-        seller.address = form.cleaned_data["address"]
-        seller.bank_account = form.cleaned_data["bank_account"]
-        seller.bank_name = form.cleaned_data["bank_name"]
-        seller.save()
-        return super().form_valid(form)
-
 
 class ProfileSetupView(ProfileUpdateView):
-    """
-    Updates all user's fiscal information.
-    """
-
-    form_class = forms.ProfileSetupForm
+    model = models.MicroUser
     form_title = "Setup fiscal information"
+    fields = ["email", "first_name", "last_name"]
+
+
+class RegistryCreateView(MicroFormMixin, CreateView):
+    model = models.MicroRegistry
+    form_title = "Define new registry"
+    form_class = forms.RegistryForm
 
     def form_valid(self, form):
+        form.instance.user = self.request.user
         seller_data = {field: form.cleaned_data[field] for field in models.FiscalEntity._meta.get_fields()}
         seller = models.FiscalEntity(seller_data)
         seller.save()
@@ -121,20 +96,42 @@ class ProfileSetupView(ProfileUpdateView):
         return super().form_valid(form)
 
 
-class RegistryCreateView(MicroFormMixin, CreateView):
-    model = models.MicroRegistry
-    form_title = "Define new registry"
-    fields = ["display_name", "invoice_series", "next_invoice_no"]
-
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        return super().form_valid(form)
-
-
 class RegistryUpdateView(MicroFormMixin, UpdateView):
     model = models.MicroRegistry
     form_title = "Update registry"
-    fields = ["display_name", "invoice_series", "next_invoice_no"]
+    form_class = forms.RegistryForm
+
+    def form_valid(self, form):
+        seller = self.object.seller
+        seller.name = form.cleaned_data["name"]
+        seller.owner_fullname = form.cleaned_data["owner_fullname"]
+        seller.registration_id = form.cleaned_data["registration_id"]
+        seller.fiscal_code = form.cleaned_data["fiscal_code"]
+        seller.address = form.cleaned_data["address"]
+        seller.country = form.cleaned_data["country"]
+        seller.bank_account = form.cleaned_data["bank_account"]
+        seller.bank_name = form.cleaned_data["bank_name"]
+        seller.save()
+        return super().form_valid(form)
+
+    def get_initial(self):
+        initial = super().get_initial()
+        if seller_instance := self.object.seller:
+            seller_data = model_to_dict(
+                seller_instance,
+                fields=[
+                    "name",
+                    "owner_fullname",
+                    "registration_id",
+                    "fiscal_code",
+                    "address",
+                    "country",
+                    "bank_account",
+                    "bank_name",
+                ],
+            )
+            initial.update(seller_data)
+        return initial
 
 
 class RegistryDeleteView(MicroFormMixin, DeleteView):
@@ -180,6 +177,7 @@ class ContractUpdateView(MicroFormMixin, UpdateView):
                     "registration_id",
                     "fiscal_code",
                     "address",
+                    "country",
                     "bank_account",
                     "bank_name",
                 ],
@@ -235,7 +233,7 @@ class TimeInvoiceCreateView(MicroFormMixin, CreateView):
         contract = form.instance.contract
 
         form.instance.registry = registry
-        form.instance.seller = registry.user.seller
+        form.instance.seller = registry.seller
         form.instance.buyer = contract.buyer
         form.instance.series = registry.invoice_series
         form.instance.number = registry.next_invoice_no
@@ -285,7 +283,7 @@ class TimeInvoicePrintView(LoginRequiredMixin, DetailView):
     def render_to_response(self, context, **response_kwargs):
         """Returns content of generated pdf"""
         invoice = context["object"]
-        content = micro_render.write_invoice_pdf(invoice)  # content is a BytesIO object
+        content = invoice_rendering.render_pdf(invoice)  # content is a BytesIO object
         response = FileResponse(
             content,
             filename=f"{invoice.series_number}.pdf",

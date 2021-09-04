@@ -1,15 +1,11 @@
 from django.db import models
-
 from django.core.mail import send_mail
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.utils import timezone
-from django.conf import settings
-
-from cryptography.fernet import InvalidToken
+from django_countries.fields import CountryField
 
 from .managers import MicroUserManager
-from . import micro_use_cases as muc
 
 
 LONG_TEXT = 255
@@ -42,6 +38,7 @@ class FiscalEntity(models.Model):
     registration_id = models.CharField(max_length=SHORT_TEXT)
     fiscal_code = models.CharField(max_length=SHORT_TEXT)
     address = models.TextField()
+    country = CountryField(default="RO")
     bank_account = models.CharField(max_length=SHORT_TEXT)
     bank_name = models.CharField(max_length=LONG_TEXT)
 
@@ -56,7 +53,6 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
     """User account, which holds the service provider (seller) entity"""
 
     id = models.AutoField(primary_key=True)
-    seller = models.OneToOneField(FiscalEntity, null=True, on_delete=models.CASCADE)
 
     first_name = models.CharField(max_length=SHORT_TEXT)
     last_name = models.CharField(max_length=SHORT_TEXT)
@@ -86,6 +82,7 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
 class MicroRegistry(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(MicroUser, related_name="registries", on_delete=models.CASCADE)
+    seller = models.ForeignKey(FiscalEntity, related_name="+", on_delete=models.CASCADE)
 
     display_name = models.CharField(max_length=SHORT_TEXT)
     invoice_series = models.CharField(max_length=REALLY_SHORT)
@@ -105,13 +102,15 @@ class ServiceContract(models.Model):
     buyer = models.ForeignKey(FiscalEntity, related_name="+", on_delete=models.RESTRICT)
     registry = models.ForeignKey(MicroRegistry, related_name="contracts", on_delete=models.CASCADE)
 
-    registration_no = models.CharField(max_length=SHORT_TEXT)
-    registration_date = models.DateField()
+    registration_no = models.CharField("Contract number", max_length=SHORT_TEXT)
+    registration_date = models.DateField("Contract date")
     currency = models.CharField(max_length=3, choices=AvailableCurrencies.choices)
     unit = models.CharField(max_length=2, choices=InvoicingUnits.choices)
     unit_rate = models.DecimalField(max_digits=16, decimal_places=2)
     invoicing_currency = models.CharField(max_length=3, choices=AvailableCurrencies.choices)
-    invoicing_description = models.CharField(max_length=LONG_TEXT)
+    invoicing_description = models.CharField(
+        "Service description template", max_length=LONG_TEXT, blank=True
+    )
 
     def __repr__(self) -> str:
         return f"{self.buyer!r}, {self.unit_rate} {self.currency}/{self.unit}"
@@ -130,7 +129,7 @@ class TimeInvoice(models.Model):
     series = models.CharField(max_length=REALLY_SHORT)
     number = models.IntegerField()
     status = models.IntegerField(choices=InvoiceStatus.choices)
-    description = models.CharField(max_length=LONG_TEXT)
+    description = models.CharField(max_length=LONG_TEXT, blank=True)
     currency = models.CharField(max_length=3, choices=AvailableCurrencies.choices)
     conversion_rate = models.DecimalField(
         max_digits=16, decimal_places=4, null=True
@@ -147,7 +146,8 @@ class TimeInvoice(models.Model):
 
     @property
     def value(self):
-        return self.unit_rate * self.quantity * self.conversion_rate
+        conversion = self.conversion_rate or 1
+        return self.unit_rate * self.quantity * conversion
 
     @property
     def contract_currency(self):

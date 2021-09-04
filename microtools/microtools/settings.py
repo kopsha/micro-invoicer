@@ -2,7 +2,6 @@
 Django settings for microtools project.
 """
 import os
-from cryptography.fernet import Fernet
 
 
 DEBUG = True
@@ -21,6 +20,7 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django_registration",
     "material",
+    "django_countries",
 ] + LOCAL_APPS
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -87,5 +87,5 @@ ACCOUNT_ACTIVATION_DAYS = 7
 STATIC_URL = "/static/"
 
 SECRET_KEY = os.environ.get("MICRO_SERVER_SECRET", "fake-key please update on deployment")
-MICRO_USER_SECRET = os.environ.get("MICRO_USER_SECRET", b"fake-key please update on deployment")
-CRYPTO_ENGINE = Fernet(MICRO_USER_SECRET)
+
+COUNTRIES_ONLY = ["RO", "CH"]

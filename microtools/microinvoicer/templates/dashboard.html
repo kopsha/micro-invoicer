@@ -3,7 +3,7 @@
 <div class="row" id="dashboard">
     {% for registry in registries %}
         <h5><a style="text-transform: uppercase;" href='{% url "registry-update" pk=registry.id %}'>
-            {{ registry.display_name }}
+            {{ registry.seller.name }} - {{ registry.display_name }}
         </a></h5>
 
         <table>

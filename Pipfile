@@ -6,13 +6,13 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-sqlparse = "*"
 pytest = "*"
+sqlparse = "*"
 django = "*"
 django-registration = "*"
 django-material = "*"
 reportlab = "*"
-cryptography = "*"
+django-countries = "*"
 
 [requires]
 python_version = "3.9"
