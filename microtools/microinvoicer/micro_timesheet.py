@@ -14,10 +14,11 @@ FAKE_TASKS_POOL = [
     "system architecture updates",
     "release notes",
     "system componend design",
-    "system api design",
-    "system api implementation",
-    "system api integration",
-    "performance profiling" "{flavor} generic mock setup",
+    "public API design",
+    "public API implementation",
+    "public API integration",
+    "{flavor} performance profiling",
+    "{flavor} generic mock setup",
     "{flavor} state manager",
     "{flavor} components architecture",
     "{flavor} android communication layer",
@@ -44,10 +45,10 @@ FAKE_TASKS_POOL = [
 ]
 
 
-def create_fake_timesheet(contract_id, hours, flavor, project_id):
+def fake_timesheet(hours, flavor, project_id):
     start_date = previous_month()
-    timesheet = dict(contract_id=contract_id, start_date=start_date, flavor=flavor, project_id=project_id)
-    how_many = random.randrange(8, stop=21)
+    timesheet = dict(start_date=start_date, flavor=flavor, project_id=project_id)
+    how_many = random.randrange(8, stop=18)
     timesheet["tasks"] = create_random_tasks(timesheet, how_many, hours=hours)
 
     return timesheet

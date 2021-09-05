@@ -10,7 +10,7 @@ from django.contrib.auth.views import LoginView
 from django.forms.models import model_to_dict
 from django_registration.backends.one_step.views import RegistrationView
 
-from . import forms, models, invoice_rendering
+from . import forms, models, pdf_rendering, micro_timesheet
 
 
 class IndexView(TemplateView):
@@ -273,7 +273,6 @@ class TimeInvoiceDetailView(LoginRequiredMixin, DetailView):
         return super().get_context_data(**kwargs)
 
 
-# TODO: render external invoice in english
 class TimeInvoicePrintView(LoginRequiredMixin, DetailView):
     """Download invoice as PDF file"""
 
@@ -283,10 +282,30 @@ class TimeInvoicePrintView(LoginRequiredMixin, DetailView):
     def render_to_response(self, context, **response_kwargs):
         """Returns content of generated pdf"""
         invoice = context["object"]
-        content = invoice_rendering.render_pdf(invoice)  # content is a BytesIO object
+        content = pdf_rendering.render_invoice(invoice)
         response = FileResponse(
             content,
             filename=f"{invoice.series_number}.pdf",
+            as_attachment=True,
+            content_type="application/pdf",
+        )
+        return response
+
+
+class TimeInvoiceFakeTimesheetView(LoginRequiredMixin, DetailView):
+    """Generate fake timesheet as PDF file"""
+
+    model = models.TimeInvoice
+    response_class = FileResponse
+
+    def render_to_response(self, context, **response_kwargs):
+        """Returns content of generated pdf"""
+        invoice = context["object"]
+        timesheet = micro_timesheet.fake_timesheet(invoice.quantity, "Meditatii", "Catalog Online")
+        content = pdf_rendering.render_timesheet(invoice, timesheet)
+        response = FileResponse(
+            content,
+            filename=f"{invoice.series_number}-timesheet.pdf",
             as_attachment=True,
             content_type="application/pdf",
         )

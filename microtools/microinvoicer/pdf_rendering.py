@@ -9,6 +9,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from io import BytesIO
 
+
 pdfmetrics.registerFont(TTFont("Helvetica Neue", "HelveticaNeue.ttc"))
 # some local settings, keep lowercase
 page_width, page_height = (21.0, 29.7)
@@ -26,12 +27,35 @@ font_subtitle = 14
 font_title = 20
 
 
-def local_translate(original, international):
-    translation = {"mo": ("luni", "month(s)"), "hr": ("ore", "hour(s)")}
-    return translation.get(original, original)[international]
+def render_timesheet(invoice, timesheet):
+    write_buffer = BytesIO()
+    pdf = canvas.Canvas(filename=write_buffer, pagesize=A4)
+    pdf.setAuthor("{} [{}]".format(invoice.seller.owner_fullname, invoice.seller.name))
+    pdf.setTitle(f"Timesheet for {invoice.series_number}")
+    pdf.setSubject(
+        "acc. contract {} / {}".format(
+            invoice.contract.registration_no, invoice.contract.registration_date.strftime("%d-%b-%Y")
+        )
+    )
+    pdf.setCreator("microtools@fibonet.ro")
+
+    country = invoice.buyer.country
+    if country == "RO":
+        locale.setlocale(locale.LC_ALL, "ro_RO")
+        render_timesheet_ro(pdf, invoice, timesheet)
+    elif country == "CH":
+        locale.setlocale(locale.LC_ALL, "en_IE")
+        render_timesheet_en(pdf, invoice, timesheet)
+    else:
+        raise RuntimeError(f"Locale settings not defined for {country}")
+
+    pdf.save()
+    write_buffer.seek(0)
+
+    return write_buffer
 
 
-def render_pdf(invoice, fake_timesheet=False):
+def render_invoice(invoice):
     write_buffer = BytesIO()
     pdf = canvas.Canvas(filename=write_buffer, pagesize=A4)
     pdf.setAuthor("{} [{}]".format(invoice.seller.owner_fullname, invoice.seller.name))
@@ -47,8 +71,6 @@ def render_pdf(invoice, fake_timesheet=False):
     if country == "RO":
         locale.setlocale(locale.LC_ALL, "ro_RO")
         render_invoice_ro(pdf, invoice)
-        if fake_timesheet:
-            render_activity_page(pdf, invoice)
     elif country == "CH":
         locale.setlocale(locale.LC_ALL, "en_IE")
         render_invoice_en(pdf, invoice)
@@ -89,6 +111,11 @@ def render_invoice_en(pdf, invoice):
 
 def to_cm(xu, yu):
     return (xu * cm, yu * cm)
+
+
+def translate_units(original, international):
+    translation = {"mo": ("luni", "month(s)"), "hr": ("ore", "hour(s)")}
+    return translation.get(original, original)[international]
 
 
 def create_ro_header_data(invoice):
@@ -165,14 +192,14 @@ def render_title(pdf_canvas, title):
     return cy
 
 
-def render_activity_subtitle(pdf_canvas, activity, from_y):
+def render_activity_subtitle(pdf_canvas, start_date, from_y):
     # Assume A4 pagesize in portrait mode
     pdf_canvas.setFont("Helvetica Neue", font_subtitle)
 
     cx = page_width / 2
     cy = from_y - (row_height + 2 * row_space)
 
-    pdf_canvas.drawString(*to_cm(cx + row_space, cy), activity.start_date.strftime("%B %Y"))
+    pdf_canvas.drawString(*to_cm(cx + row_space, cy), start_date.strftime("%B %Y"))
     cy -= row_height * 2
 
     return cy
@@ -243,7 +270,7 @@ def render_invoice_items(pdf_canvas, invoice, from_y, international=False):
     pdf_canvas.drawCentredString(6 * cm, (cy - row_height * 0.45) * cm, desc_line_2)
 
     pdf_canvas.drawCentredString(11 * cm, cy * cm, locale.str(invoice.quantity))
-    unit = local_translate(invoice.unit, international)
+    unit = translate_units(invoice.unit, international)
     pdf_canvas.drawCentredString(13 * cm, cy * cm, unit)
 
     pdf_canvas.drawCentredString(
@@ -303,13 +330,13 @@ def render_invoice_items(pdf_canvas, invoice, from_y, international=False):
     return cy
 
 
-def render_tasks_table(pdf_canvas, activity, from_y):
+def render_tasks_table(pdf_canvas, tasks, from_y, international=False):
     # table header
     headings = [
-        ("Data", 4),
-        ("Cod client", 7),
-        ("Descriere", 11),
-        ("Ore", 18),
+        ("Date" if international else "Data", 4),
+        ("Project" if international else "Proiect", 7),
+        ("Task" if international else "Activitate", 11),
+        ("Hours" if international else "Ore", 18),
     ]
     pdf_canvas.setFont("Helvetica Neue", font_small)
     cy = from_y - 2 * (row_height + row_space)
@@ -324,14 +351,14 @@ def render_tasks_table(pdf_canvas, activity, from_y):
 
     # contents
     pdf_canvas.setFont("Helvetica Neue", font_normal)
-    cy -= row_height * 2
+    cy -= row_height * 2 - row_space
 
-    for task in activity.tasks:
+    for task in tasks:
         # start_date, name, duration, client
-        pdf_canvas.drawCentredString(*to_cm(4, cy), task.date.strftime("%Y-%m-%d"))
-        pdf_canvas.drawCentredString(*to_cm(7, cy), task.project_id)
-        pdf_canvas.drawString(*to_cm(9, cy), task.name)
-        pdf_canvas.drawCentredString(*to_cm(18, cy), str(int(task.duration)))
+        pdf_canvas.drawCentredString(*to_cm(4, cy), task["date"].strftime("%Y-%m-%d"))
+        pdf_canvas.drawCentredString(*to_cm(7, cy), task["project"])
+        pdf_canvas.drawString(*to_cm(9, cy), task["name"])
+        pdf_canvas.drawCentredString(*to_cm(18, cy), str(int(task["duration"])))
         cy -= row_height + row_space
 
     pdf_canvas.line(
@@ -342,29 +369,25 @@ def render_tasks_table(pdf_canvas, activity, from_y):
     # totals
     pdf_canvas.setFont("Helvetica-Bold", font_normal)
     pdf_canvas.drawRightString(*to_cm(18 - 2, cy), "Total")
-    pdf_canvas.drawCentredString(*to_cm(18, cy), str(activity.duration))
+    pdf_canvas.drawCentredString(*to_cm(18, cy), str(sum([t["duration"] for t in tasks])))
 
     return cy
 
 
-def render_signatures(pdf_canvas, invoice, from_y=(page_height / 2)):
+def render_signatures(pdf_canvas, invoice, from_y=(page_height / 2), international=False):
 
     footer_left = [
-        "Furnizor:",
+        "Supplier" if international else "Furnizor:",
         "",
         invoice.seller.name,
         invoice.seller.owner_fullname,
-        "",
-        "L.S.",
     ]
 
     footer_right = [
-        "Beneficiar:",
+        "Buyer:" if international else "Beneficiar:",
         "",
         invoice.buyer.name,
         invoice.buyer.owner_fullname,
-        "",
-        "L.S.",
     ]
 
     pdf_canvas.setFont("Helvetica Neue", font_normal)
@@ -389,14 +412,31 @@ def render_watermark(pdf):
     pdf.drawRightString(*to_cm(right_margin, bottom_margin), ".. micro-tools.fibonet.ro ..")
 
 
-def render_activity_page(pdf, invoice):
-    title = "Raport de activitate"
+def render_timesheet_ro(pdf, invoice, timesheet):
+    header = create_ro_header_data(invoice)
+    render_header(pdf, header)
 
-    render_header(pdf, invoice)
+    title = "Raport de activitate"
     bottom = render_title(pdf, title)
-    bottom = render_activity_subtitle(pdf, invoice.activity, from_y=bottom)
-    bottom = render_tasks_table(pdf, invoice.activity, from_y=bottom)
+    bottom = render_activity_subtitle(pdf, timesheet["start_date"], from_y=bottom)
+
+    bottom = render_tasks_table(pdf, timesheet["tasks"], from_y=bottom)
     bottom = render_signatures(pdf, invoice, from_y=bottom)
+    render_watermark(pdf)
+
+    pdf.showPage()
+
+
+def render_timesheet_en(pdf, invoice, timesheet):
+    header = create_en_header_data(invoice)
+    render_header(pdf, header)
+
+    title = "Timesheet report"
+    bottom = render_title(pdf, title)
+    bottom = render_activity_subtitle(pdf, timesheet["start_date"], from_y=bottom)
+
+    bottom = render_tasks_table(pdf, timesheet["tasks"], from_y=bottom, international=True)
+    bottom = render_signatures(pdf, invoice, from_y=bottom, international=True)
     render_watermark(pdf)
 
     pdf.showPage()

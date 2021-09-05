@@ -47,6 +47,11 @@ urlpatterns = [
         views.TimeInvoicePrintView.as_view(),
         name="registry-invoice-print",
     ),
+    path(
+        "registry/<registry_id>/invoice/<pk>/timesheet",
+        views.TimeInvoiceFakeTimesheetView.as_view(),
+        name="registry-invoice-timesheet",
+    ),
     path("home/", views.MicroHomeView.as_view(), name="home"),
     path("", views.IndexView.as_view(), name="index"),
 ]

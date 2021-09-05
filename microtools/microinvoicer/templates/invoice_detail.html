@@ -34,8 +34,15 @@
     <br>
 </div>
 <div class="row">
-    <a class="btn-large" href="{% url 'registry-invoice-print' registry_id=object.registry.id pk=object.id %}" download>
-        Download PDF
-    </a>
+    <div class="col center-align">
+        <a class="btn-large" href="{% url 'registry-invoice-print' registry_id=object.registry.id pk=object.id %}" download>
+            Download PDF
+        </a>
+    </div>
+        <a class="btn-large" href="{% url 'registry-invoice-timesheet' registry_id=object.registry.id pk=object.id %}" download>
+            Fake Timesheet PDF
+        </a>
+    <div class="col center-align">
+    </div>
 </div>
 {% endblock %}
