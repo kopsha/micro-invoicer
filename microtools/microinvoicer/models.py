@@ -60,8 +60,6 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(default=timezone.now)
-    datastore = models.TextField(blank=True, default="")
-    crc = models.CharField(max_length=10, default="0x0")
 
     objects = MicroUserManager()
 
