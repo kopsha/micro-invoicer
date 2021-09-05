@@ -34,7 +34,7 @@
         </tr>
         {% endfor %}
         </table>
-        <small>{{ invoices|length|intword }} invoice{{ invoices|length|pluralize}} found</small>
+        <small>{{ registry.invoices.all|length|intword }} invoice{{ registry.invoices.all|length|pluralize}} found</small>
 
 
         <table>
@@ -55,7 +55,7 @@
         </tr>
         {% endfor %}
         </table>
-        <small align="right">{{ contracts|length|intword }} contract{{ contracts|length|pluralize}} found</small>
+        <small align="right">{{ registry.contracts.all|length|intword }} contract{{ registry.contracts.all|length|pluralize}} found</small>
 
     {% endfor %}
     <hr>
