@@ -269,9 +269,6 @@ class TimeInvoiceDetailView(LoginRequiredMixin, DetailView):
     model = models.TimeInvoice
     template_name = "invoice_detail.html"
 
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs)
-
 
 class TimeInvoicePrintView(LoginRequiredMixin, DetailView):
     """Download invoice as PDF file"""
