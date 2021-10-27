@@ -8,6 +8,7 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
 from django.forms.models import model_to_dict
+from django.template import Template, Context
 from django_registration.backends.one_step.views import RegistrationView
 
 from . import forms, models, pdf_rendering, micro_timesheet
@@ -217,13 +218,20 @@ class TimeInvoiceCreateView(MicroFormMixin, CreateView):
     def get_initial(self, **kwargs):
         """provide sensible defaults for a new invoice"""
         initial = super().get_initial()
-        initial["issue_date"] = date.today
+        today = date.today()
+        initial["issue_date"] = today
         registry = models.MicroRegistry.objects.get(pk=self.kwargs["registry_id"])
         self.kwargs["registry"] = registry
         last_invoice = registry.invoices.last()
         if last_invoice:
             initial["contract"] = last_invoice.contract
             initial["quantity"] = last_invoice.quantity
+
+            description_template = Template(last_invoice.contract.invoicing_description)
+            last_month = today.replace(day=1, month=(today.month - 1))
+            local_context = Context(dict(today=today, last_month=last_month))
+            initial["override_description"] = description_template.render(local_context)
+
 
         return initial
 
