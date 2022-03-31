@@ -281,8 +281,27 @@ def render_invoice_items(pdf_canvas, invoice, from_y, international=False):
         ),
     )
     pdf_canvas.drawCentredString(
-        18.35 * cm, cy * cm, locale.currency(invoice.value, grouping=True, international=international)
+        18.35 * cm, cy * cm, locale.currency(invoice.time_value(), grouping=True, international=international)
     )
+
+    if invoice.attached_cost:
+        cy -= 2 * row_height
+
+        desc_line_1 = invoice.attached_description
+        desc_line_2 = ""
+        if len(invoice.attached_description) > 27:
+            split_at = invoice.attached_description.find(" ", 27)
+            if split_at > 0:
+                desc_line_1 = invoice.attached_description[:split_at]
+                desc_line_2 = invoice.attached_description[split_at + 1 :]
+
+        pdf_canvas.drawCentredString(2.5 * cm, cy * cm, "2")
+        pdf_canvas.drawCentredString(6 * cm, (cy + row_height * 0.4) * cm, desc_line_1)
+        pdf_canvas.drawCentredString(6 * cm, (cy - row_height * 0.45) * cm, desc_line_2)
+        pdf_canvas.drawCentredString(
+            18.35 * cm, cy * cm, locale.currency(invoice.attached_cost, grouping=True, international=international)
+        )
+
 
     cy -= row_height / 2
     cy = draw_ruler(cy)

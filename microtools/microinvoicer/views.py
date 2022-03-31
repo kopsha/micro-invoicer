@@ -255,6 +255,10 @@ class TimeInvoiceCreateView(MicroFormMixin, CreateView):
         else:
             form.instance.description = contract.invoicing_description
 
+        if form.cleaned_data["attached_cost"] and form.cleaned_data["attached_description"]:
+            form.instance.attached_description = form.cleaned_data["attached_description"]
+            form.instance.attached_cost = form.cleaned_data["attached_cost"]
+
         response = super().form_valid(form)
         registry.next_invoice_no += 1
         registry.save()

@@ -30,6 +30,9 @@
                 {% if object.conversion_rate %}
                 [ x {{ object.conversion_rate|floatformat:4 }} <sub><small>{{ object.currency }}/{{ object.contract_currency }}</small></sub> ]
                 {% endif %}
+                {% if object.attached_cost %}
+                + {{ object.attached_cost|floatformat:2|intcomma }} <sub><small>{{ object.currency }}</small></sub>
+                {% endif %}
                 = {{ object.value|floatformat:2|intcomma }} <sub><small>{{ object.currency }}</small></sub>
             </h5>
         </div>
