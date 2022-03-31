@@ -135,6 +135,9 @@ class TimeInvoice(models.Model):
     unit = models.CharField(max_length=2, choices=InvoicingUnits.choices)
     unit_rate = models.DecimalField(max_digits=16, decimal_places=2)
 
+    attached_cost = models.DecimalField(max_digits=16, decimal_places=2, null=True)
+    attached_description = models.CharField(max_length=LONG_TEXT, null=True)
+
     issue_date = models.DateField()
     quantity = models.IntegerField()
 

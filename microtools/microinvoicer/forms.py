@@ -70,7 +70,7 @@ class TimeInvoiceForm(forms.ModelForm):
 
     class Meta:
         model = models.TimeInvoice
-        fields = ["contract", "issue_date", "quantity", "conversion_rate"]
+        fields = ["contract", "issue_date", "quantity", "conversion_rate", "attached_description", "attached_cost"]
 
     def __init__(self, *args, **kwargs):
         registry = kwargs.pop("registry")
