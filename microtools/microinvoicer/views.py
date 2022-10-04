@@ -228,7 +228,7 @@ class TimeInvoiceCreateView(MicroFormMixin, CreateView):
             initial["quantity"] = last_invoice.quantity
 
             description_template = Template(last_invoice.contract.invoicing_description)
-            last_month = today.replace(day=1, month=((today.month + 11) % 12) + 1)
+            last_month = today.replace(day=1, month=((today.month + 11) % 12))
             local_context = Context(dict(today=today, last_month=last_month))
             initial["override_description"] = description_template.render(local_context)
 

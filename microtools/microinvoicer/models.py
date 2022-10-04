@@ -21,6 +21,7 @@ class AvailableCurrencies(models.TextChoices):
 
 class InvoicingUnits(models.TextChoices):
     MONTHLY = "mo", "Month"
+    DAILY = "d", "Day"
     HOURLY = "hr", "Hour"
 
 

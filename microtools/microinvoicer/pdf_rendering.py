@@ -71,7 +71,7 @@ def render_invoice(invoice):
     if country == "RO":
         locale.setlocale(locale.LC_ALL, "ro_RO")
         render_invoice_ro(pdf, invoice)
-    elif country == "CH":
+    elif country in {"CH", "IE"}:
         locale.setlocale(locale.LC_ALL, "en_IE")
         render_invoice_en(pdf, invoice)
     else:
@@ -114,7 +114,7 @@ def to_cm(xu, yu):
 
 
 def translate_units(original, international):
-    translation = {"mo": ("luni", "month(s)"), "hr": ("ore", "hour(s)")}
+    translation = {"mo": ("luni", "month(s)"), "hr": ("ore", "hour(s)"), "d": ("zile", "day(s)")}
     return translation.get(original, original)[international]
 
 
