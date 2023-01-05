@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.mail import send_mail
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.utils import timezone
@@ -50,6 +51,7 @@ class FiscalEntity(models.Model):
 
 class MicroUser(AbstractBaseUser, PermissionsMixin):
     """User account, which holds the service provider (seller) entity"""
+
     first_name = models.CharField(max_length=SHORT_TEXT)
     last_name = models.CharField(max_length=SHORT_TEXT)
     email = models.EmailField(unique=True)
@@ -80,7 +82,13 @@ class MicroRegistry(models.Model):
     display_name = models.CharField(max_length=SHORT_TEXT)
     invoice_series = models.CharField(max_length=REALLY_SHORT)
     next_invoice_no = models.IntegerField()
-    include_vat = models.BooleanField(default=False)
+    include_vat = models.IntegerField(
+        default=0,
+        validators=(
+            MinValueValidator(0),
+            MaxValueValidator(100),
+        ),
+    )
 
     def __repr__(self) -> str:
         return (
@@ -134,6 +142,7 @@ class TimeInvoice(models.Model):
 
     issue_date = models.DateField()
     quantity = models.IntegerField()
+    include_vat = models.IntegerField(default=0)
 
     @property
     def series_number(self):
@@ -141,11 +150,14 @@ class TimeInvoice(models.Model):
 
     @property
     def value(self):
-        return self.time_value() + (self.attached_cost or 0)
+        return self.time_value() + self.vat_value() + (self.attached_cost or 0)
 
     def time_value(self):
         conversion = self.conversion_rate or 1
         return self.unit_rate * self.quantity * conversion
+
+    def vat_value(self):
+        return (self.time_value() * self.include_vat) / 100
 
     @property
     def contract_currency(self):

@@ -218,8 +218,10 @@ class TimeInvoiceCreateView(MicroFormMixin, CreateView):
         today = date.today()
         initial["issue_date"] = today
         registry = models.MicroRegistry.objects.get(pk=self.kwargs["registry_id"])
+        initial["include_vat"] = registry.include_vat
         self.kwargs["registry"] = registry
         last_invoice = registry.invoices.last()
+        # TODO: fixeaza template-ul
         if last_invoice:
             initial["contract"] = last_invoice.contract
             initial["quantity"] = last_invoice.quantity
