@@ -90,10 +90,11 @@ class RegistryCreateView(MicroFormMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
-        seller_data = {field: form.cleaned_data[field] for field in models.FiscalEntity._meta.get_fields()}
-        seller = models.FiscalEntity(seller_data)
+        most_fields = [field.name for field in models.FiscalEntity._meta.get_fields() if field.name != "id"]
+        seller_data = {field: form.cleaned_data[field] for field in most_fields}
+        seller = models.FiscalEntity(**seller_data)
         seller.save()
-        self.object.seller = seller
+        form.instance.seller = seller
         return super().form_valid(form)
 
 
@@ -231,7 +232,6 @@ class TimeInvoiceCreateView(MicroFormMixin, CreateView):
             last_month = today.replace(day=1, month=((today.month + 11) % 12))
             local_context = Context(dict(today=today, last_month=last_month))
             initial["override_description"] = description_template.render(local_context)
-
 
         return initial
 
