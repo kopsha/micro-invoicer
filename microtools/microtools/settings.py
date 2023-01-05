@@ -89,3 +89,4 @@ STATIC_URL = "/static/"
 SECRET_KEY = os.environ.get("MICRO_SERVER_SECRET", "fake-key please update on deployment")
 
 COUNTRIES_ONLY = ["RO", "CH", "IE"]
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"

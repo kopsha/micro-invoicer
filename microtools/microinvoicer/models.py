@@ -32,8 +32,6 @@ class InvoiceStatus(models.IntegerChoices):
 
 
 class FiscalEntity(models.Model):
-    id = models.AutoField(primary_key=True)
-
     name = models.CharField(max_length=LONG_TEXT)
     owner_fullname = models.CharField(max_length=LONG_TEXT)
     registration_id = models.CharField(max_length=SHORT_TEXT)
@@ -52,9 +50,6 @@ class FiscalEntity(models.Model):
 
 class MicroUser(AbstractBaseUser, PermissionsMixin):
     """User account, which holds the service provider (seller) entity"""
-
-    id = models.AutoField(primary_key=True)
-
     first_name = models.CharField(max_length=SHORT_TEXT)
     last_name = models.CharField(max_length=SHORT_TEXT)
     email = models.EmailField(unique=True)
@@ -79,7 +74,6 @@ class MicroUser(AbstractBaseUser, PermissionsMixin):
 
 
 class MicroRegistry(models.Model):
-    id = models.AutoField(primary_key=True)
     user = models.ForeignKey(MicroUser, related_name="registries", on_delete=models.CASCADE)
     seller = models.ForeignKey(FiscalEntity, related_name="+", on_delete=models.CASCADE)
 
@@ -97,7 +91,6 @@ class MicroRegistry(models.Model):
 
 
 class ServiceContract(models.Model):
-    id = models.AutoField(primary_key=True)
     buyer = models.ForeignKey(FiscalEntity, related_name="+", on_delete=models.RESTRICT)
     registry = models.ForeignKey(MicroRegistry, related_name="contracts", on_delete=models.CASCADE)
 
@@ -119,7 +112,6 @@ class ServiceContract(models.Model):
 
 
 class TimeInvoice(models.Model):
-    id = models.AutoField(primary_key=True)
     registry = models.ForeignKey(MicroRegistry, related_name="invoices", on_delete=models.CASCADE)
     seller = models.ForeignKey(FiscalEntity, related_name="+", on_delete=models.RESTRICT)
     buyer = models.ForeignKey(FiscalEntity, related_name="+", on_delete=models.RESTRICT)
