@@ -41,7 +41,7 @@ def render_timesheet(invoice, timesheet):
 
     country = invoice.buyer.country
     if country == "RO":
-        locale.setlocale(locale.LC_ALL, "ro_RO")
+        locale.setlocale(locale.LC_ALL, "ro_RO.utf8")
         render_timesheet_ro(pdf, invoice, timesheet)
     elif country == "CH":
         locale.setlocale(locale.LC_ALL, "en_IE")
@@ -69,7 +69,7 @@ def render_invoice(invoice):
 
     country = invoice.buyer.country
     if country == "RO":
-        locale.setlocale(locale.LC_ALL, "ro_RO")
+        locale.setlocale(locale.LC_ALL, "ro_RO.utf8")
         render_invoice_ro(pdf, invoice)
     elif country in {"CH", "IE"}:
         locale.setlocale(locale.LC_ALL, "en_IE")

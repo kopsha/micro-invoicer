@@ -104,15 +104,11 @@ class RegistryUpdateView(MicroFormMixin, UpdateView):
     form_class = forms.RegistryForm
 
     def form_valid(self, form):
-        seller = self.object.seller
-        seller.name = form.cleaned_data["name"]
-        seller.owner_fullname = form.cleaned_data["owner_fullname"]
-        seller.registration_id = form.cleaned_data["registration_id"]
-        seller.fiscal_code = form.cleaned_data["fiscal_code"]
-        seller.address = form.cleaned_data["address"]
-        seller.country = form.cleaned_data["country"]
-        seller.bank_account = form.cleaned_data["bank_account"]
-        seller.bank_name = form.cleaned_data["bank_name"]
+        # update seller information too
+        seller = form.instance.seller
+        seller_fields = [field.name for field in models.FiscalEntity._meta.get_fields() if field.name != "id"]
+        for field in seller_fields:
+            setattr(seller, field, form.cleaned_data[field])
         seller.save()
         return super().form_valid(form)
 

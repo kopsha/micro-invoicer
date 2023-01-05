@@ -80,6 +80,7 @@ class MicroRegistry(models.Model):
     display_name = models.CharField(max_length=SHORT_TEXT)
     invoice_series = models.CharField(max_length=REALLY_SHORT)
     next_invoice_no = models.IntegerField()
+    include_vat = models.BooleanField(default=False)
 
     def __repr__(self) -> str:
         return (

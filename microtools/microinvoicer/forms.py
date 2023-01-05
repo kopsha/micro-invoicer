@@ -40,7 +40,7 @@ class FiscalEntityForm(forms.ModelForm):
 class RegistryForm(FiscalEntityForm):
     class Meta:
         model = models.MicroRegistry
-        fields = ["display_name", "invoice_series", "next_invoice_no"]
+        fields = ["display_name", "invoice_series", "next_invoice_no", "include_vat"]
 
 
 class ServiceContractForm(FiscalEntityForm):
