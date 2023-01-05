@@ -1,5 +1,5 @@
 """How about now."""
-from datetime import date
+from datetime import date, timedelta
 from django.http import FileResponse
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView
@@ -215,19 +215,21 @@ class TimeInvoiceCreateView(MicroFormMixin, CreateView):
     def get_initial(self, **kwargs):
         """provide sensible defaults for a new invoice"""
         initial = super().get_initial()
+
         today = date.today()
+        first_of_month = today.replace(day=1)
+        last_month = first_of_month - timedelta(days=1)
+
         initial["issue_date"] = today
         registry = models.MicroRegistry.objects.get(pk=self.kwargs["registry_id"])
         initial["include_vat"] = registry.include_vat
         self.kwargs["registry"] = registry
         last_invoice = registry.invoices.last()
-        # TODO: fixeaza template-ul
         if last_invoice:
             initial["contract"] = last_invoice.contract
             initial["quantity"] = last_invoice.quantity
 
             description_template = Template(last_invoice.contract.invoicing_description)
-            last_month = today.replace(day=1, month=((today.month + 11) % 12))
             local_context = Context(dict(today=today, last_month=last_month))
             initial["override_description"] = description_template.render(local_context)
 
@@ -247,6 +249,7 @@ class TimeInvoiceCreateView(MicroFormMixin, CreateView):
         form.instance.currency = contract.invoicing_currency
         form.instance.unit = contract.unit
         form.instance.unit_rate = contract.unit_rate
+        form.instance.include_vat = registry.include_vat
 
         if form.cleaned_data["override_description"]:
             form.instance.description = form.cleaned_data["override_description"]

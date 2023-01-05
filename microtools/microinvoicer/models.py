@@ -83,6 +83,7 @@ class MicroRegistry(models.Model):
     invoice_series = models.CharField(max_length=REALLY_SHORT)
     next_invoice_no = models.IntegerField()
     include_vat = models.IntegerField(
+        verbose_name="Apply VAT (%)",
         default=0,
         validators=(
             MinValueValidator(0),
