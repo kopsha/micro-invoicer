@@ -1,0 +1,5 @@
+services:
+  micro-invoicer:
+    volumes:
+      - ./api/src:/app/src
+      - ./api/htmlcov:/app/htmlcov
