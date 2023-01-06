@@ -3,196 +3,50 @@
 Making invoices has never been easier
 
 
-## Back to basics
+## Models hierarchy
 
-* [x] Migrate to Django models
-* [x] Add more registries (e.g. internal and external)
-* [x] Contracts can be fixed (monthly) or timed
-* [x] Invoices can be timed or fixed
-* [x] Issue invoices in more currencies
-* [ ] New invoice type for materials
+![Models hierarchy](./doc/models.png)
 
 
-## Conceptualized API as use cases
+## Use cases
 
-registry
-* created with (seller, series, start_no)
-* add_contract(buyer, hourly_rate)
-* contracts[]  # read-only property
-* amend_contract(id, buyer, hourly_rate)
-* new_draft_invoice(...) : invoice
-* publish(invoice)
-* invoices() : invoice stack iterator
+Anonymous users
+- can register via email (aka sign-up)
 
-registry has:
-* seller
-* contracts[]
-* series, next_id
-* invoice_stack[]
+Registered users
+- user can **CRUD** many registries, each registry identifies
+  - a seller fiscal entity
+  - a VAT rate
 
-1, load / create the registry
+Under each registry
+- Can can **CRUD** many service contracts, each contract identifies
+  - a buyer fiscal entity
+  - unit
+  - unit price
+  - currency
+- Can view all invoices
+- Can issue a new invoice, each invoice identifies:
+  - seller (via registry)
+  - buyer (via contract)
+  - unit, unit price, currency, invocing currency (via contract)
+  - conversion rate
+  - quantity
+  - additional fixed costs
+- Can remove most recent invoice only
 
-* `registry = install_registry(series, start_number, seller)`, or
-* `registry = get_installed()`
+### ToDO use cases
 
-2, load / create a contract
-
-* `contract = registry.make_contract(buyer, hourly_rate)`, or
-* `contract = registry.last_contract()`, or
-* `contract = registry.find_contract(buyer)`
-
-3, create new invoice
-
-* `invoice = make_time_invoice(date, report, exchange_rate, contract)`, or
-* `invoice = make_materials_invoice(date, price, quantity, contract)`
-
-4, release all draft invoices
-
-5, amend invoice (storno)
+Under each registry
+- New invoices are issues in draft state
+- Can publish a draft invoice (published become read-only)
+- Can remove only draft invoices
+- Can storno a published invoice
 
 
 ## Setup instructions
 
-Before being able to generate (issue) a new invoice you need to provide some data to the script.
-In the same folder, create the following json files and fill in your company and contract details as in the examples below:
+- `docker-compose build`
+- `docker-compose up`
+- `docker-compose down --remove-orphans`
 
-`seller.json`
-```json
-{
-    "name" : "AGRICULTORII VESELI S.R.L",
-    "registration_id": "J12/3156/1010",
-    "fiscal_code": "12345678",
-    "address": "Castelul Fermecat, Comuna Imperiala, nr. 3, jud. Regatul Albastru",
-    "bank_account": "RA12 TRRG RANC RT01 1234 5678",
-    "bank_name": "Trezoreria Regala",
-    "invoice_series" : "APR",
-    "invoice_start_number" : 1
-}
-```
-
-`contract.json`
-```json
-{
-    "name" : "FAMILIA REGALA S.R.L.",
-    "registration_id": "J12/0001/1001",
-    "fiscal_code": "987654321",
-    "address": "Castelul Regal, Orasul Minciunilor, nr. 1, jud. Regatul Albastru",
-    "bank_account": "RA01 TRRG RANC RT01 0001 0001",
-    "bank_name": "Trezoreria Regala",
-    "hourly_rate" : 112
-}
-```
-
-
-Then, run the script providing the json files created earlier as arguments:
-
-```console
-micro-invoicer $ python mini_invoicer.py --install seller.json --contract contract.json --commit
-********************************************************************************
-* Mini Invoicer                                                                *
-********************************************************************************
-All changes will be written to local database.
-********************************************************************************
-* Installing new invoice register                                              *
-********************************************************************************
-Created register for AGRICULTORII VESELI S.R.L
-Created contract with FAMILIA REGALA S.R.L.
-Local database updated successfully.
-********************************************************************************
-* AGRICULTORII VESELI S.R.L registry quick view                                *
-********************************************************************************
-Contracts:
-  0 : FAMILIA REGALA S.R.L.
-No invoices found in registry.
-********************************************************************************
-* [14:36:12] Finished in 0.00 seconds.                                         *
-********************************************************************************
-micro-invoicer $ _
-```
-
-Notice the `--commit` flag, which tells the script that you want to write the required changes to disk.
-
-Now, the setup is complete so you can ...
-
-
-### Issue a new invoice
-
-In order to render (read as *issue*) a PDF with a new invoice, you need to provide the details of that invoice in a new json file.
-
-`new_invoice.json`
-```json
-{
-    "contract_id" : 0,
-    "hours" : 128,
-    "flavor": "authentication module",
-    "project_id": "FooBar Banking",
-    "xchg_rate" : 7.4551
-}
-```
-
-Then, run the script with using the `--invoice` argument as below:
-```console
-micro-invoicer $ python mini_invoicer.py --invoice invoice.json --commit
-********************************************************************************
-* Mini Invoicer                                                                *
-********************************************************************************
-All changes will be written to local database.
-********************************************************************************
-* AGRICULTORII VESELI S.R.L registry quick view                                *
-********************************************************************************
-Contracts:
-  0 : FAMILIA REGALA S.R.L.
-No invoices found in registry.
-New invoice:
-   APR-0001 : FAMILIA REGALA S.R.L.            :     128 ore :   106876.31 lei
-Local database updated successfully.
-********************************************************************************
-* [14:43:08] Finished in 0.01 seconds.                                         *
-********************************************************************************
-micro-invoicer $ _
-```
-
-And you're done.
-
-For the next one, you only need to update this json file and run the script with `--invoice` argument again.
-
-
-### Reqistry quick view
-
-At some point, you may want to inspect the current registry and all you have to do is to run the script without arguments.
-
-```console
-micro-invoicer $ python mini_invoicer.py
-********************************************************************************
-* Mini Invoicer                                                                *
-********************************************************************************
-Performing a dry run, local database will not be touched.
-********************************************************************************
-* AGRICULTORII VESELI S.R.L registry quick view                                *
-********************************************************************************
-Contracts:
-  0 : FAMILIA REGALA S.R.L.
-Last 5 invoices in registry:
-   APR-0001 : FAMILIA REGALA S.R.L.            :     128 ore :   106876.31 lei
-********************************************************************************
-* [14:46:42] Finished in 0.00 seconds.                                         *
-********************************************************************************
-micro-invoicer $ _
-```
-
-You can see the full list of arguments with `--help`.
-
-## Sitemap
-
- URL             | Title            | Template               | Purpose
- ----            | ----             | ----                   | ----
- /               | Index            | index.html             | site landing page
- /register       | Registration     | registration_form.html | signup page
- /home           | home             | home.html              | user home (registry overview)
- /profile        | Profile          | profile.html           | user profile (with reset option)
- /setup          | Setup            | base_form.html         | setup company/seller info
- /contract       | Contract         | base_form.html         | contract details
- /contracts      | Contracts        | contract_list.html     | contracts manager
- /draft_time     | Time Invoice     | base_form.html         | create time invoice
- /draft_material | Material Invoice | base_form.html         | create materials invoice
-
+_NB:_ Remember to backup your sqlite db every quarter.
