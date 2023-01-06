@@ -37,16 +37,16 @@ Under each registry
 ### ToDO use cases
 
 Under each registry
-- New invoices are issues in draft state
-- Can publish a draft invoice (published become read-only)
-- Can remove only draft invoices
-- Can storno a published invoice
+- New invoices are issued in *draft* state
+- Can publish a *draft* invoice (*published* invoices become read-only)
+- Can only remove *draft* invoices
+- Can *storno* a *published* invoice
 
 
 ## Setup instructions
 
-- `docker-compose build`
-- `docker-compose up`
-- `docker-compose down --remove-orphans`
+1. `docker-compose build`
+1. `docker-compose up`
+1. `docker-compose down --remove-orphans`
 
 _NB:_ Remember to backup your sqlite db every quarter.
