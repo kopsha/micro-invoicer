@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+set -e
+
+main()
+{
+    case $1 in
+        shell)
+            bash
+            ;;
+        start)
+            ./manage.py runserver 0.0.0.0:8000
+            ;;
+        migrate)
+            ./manage.py migrate
+            ;;
+        makemigrations)
+            ./manage.py makemigrations
+            ;;
+        check)
+            printf "\t ..: Running all tests and coverage reports\n"
+            coverage run -m pytest
+            coverage html -d /app/htmlcov
+            ;;
+        develop)
+            printf "\t ..: Starting the developer loop\n"
+            find ./ -name "*.py" | entr -cd pytest -sv
+            ;;
+        *)
+            printf "\t ..: Invoking '$*'\n"
+            exec "$@"
+            ;;
+    esac
+}
+
+cd /app/src
+main "$@"
