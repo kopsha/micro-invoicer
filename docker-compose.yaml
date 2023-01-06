@@ -1,5 +1,10 @@
+version: "3"
+
 services:
   micro-invoicer:
+    build: ./
+    ports:
+      - 8000:8000
     volumes:
-      - ./api/src:/app/src
-      - ./api/htmlcov:/app/htmlcov
+      - ./src:/app/src
+      - ./htmlcov:/app/htmlcov
