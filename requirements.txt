@@ -3,5 +3,5 @@ sqlparse
 django
 django-registration
 django-material
-reportlab
 django-countries
+pdfkit

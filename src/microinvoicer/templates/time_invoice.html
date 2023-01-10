@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>INVOICE {{ invoice_no }}</title>
+        <style>
+            html, body {
+                height:297mm;
+                width:210mm;
+                margin: 8mm 21mm 13mm 8mm;
+                font-family: Helvetica, Sans-Serif;
+            }
+            .full_width {
+                width: 100%;
+            }
+            .left_column {
+                width:50%;
+                text-align: left;
+            }
+            .right_column {
+                width:50%;
+                text-align: right;
+            }
+            .title_box {
+                vertical-align: bottom;
+                text-align: center;
+                height: 5em;
+                border: solid 1px red;
+            }
+            .title_box h2 {
+                margin-block-end: 0;
+            }
+            .title {
+                font-size: 15pt;
+            }
+            .items {
+                font-size: 12pt;
+                margin-block-start: 3em;
+            }
+            .underline td {
+                border-bottom: solid 1px black;
+            }
+            .bold-text {
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <table class="full_width">
+                <thead>
+                    <td class="left_column">Supplier:</td>
+                    <td class="right_column">Buyer:</td>
+                </thead>
+                <tr>
+                    <td class="left_column">supplier<br>reg no<br>fiscal code</td>
+                    <td class="right_column">buyer<br>reg no<br>fiscal code</td>
+                </tr>
+            </table>
+        </header>
+
+        <div class="title">
+            <table class="full_width">
+                <tr>
+                    <td class="title_box" colspan="2"><h2>INVOICE</h2></td>
+                </tr>
+                <tr>
+                    <td class="right_column">no:</td>
+                    <td class="left_column">FBEXT-0013</td>
+                </tr>
+                <tr>
+                    <td class="right_column">date:</td>
+                    <td class="left_column">06-Jan-2023</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="items">
+            <table class="full_width">
+                <thead class="underline bold-text">
+                    <td>No</td>
+                    <td>Description</td>
+                    <td>Qty</td>
+                    <td>Unit</td>
+                    <td>Price</td>
+                    <td>VAT</td>
+                    <td>Amount</td>
+                </thead>
+                <tr>
+                    <td>1</td>
+                    <td>Software development services,<br>rendered in December 2022</td>
+                    <td>19</td>
+                    <td>day(s)</td>
+                    <td>EUR 300.00</td>
+                    <td>EUR 0.00</td>
+                    <td>EUR 3,700.00</td>
+                </tr>
+                <tr>
+                    <td class="right_column">Total?</td>
+                    <td class="left_column">06-Jan-2023</td>
+                </tr>
+            </table>
+        </div>
+
+        <footer>
+        footer
+        </footer>
+    </body>
+</html>

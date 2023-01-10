@@ -4,6 +4,7 @@ FROM python:3-slim
 RUN apt update && apt install --yes \
     entr \
     git \
+    wkhtmltopdf \
     && rm -rf /var/lib/apt/lists/*
 
 # prepare application folder
