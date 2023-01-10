@@ -92,9 +92,7 @@ class MicroRegistry(models.Model):
     )
 
     def __repr__(self) -> str:
-        return (
-            f"{self.display_name}, series {self.invoice_series}, {self.contracts.count()} contracts and ..."
-        )
+        return f"{self.display_name}, series {self.invoice_series}, {self.contracts.count()} contracts and ..."
 
     def __str__(self):
         return repr(self)

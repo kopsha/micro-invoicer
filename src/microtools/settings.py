@@ -84,7 +84,7 @@ LOGIN_REDIRECT_URL = "/home/"
 LOGOUT_REDIRECT_URL = "/"
 ACCOUNT_ACTIVATION_DAYS = 7
 
-STATIC_URL = "/static/"
+STATIC_URL = "static/"
 
 SECRET_KEY = os.environ.get("MICRO_SERVER_SECRET", "fake-key please update on deployment")
 

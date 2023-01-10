@@ -1,4 +1,6 @@
 """How about now."""
+from datetime import date
+
 from datetime import date, timedelta
 from django.http import FileResponse
 from django.urls import reverse_lazy
@@ -12,6 +14,7 @@ from django.template import Template, Context
 from django_registration.backends.one_step.views import RegistrationView
 
 from . import forms, models, pdf_rendering, micro_timesheet
+from .temporary_locale import TemporaryLocale
 
 
 class IndexView(TemplateView):
@@ -90,7 +93,9 @@ class RegistryCreateView(MicroFormMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
-        most_fields = [field.name for field in models.FiscalEntity._meta.get_fields() if field.name != "id"]
+        most_fields = [
+            field.name for field in models.FiscalEntity._meta.get_fields() if field.name != "id"
+        ]
         seller_data = {field: form.cleaned_data[field] for field in most_fields}
         seller = models.FiscalEntity(**seller_data)
         seller.save()
@@ -106,7 +111,9 @@ class RegistryUpdateView(MicroFormMixin, UpdateView):
     def form_valid(self, form):
         # update seller information too
         seller = form.instance.seller
-        seller_fields = [field.name for field in models.FiscalEntity._meta.get_fields() if field.name != "id"]
+        seller_fields = [
+            field.name for field in models.FiscalEntity._meta.get_fields() if field.name != "id"
+        ]
         for field in seller_fields:
             setattr(seller, field, form.cleaned_data[field])
         seller.save()
@@ -229,9 +236,17 @@ class TimeInvoiceCreateView(MicroFormMixin, CreateView):
             initial["contract"] = last_invoice.contract
             initial["quantity"] = last_invoice.quantity
 
-            description_template = Template(last_invoice.contract.invoicing_description)
-            local_context = Context(dict(today=today, last_month=last_month))
-            initial["override_description"] = description_template.render(local_context)
+            use_locale = "ro_RO" if last_invoice.contract.buyer.country == "RO" else "en_IE"
+            with TemporaryLocale(use_locale):
+                description_template = Template(last_invoice.contract.invoicing_description)
+                local_context = Context(
+                    dict(
+                        this_month=date.strftime(today, "%B %Y").title(),
+                        last_month=date.strftime(last_month, "%B %Y").title(),
+                    )
+                )
+                print(local_context, flush=True)
+                initial["override_description"] = description_template.render(local_context)
 
         return initial
 

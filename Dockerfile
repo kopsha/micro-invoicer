@@ -2,8 +2,11 @@ FROM python:3-slim
 
 # prepare base image
 RUN apt update && apt install --yes \
+    locales \
+    locales-all \
     entr \
     git \
+    wkhtmltopdf \
     && rm -rf /var/lib/apt/lists/*
 
 # prepare application folder
