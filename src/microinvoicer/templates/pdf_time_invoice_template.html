@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>INVOICE {{ invoice_no }}</title>
+        <title>{{ invoice_title }}</title>
         <style>
             html,
             body {
-                height: 297mm;
-                width: 210mm;
-                margin: 8mm 21mm 13mm 8mm;
+                margin: 0;
                 font-family: Helvetica, Sans-Serif;
             }
             .full_width {
@@ -92,32 +90,35 @@
         <header>
             <table class="full_width">
                 <thead>
-                    <td class="left_column">Supplier:</td>
-                    <td class="right_column">Buyer:</td>
+                    <td class="left_column">{{ head.left_first }}</td>
+                    <td class="right_column">{{ head.right_first }}</td>
                 </thead>
+                {% for left, right in head.items %}
                 <tr>
-                    <td class="left_column">
-                        supplier<br />reg no<br />fiscal code
-                    </td>
-                    <td class="right_column">
-                        buyer<br />reg no<br />fiscal code
-                    </td>
+                    {% if forloop.first %}
+                        <td class="left_column"><b>{{ left }}</b></td>
+                        <td class="right_column"><b>{{ right }}</b></td>
+                    {% else %}
+                        <td class="left_column">{{ left }}</td>
+                        <td class="right_column">{{ right }}</td>
+                    {% endif %}
                 </tr>
+                {% endfor %}
             </table>
         </header>
 
         <div class="title">
             <table class="full_width">
                 <tr>
-                    <td class="title_box" colspan="2"><h2>INVOICE</h2></td>
+                    <td class="title_box" colspan="2"><h2>{{ invoice_title }}</h2></td>
                 </tr>
                 <tr>
-                    <td class="right_column">no:</td>
-                    <td class="left_column">FBEXT-0013</td>
+                    <td class="right_column">{{ subtitle_no }}</td>
+                    <td class="left_column">{{ invoice.series_number }} </td>
                 </tr>
                 <tr>
-                    <td class="right_column">date:</td>
-                    <td class="left_column">06-Jan-2023</td>
+                    <td class="right_column">{{ subtitle_from }}</td>
+                    <td class="left_column">{{ invoice.issue_date|date:'d-m-Y' }}</td>
                 </tr>
             </table>
         </div>
@@ -135,15 +136,12 @@
                 </thead>
                 <tr>
                     <td class="no">1</td>
-                    <td class="desc">
-                        Software development services,<br />rendered in December
-                        2022
-                    </td>
-                    <td class="qty">19</td>
-                    <td class="unit">day(s)</td>
-                    <td>EUR 300.00</td>
-                    <td>EUR 340.00</td>
-                    <td class="right">EUR 3,700.00</td>
+                    <td class="desc">{{ invoice.description }}</td>
+                    <td class="qty">{{ invoice.quantity }}</td>
+                    <td class="unit">{{ invoice_unit }}</td>
+                    <td>{{ invoice_price }}</td>
+                    <td>{{ invoice_vat }}</td>
+                    <td class="right">{{ invoice_time_value }}</td>
                 </tr>
                 <tr class="overline bold-text">
                     <td class="no"></td>
@@ -152,15 +150,17 @@
                     <td class="unit"></td>
                     <td></td>
                     <td>Total</td>
-                    <td class="right">EUR 3,700.00</td>
+                    <td class="right">{{ invoice_time_value }}</td>
                 </tr>
                 <tr>
                     <td class="no"></td>
                     <td class="conversion">
+                        {% if invoice.conversion_rate %}
                         &nbsp;<br />
                         Curs BNR<br />
-                        1 Euro = 4,9479 lei<br />
+                        1 Euro = {{ invoice.conversion_rate|floatformat:4 }} lei<br />
                         &nbsp;
+                        {% endif %}
                     </td>
                     <td class="qty"></td>
                     <td class="unit"></td>

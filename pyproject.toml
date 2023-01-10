@@ -1,5 +1,5 @@
 [tool.black]
-line-length = 108
+line-length = 91
 include = '\.pyi?$'
 extend-exclude = '''
 # A regex preceded with ^/ will apply only to files and directories
