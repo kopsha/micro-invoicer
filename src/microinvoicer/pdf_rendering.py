@@ -19,6 +19,7 @@ RENDER_OPTIONS = {
     "custom-header": [("Accept-Encoding", "gzip")],
 }
 
+
 def render_timesheet(invoice, timesheet):
     return ""
 
@@ -51,26 +52,31 @@ def translate_invoice(invoice: TimeInvoice, international) -> dict:
         invoice_issue_date=invoice.issue_date,
         subtitle_no="no:" if international else "nr:",
         subtitle_from="date:" if international else "din:",
-
         invoice_description=invoice.description,
         invoice_quantity=invoice.quantity,
         invoice_unit=translate_units(invoice.unit, international),
         invoice_conversion_rate=invoice.conversion_rate,
         invoice_price=locale.currency(
-            invoice.unit_rate * (invoice.conversion_rate or 1), grouping=True, international=international
+            invoice.unit_rate * (invoice.conversion_rate or 1),
+            grouping=True,
+            international=international,
         ),
-
         invoice_vat_perc=f"{invoice.include_vat}%",
-        invoice_vat=locale.currency(invoice.vat_value(), grouping=True, international=international),
-        invoice_time_value=locale.currency(invoice.time_value(), grouping=True, international=international),
-
+        invoice_vat=locale.currency(
+            invoice.vat_value(), grouping=True, international=international
+        ),
+        invoice_time_value=locale.currency(
+            invoice.time_value(), grouping=True, international=international
+        ),
         invoice_attached_description=invoice.attached_description,
-        invoice_attached_cost=locale.currency(invoice.attached_cost or 0, grouping=True, international=international),
-
+        invoice_attached_cost=locale.currency(
+            invoice.attached_cost or 0, grouping=True, international=international
+        ),
         invoice_value=locale.currency(invoice.value, grouping=True, international=international),
     )
 
     return data
+
 
 def translate_units(original, international):
     translation = {"mo": ("luni", "month(s)"), "hr": ("ore", "hour(s)"), "d": ("zile", "day(s)")}

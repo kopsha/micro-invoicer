@@ -77,7 +77,9 @@ def create_random_tasks(activity, how_many, hours):
 
 
 def pick_task_names(flavor, count):
-    tasks = [name.format(flavor=flavor).capitalize() for name in random.sample(FAKE_TASKS_POOL, k=count)]
+    tasks = [
+        name.format(flavor=flavor).capitalize() for name in random.sample(FAKE_TASKS_POOL, k=count)
+    ]
     return tasks
 
 

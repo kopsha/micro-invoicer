@@ -94,9 +94,7 @@ class RegistryCreateView(MicroFormMixin, CreateView):
     def form_valid(self, form):
         form.instance.user = self.request.user
         most_fields = [
-            field.name
-            for field in models.FiscalEntity._meta.get_fields()
-            if field.name != "id"
+            field.name for field in models.FiscalEntity._meta.get_fields() if field.name != "id"
         ]
         seller_data = {field: form.cleaned_data[field] for field in most_fields}
         seller = models.FiscalEntity(**seller_data)
@@ -114,9 +112,7 @@ class RegistryUpdateView(MicroFormMixin, UpdateView):
         # update seller information too
         seller = form.instance.seller
         seller_fields = [
-            field.name
-            for field in models.FiscalEntity._meta.get_fields()
-            if field.name != "id"
+            field.name for field in models.FiscalEntity._meta.get_fields() if field.name != "id"
         ]
         for field in seller_fields:
             setattr(seller, field, form.cleaned_data[field])
@@ -165,9 +161,7 @@ class ContractCreateView(MicroFormMixin, CreateView):
         buyer.save()
 
         form.instance.buyer = buyer
-        form.instance.registry = models.MicroRegistry.objects.get(
-            pk=self.kwargs["registry_id"]
-        )
+        form.instance.registry = models.MicroRegistry.objects.get(pk=self.kwargs["registry_id"])
 
         return super().form_valid(form)
 
@@ -242,13 +236,9 @@ class TimeInvoiceCreateView(MicroFormMixin, CreateView):
             initial["contract"] = last_invoice.contract
             initial["quantity"] = last_invoice.quantity
 
-            use_locale = (
-                "ro_RO" if last_invoice.contract.buyer.country == "RO" else "en_IE"
-            )
+            use_locale = "ro_RO" if last_invoice.contract.buyer.country == "RO" else "en_IE"
             with TemporaryLocale(use_locale):
-                description_template = Template(
-                    last_invoice.contract.invoicing_description
-                )
+                description_template = Template(last_invoice.contract.invoicing_description)
                 local_context = Context(
                     dict(
                         this_month=date.strftime(today, "%B %Y").title(),
@@ -256,9 +246,7 @@ class TimeInvoiceCreateView(MicroFormMixin, CreateView):
                     )
                 )
                 print(local_context, flush=True)
-                initial["override_description"] = description_template.render(
-                    local_context
-                )
+                initial["override_description"] = description_template.render(local_context)
 
         return initial
 
@@ -283,10 +271,7 @@ class TimeInvoiceCreateView(MicroFormMixin, CreateView):
         else:
             form.instance.description = contract.invoicing_description
 
-        if (
-            form.cleaned_data["attached_cost"]
-            and form.cleaned_data["attached_description"]
-        ):
+        if form.cleaned_data["attached_cost"] and form.cleaned_data["attached_description"]:
             form.instance.attached_description = form.cleaned_data["attached_description"]
             form.instance.attached_cost = form.cleaned_data["attached_cost"]
 
@@ -341,9 +326,7 @@ class TimeInvoiceFakeTimesheetView(LoginRequiredMixin, DetailView):
     def render_to_response(self, context, **response_kwargs):
         """Returns content of generated pdf"""
         invoice = context["object"]
-        timesheet = micro_timesheet.fake_timesheet(
-            invoice.quantity, "Meditatii", "Catalog Online"
-        )
+        timesheet = micro_timesheet.fake_timesheet(invoice.quantity, "Meditatii", "Catalog Online")
         content = pdf_rendering.render_timesheet(invoice, timesheet)
         response = FileResponse(
             content,

@@ -59,18 +59,29 @@ class ServiceContractForm(FiscalEntityForm):
     def __init__(self, *args, **kwargs):
         """reorder fields to get buyer details on top"""
         super().__init__(*args, **kwargs)
-        buyer_fields = {key: value for key, value in self.fields.items() if key not in self.Meta.fields}
+        buyer_fields = {
+            key: value for key, value in self.fields.items() if key not in self.Meta.fields
+        }
         self_fields = {key: value for key, value in self.fields.items() if key in self.Meta.fields}
         self.fields = dict(**buyer_fields, **self_fields)
 
 
 class TimeInvoiceForm(forms.ModelForm):
-    conversion_rate = forms.DecimalField(required=False, help_text="to local currency (if applicable)")
+    conversion_rate = forms.DecimalField(
+        required=False, help_text="to local currency (if applicable)"
+    )
     override_description = forms.CharField(required=False, help_text="(optional)")
 
     class Meta:
         model = models.TimeInvoice
-        fields = ["contract", "issue_date", "quantity", "conversion_rate", "attached_description", "attached_cost"]
+        fields = [
+            "contract",
+            "issue_date",
+            "quantity",
+            "conversion_rate",
+            "attached_description",
+            "attached_cost",
+        ]
 
     def __init__(self, *args, **kwargs):
         registry = kwargs.pop("registry")
