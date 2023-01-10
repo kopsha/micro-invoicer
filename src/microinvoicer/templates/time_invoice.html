@@ -3,9 +3,10 @@
     <head>
         <title>INVOICE {{ invoice_no }}</title>
         <style>
-            html, body {
-                height:297mm;
-                width:210mm;
+            html,
+            body {
+                height: 297mm;
+                width: 210mm;
                 margin: 8mm 21mm 13mm 8mm;
                 font-family: Helvetica, Sans-Serif;
             }
@@ -13,18 +14,17 @@
                 width: 100%;
             }
             .left_column {
-                width:50%;
+                width: 50%;
                 text-align: left;
             }
             .right_column {
-                width:50%;
+                width: 50%;
                 text-align: right;
             }
             .title_box {
                 vertical-align: bottom;
                 text-align: center;
                 height: 5em;
-                border: solid 1px red;
             }
             .title_box h2 {
                 margin-block-end: 0;
@@ -33,14 +33,58 @@
                 font-size: 15pt;
             }
             .items {
-                font-size: 12pt;
+                font-size: 11pt;
                 margin-block-start: 3em;
             }
-            .underline td {
+            .underline td,
+            .underline th {
                 border-bottom: solid 1px black;
+            }
+            .overline td,
+            .overline th {
+                border-top: solid 1px black;
             }
             .bold-text {
                 font-weight: bold;
+            }
+            .items th,
+            .items td {
+                width: 14%;
+                text-align: center;
+            }
+            .items th.no,
+            .items td.no {
+                width: 5%;
+            }
+            .items th.qty,
+            .items td.qty,
+            .items th.unit,
+            .items td.unit {
+                width: 8%;
+            }
+            .items th.desc,
+            .items td.desc {
+                width: auto;
+            }
+            .items td.conversion {
+                width: auto;
+                text-align: left;
+            }
+            .items td.right {
+                text-align: right;
+            }
+            .disclaimer {
+                margin-block-start: 3em;
+                font-size: 9pt;
+                text-align: center;
+                line-height: 13pt;
+                color: darkgray;
+            }
+            footer {
+                margin-block-start: 5em;
+                font-family: monospace;
+                text-align: right;
+                color: darkgray;
             }
         </style>
     </head>
@@ -52,8 +96,12 @@
                     <td class="right_column">Buyer:</td>
                 </thead>
                 <tr>
-                    <td class="left_column">supplier<br>reg no<br>fiscal code</td>
-                    <td class="right_column">buyer<br>reg no<br>fiscal code</td>
+                    <td class="left_column">
+                        supplier<br />reg no<br />fiscal code
+                    </td>
+                    <td class="right_column">
+                        buyer<br />reg no<br />fiscal code
+                    </td>
                 </tr>
             </table>
         </header>
@@ -75,34 +123,63 @@
         </div>
 
         <div class="items">
-            <table class="full_width">
+            <table class="full_width" style="table-layout: fixed">
                 <thead class="underline bold-text">
-                    <td>No</td>
-                    <td>Description</td>
-                    <td>Qty</td>
-                    <td>Unit</td>
-                    <td>Price</td>
-                    <td>VAT</td>
-                    <td>Amount</td>
+                    <th class="no">No</th>
+                    <th class="desc">Description</th>
+                    <th class="qty">Qty</th>
+                    <th class="unit">Unit</th>
+                    <th>Price</th>
+                    <th>VAT</th>
+                    <th>Amount</th>
                 </thead>
                 <tr>
-                    <td>1</td>
-                    <td>Software development services,<br>rendered in December 2022</td>
-                    <td>19</td>
-                    <td>day(s)</td>
+                    <td class="no">1</td>
+                    <td class="desc">
+                        Software development services,<br />rendered in December
+                        2022
+                    </td>
+                    <td class="qty">19</td>
+                    <td class="unit">day(s)</td>
                     <td>EUR 300.00</td>
-                    <td>EUR 0.00</td>
-                    <td>EUR 3,700.00</td>
+                    <td>EUR 340.00</td>
+                    <td class="right">EUR 3,700.00</td>
+                </tr>
+                <tr class="overline bold-text">
+                    <td class="no"></td>
+                    <td class="desc"></td>
+                    <td class="qty"></td>
+                    <td class="unit"></td>
+                    <td></td>
+                    <td>Total</td>
+                    <td class="right">EUR 3,700.00</td>
                 </tr>
                 <tr>
-                    <td class="right_column">Total?</td>
-                    <td class="left_column">06-Jan-2023</td>
+                    <td class="no"></td>
+                    <td class="conversion">
+                        &nbsp;<br />
+                        Curs BNR<br />
+                        1 Euro = 4,9479 lei<br />
+                        &nbsp;
+                    </td>
+                    <td class="qty"></td>
+                    <td class="unit"></td>
+                    <td></td>
+                    <td></td>
+                    <td class="right"></td>
                 </tr>
             </table>
         </div>
 
+        <div class="disclaimer full_width">
+            <p>
+                * VAT reverse charge (dir. 2008/8/EC)<br />
+                ** non-taxable in Romania art. 268 (1)<br />
+                and art. 278 (2) of Romanian Fiscal Code
+            </p>
+        </div>
         <footer>
-        footer
+            <small>.: micro-tools.fibonet.ro :.</small>
         </footer>
     </body>
 </html>
