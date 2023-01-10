@@ -24,10 +24,6 @@ def render_timesheet(invoice, timesheet):
 
 
 def render_invoice(invoice: TimeInvoice):
-
-    print(invoice.__dict__)
-
-
     country = invoice.buyer.country
     international = True
     if country == "RO":
@@ -38,28 +34,43 @@ def render_invoice(invoice: TimeInvoice):
     else:
         raise RuntimeError(f"Locale settings not defined for {country}")
 
-    unit = translate_units(invoice.unit, international)
-    context = dict(
-        head=create_header_data(invoice, international),
-        invoice=invoice,
-        invoice_title="INVOICE " if international else "FACTURA " + invoice.series_number,
-        subtitle_no="no:" if international else "nr:",
-        subtitle_from="date:" if international else "din:",
-        invoice_unit=unit,
-        invoice_price=locale.currency(
-            invoice.unit_rate * (invoice.conversion_rate or 1), grouping=True, international=international
-        ),
-        invoice_vat=locale.currency(invoice.vat_value(), grouping=True, international=international),
-        invoice_time_value=locale.currency(invoice.time_value(), grouping=True, international=international),
-        invoice_value=locale.currency(invoice.value, grouping=True, international=international),
-    )
-
-    html_content = render_to_string("pdf_time_invoice_template.html", context=context)
+    tr_invoice = translate_invoice(invoice, international)
+    html_content = render_to_string("pdf_time_invoice_template.html", context=tr_invoice)
     pdf_content = pdfkit.from_string(html_content, options=RENDER_OPTIONS)
     buffer = io.BytesIO(pdf_content)
 
     return buffer
 
+
+def translate_invoice(invoice: TimeInvoice, international) -> dict:
+    data = dict(
+        international=international,
+        head=create_header_data(invoice, international),
+        invoice_title="INVOICE" if international else "FACTURA",
+        invoice_series_number=invoice.series_number,
+        invoice_issue_date=invoice.issue_date,
+        subtitle_no="no:" if international else "nr:",
+        subtitle_from="date:" if international else "din:",
+
+        invoice_description=invoice.description,
+        invoice_quantity=invoice.quantity,
+        invoice_unit=translate_units(invoice.unit, international),
+        invoice_conversion_rate=invoice.conversion_rate,
+        invoice_price=locale.currency(
+            invoice.unit_rate * (invoice.conversion_rate or 1), grouping=True, international=international
+        ),
+
+        invoice_vat_perc=f"{invoice.include_vat}%",
+        invoice_vat=locale.currency(invoice.vat_value(), grouping=True, international=international),
+        invoice_time_value=locale.currency(invoice.time_value(), grouping=True, international=international),
+
+        invoice_attached_description=invoice.attached_description,
+        invoice_attached_cost=locale.currency(invoice.attached_cost or 0, grouping=True, international=international),
+
+        invoice_value=locale.currency(invoice.value, grouping=True, international=international),
+    )
+
+    return data
 
 def translate_units(original, international):
     translation = {"mo": ("luni", "month(s)"), "hr": ("ore", "hour(s)"), "d": ("zile", "day(s)")}

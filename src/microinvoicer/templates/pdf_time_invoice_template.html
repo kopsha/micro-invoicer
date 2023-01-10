@@ -1,12 +1,29 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>{{ invoice_title }}</title>
+        <meta charset="utf-8" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>{{ invoice_title }} {{ invoice_series_number }}</title>
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css?family=Open+Sans:regular,bold"
+        />
         <style>
-            html,
+            html {
+                margin: 0;
+                width: 100%;
+                height: 100%;
+                font-family: "Open Sans";
+            }
             body {
                 margin: 0;
-                font-family: Helvetica, Sans-Serif;
+                height: 90%;
+                display: flex;
+                flex-direction: column;
+            }
+            .filler {
+                flex-grow: 1;
             }
             .full_width {
                 width: 100%;
@@ -25,14 +42,14 @@
                 height: 5em;
             }
             .title_box h2 {
-                margin-block-end: 0;
+                margin-bottom: 0;
             }
             .title {
-                font-size: 15pt;
+                font-size: 18pt;
             }
             .items {
-                font-size: 11pt;
-                margin-block-start: 3em;
+                font-size: 13pt;
+                margin-top: 3em;
             }
             .underline td,
             .underline th {
@@ -64,23 +81,26 @@
             .items td.desc {
                 width: auto;
             }
-            .items td.conversion {
+            .items td.conversion_rate {
                 width: auto;
                 text-align: left;
+                padding-top: 2em;
+                padding-bottom: 2em;
             }
             .items td.right {
                 text-align: right;
             }
             .disclaimer {
-                margin-block-start: 3em;
-                font-size: 9pt;
+                margin-top: 5em;
+                font-size: 11pt;
                 text-align: center;
-                line-height: 13pt;
+                line-height: 14pt;
                 color: darkgray;
             }
             footer {
-                margin-block-start: 5em;
+                margin-top: 8em;
                 font-family: monospace;
+                /* font-size: 10pt; */
                 text-align: right;
                 color: darkgray;
             }
@@ -96,11 +116,11 @@
                 {% for left, right in head.items %}
                 <tr>
                     {% if forloop.first %}
-                        <td class="left_column"><b>{{ left }}</b></td>
-                        <td class="right_column"><b>{{ right }}</b></td>
+                    <td class="left_column"><b>{{ left }}</b></td>
+                    <td class="right_column"><b>{{ right }}</b></td>
                     {% else %}
-                        <td class="left_column">{{ left }}</td>
-                        <td class="right_column">{{ right }}</td>
+                    <td class="left_column">{{ left }}</td>
+                    <td class="right_column">{{ right }}</td>
                     {% endif %}
                 </tr>
                 {% endfor %}
@@ -110,39 +130,70 @@
         <div class="title">
             <table class="full_width">
                 <tr>
-                    <td class="title_box" colspan="2"><h2>{{ invoice_title }}</h2></td>
+                    <td class="title_box" colspan="2">
+                        <h2>{{ invoice_title }}</h2>
+                    </td>
                 </tr>
                 <tr>
-                    <td class="right_column">{{ subtitle_no }}</td>
-                    <td class="left_column">{{ invoice.series_number }} </td>
+                    <td class="right_column">
+                        {{ subtitle_no }}<br />
+                        {{ subtitle_from }}
+                    </td>
+                    <td class="left_column">
+                        {{ invoice_series_number }}<br />
+                        {{ invoice_issue_date|date:'d-m-Y' }}
+                    </td>
                 </tr>
-                <tr>
-                    <td class="right_column">{{ subtitle_from }}</td>
-                    <td class="left_column">{{ invoice.issue_date|date:'d-m-Y' }}</td>
-                </tr>
+                <!-- <tr>
+                    <td class="right_column"></td>
+                    <td class="left_column">
+
+                    </td>
+                </tr> -->
             </table>
         </div>
 
         <div class="items">
             <table class="full_width" style="table-layout: fixed">
                 <thead class="underline bold-text">
+                    {% if international %}
                     <th class="no">No</th>
                     <th class="desc">Description</th>
                     <th class="qty">Qty</th>
                     <th class="unit">Unit</th>
                     <th>Price</th>
-                    <th>VAT</th>
+                    <th>VAT {{ invoice_vat_perc }}</th>
                     <th>Amount</th>
+                    {% else %}
+                    <th class="no">Nr.</th>
+                    <th class="desc">Descriere</th>
+                    <th class="qty">Cant.</th>
+                    <th class="unit">U.M.</th>
+                    <th>Preț unitar</th>
+                    <th>TVA {{ invoice_vat_perc }}</th>
+                    <th>Valoare</th>
+                    {% endif %}
                 </thead>
                 <tr>
                     <td class="no">1</td>
-                    <td class="desc">{{ invoice.description }}</td>
-                    <td class="qty">{{ invoice.quantity }}</td>
+                    <td class="desc">{{ invoice_description }}</td>
+                    <td class="qty">{{ invoice_quantity }}</td>
                     <td class="unit">{{ invoice_unit }}</td>
                     <td>{{ invoice_price }}</td>
                     <td>{{ invoice_vat }}</td>
                     <td class="right">{{ invoice_time_value }}</td>
                 </tr>
+                {% if invoice_attached_description %}
+                <tr>
+                    <td class="no">2</td>
+                    <td class="desc">{{ invoice_attached_description }}</td>
+                    <td class="qty"></td>
+                    <td class="unit"></td>
+                    <td></td>
+                    <td></td>
+                    <td class="right">{{ invoice_attached_cost }}</td>
+                </tr>
+                {% endif %}
                 <tr class="overline bold-text">
                     <td class="no"></td>
                     <td class="desc"></td>
@@ -150,16 +201,14 @@
                     <td class="unit"></td>
                     <td></td>
                     <td>Total</td>
-                    <td class="right">{{ invoice_time_value }}</td>
+                    <td class="right">{{ invoice_value }}</td>
                 </tr>
                 <tr>
                     <td class="no"></td>
-                    <td class="conversion">
-                        {% if invoice.conversion_rate %}
-                        &nbsp;<br />
-                        Curs BNR<br />
-                        1 Euro = {{ invoice.conversion_rate|floatformat:4 }} lei<br />
-                        &nbsp;
+                    <td class="conversion_rate">
+                        {% if invoice_conversion_rate %} Curs BNR<br />
+                        1 Euro = {{ invoice_conversion_rate|floatformat:4 }}
+                        Lei<br />
                         {% endif %}
                     </td>
                     <td class="qty"></td>
@@ -173,13 +222,17 @@
 
         <div class="disclaimer full_width">
             <p>
-                * VAT reverse charge (dir. 2008/8/EC)<br />
+                {% if international %} * VAT reverse charge (dir. 2008/8/EC)<br />
                 ** non-taxable in Romania art. 268 (1)<br />
-                and art. 278 (2) of Romanian Fiscal Code
+                and art. 278 (2) of Romanian Fiscal Code {% else %} * prezenta
+                factură circulă<br />
+                fără semnătură și ștampilă<br />
+                cf. art. 319 (29) din Codul Fiscal {% endif %}
             </p>
         </div>
+        <div class="filler"></div>
         <footer>
-            <small>.: micro-tools.fibonet.ro :.</small>
+            ..: micro-tools.fibonet.ro :..
         </footer>
     </body>
 </html>
