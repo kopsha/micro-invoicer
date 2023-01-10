@@ -144,12 +144,6 @@
                         {{ invoice_issue_date|date:'d-m-Y' }}
                     </td>
                 </tr>
-                <!-- <tr>
-                    <td class="right_column"></td>
-                    <td class="left_column">
-
-                    </td>
-                </tr> -->
             </table>
         </div>
 
@@ -162,16 +156,16 @@
                     <th class="qty">Qty</th>
                     <th class="unit">Unit</th>
                     <th>Price</th>
-                    <th>VAT {{ invoice_vat_perc }}</th>
                     <th>Amount</th>
+                    <th>VAT {{ invoice_vat_perc }}</th>
                     {% else %}
                     <th class="no">Nr.</th>
                     <th class="desc">Descriere</th>
                     <th class="qty">Cant.</th>
                     <th class="unit">U.M.</th>
                     <th>Preț unitar</th>
-                    <th>TVA {{ invoice_vat_perc }}</th>
                     <th>Valoare</th>
+                    <th>TVA {{ invoice_vat_perc }}</th>
                     {% endif %}
                 </thead>
                 <tr>
@@ -180,8 +174,8 @@
                     <td class="qty">{{ invoice_quantity }}</td>
                     <td class="unit">{{ invoice_unit }}</td>
                     <td>{{ invoice_price }}</td>
-                    <td>{{ invoice_vat }}</td>
                     <td class="right">{{ invoice_time_value }}</td>
+                    <td class="right">{{ invoice_vat }}</td>
                 </tr>
                 {% if invoice_attached_description %}
                 <tr>
@@ -198,10 +192,10 @@
                     <td class="no"></td>
                     <td class="desc"></td>
                     <td class="qty"></td>
-                    <td class="unit"></td>
-                    <td></td>
-                    <td>Total</td>
-                    <td class="right">{{ invoice_value }}</td>
+                    <td class="right" colspan="2">
+                        Total {{ international|yesno:"incl. taxes,incl. TVA" }}
+                    </td>
+                    <td colspan="2">{{ invoice_value }}</td>
                 </tr>
                 <tr>
                     <td class="no"></td>
@@ -231,8 +225,6 @@
             </p>
         </div>
         <div class="filler"></div>
-        <footer>
-            ..: micro-tools.fibonet.ro :..
-        </footer>
+        <footer>..: micro-tools.fibonet.ro :..</footer>
     </body>
 </html>
