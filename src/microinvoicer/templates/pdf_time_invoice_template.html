@@ -58,6 +58,7 @@
             .overline td,
             .overline th {
                 border-top: solid 1px black;
+                padding-top: 8pt;
             }
             .bold-text {
                 font-weight: bold;
@@ -87,7 +88,7 @@
                 padding-top: 2em;
                 padding-bottom: 2em;
             }
-            .items td.right {
+            .items td.right, .items th.right {
                 text-align: right;
             }
             .disclaimer {
@@ -141,7 +142,7 @@
                     </td>
                     <td class="left_column">
                         {{ invoice_series_number }}<br />
-                        {{ invoice_issue_date|date:'d-m-Y' }}
+                        {{ invoice_issue_date|date:'d-M-Y' }}
                     </td>
                 </tr>
             </table>
@@ -157,7 +158,7 @@
                     <th class="unit">Unit</th>
                     <th>Price</th>
                     <th>Amount</th>
-                    <th>VAT {{ invoice_vat_perc }}</th>
+                    <th>VAT ({{ invoice_vat_perc }})</th>
                     {% else %}
                     <th class="no">Nr.</th>
                     <th class="desc">Descriere</th>
@@ -165,7 +166,7 @@
                     <th class="unit">U.M.</th>
                     <th>Preț unitar</th>
                     <th>Valoare</th>
-                    <th>TVA {{ invoice_vat_perc }}</th>
+                    <th>TVA ({{ invoice_vat_perc }})</th>
                     {% endif %}
                 </thead>
                 <tr>
@@ -174,8 +175,8 @@
                     <td class="qty">{{ invoice_quantity }}</td>
                     <td class="unit">{{ invoice_unit }}</td>
                     <td>{{ invoice_price }}</td>
-                    <td class="right">{{ invoice_time_value }}</td>
-                    <td class="right">{{ invoice_vat }}</td>
+                    <td>{{ invoice_time_value }}</td>
+                    <td>{{ invoice_vat }}</td>
                 </tr>
                 {% if invoice_attached_description %}
                 <tr>
@@ -185,7 +186,7 @@
                     <td class="unit"></td>
                     <td></td>
                     <td></td>
-                    <td class="right">{{ invoice_attached_cost }}</td>
+                    <td>{{ invoice_attached_cost }}</td>
                 </tr>
                 {% endif %}
                 <tr class="overline bold-text">
@@ -193,7 +194,7 @@
                     <td class="desc"></td>
                     <td class="qty"></td>
                     <td class="right" colspan="2">
-                        Total {{ international|yesno:"incl. taxes,incl. TVA" }}
+                        Total {{ international|yesno:"due,de plata" }}
                     </td>
                     <td colspan="2">{{ invoice_value }}</td>
                 </tr>
@@ -209,7 +210,7 @@
                     <td class="unit"></td>
                     <td></td>
                     <td></td>
-                    <td class="right"></td>
+                    <td></td>
                 </tr>
             </table>
         </div>

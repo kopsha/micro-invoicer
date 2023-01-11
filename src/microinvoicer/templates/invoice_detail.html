@@ -28,7 +28,10 @@
                 {{ object.quantity }} <sub><small>{{ object.unit }}</small></sub>
                 x {{ object.unit_rate|floatformat:0 }} <sub><small>{{ object.contract_currency }}/{{ object.unit }}</small></sub>
                 {% if object.conversion_rate %}
-                [ x {{ object.conversion_rate|floatformat:4 }} <sub><small>{{ object.currency }}/{{ object.contract_currency }}</small></sub> ]
+                 x {{ object.conversion_rate|floatformat:4 }} <sub><small>{{ object.currency }}/{{ object.contract_currency }}</small></sub>
+                {% endif %}
+                {% if object.include_vat %}
+                + {{ object.include_vat }}% <sub><small>VAT</small></sub>
                 {% endif %}
                 {% if object.attached_cost %}
                 + {{ object.attached_cost|floatformat:2|intcomma }} <sub><small>{{ object.currency }}</small></sub>
