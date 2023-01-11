@@ -45,8 +45,7 @@ FAKE_TASKS_POOL = [
 ]
 
 
-def fake_timesheet(hours, flavor, project_id):
-    start_date = previous_month()
+def fake_timesheet(hours, flavor, project_id, start_date):
     timesheet = dict(start_date=start_date, flavor=flavor, project_id=project_id)
     how_many = random.randrange(8, stop=18)
     timesheet["tasks"] = create_random_tasks(timesheet, how_many, hours=hours)

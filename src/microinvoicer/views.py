@@ -1,6 +1,4 @@
 """How about now."""
-from datetime import date
-
 from datetime import date, timedelta
 from django.http import FileResponse
 from django.urls import reverse_lazy
@@ -245,7 +243,6 @@ class TimeInvoiceCreateView(MicroFormMixin, CreateView):
                         last_month=date.strftime(last_month, "%B %Y").title(),
                     )
                 )
-                print(local_context, flush=True)
                 initial["override_description"] = description_template.render(local_context)
 
         return initial
@@ -326,7 +323,12 @@ class TimeInvoiceFakeTimesheetView(LoginRequiredMixin, DetailView):
     def render_to_response(self, context, **response_kwargs):
         """Returns content of generated pdf"""
         invoice = context["object"]
-        timesheet = micro_timesheet.fake_timesheet(invoice.quantity, "Meditatii", "Catalog Online")
+        if "last_month" in invoice.contract.invoicing_description:
+            start_date = invoice.issue_date.replace(day=1) - timedelta(days=1)
+            start_date = start_date.replace(day=1)
+        else:
+            start_date = invoice.issue_date.replace(day=1)
+        timesheet = micro_timesheet.fake_timesheet(invoice.quantity, "Meditatii", "Catalog Online", start_date)
         content = pdf_rendering.render_timesheet(invoice, timesheet)
         response = FileResponse(
             content,

@@ -17,11 +17,33 @@ RENDER_OPTIONS = {
     "margin-left": "18mm",
     "encoding": "UTF-8",
     "custom-header": [("Accept-Encoding", "gzip")],
+    "no-background": True,
 }
 
 
-def render_timesheet(invoice, timesheet):
-    return ""
+def render_timesheet(invoice: TimeInvoice, timesheet):
+    country = invoice.buyer.country
+    international = True
+    if country == "RO":
+        locale.setlocale(locale.LC_ALL, "ro_RO")
+        international = False
+    elif country in {"CH", "IE"}:
+        locale.setlocale(locale.LC_ALL, "en_IE")
+    else:
+        raise RuntimeError(f"Locale settings not defined for {country}")
+
+
+    tr_invoice = translate_invoice(invoice, international)
+    tr_invoice["seller"] = invoice.seller
+    tr_invoice["buyer"] = invoice.buyer
+    tr_invoice["tasks"] = timesheet["tasks"]
+    options = dict(RENDER_OPTIONS)
+    tr_invoice["invoice_title"] = options["title"] = "Annex: Timesheet Report" if international else "Anexa: Raport de Activitate"
+    html_content = render_to_string("pdf_timesheet_template.html", context=tr_invoice)
+    pdf_content = pdfkit.from_string(html_content, options=options)
+    buffer = io.BytesIO(pdf_content)
+
+    return buffer
 
 
 def render_invoice(invoice: TimeInvoice):
@@ -35,9 +57,12 @@ def render_invoice(invoice: TimeInvoice):
     else:
         raise RuntimeError(f"Locale settings not defined for {country}")
 
+
     tr_invoice = translate_invoice(invoice, international)
+    options = dict(RENDER_OPTIONS)
+    options["title"] = tr_invoice["invoice_title"]
     html_content = render_to_string("pdf_time_invoice_template.html", context=tr_invoice)
-    pdf_content = pdfkit.from_string(html_content, options=RENDER_OPTIONS)
+    pdf_content = pdfkit.from_string(html_content, options=options)
     buffer = io.BytesIO(pdf_content)
 
     return buffer

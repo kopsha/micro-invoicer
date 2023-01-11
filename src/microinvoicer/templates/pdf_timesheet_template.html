@@ -28,6 +28,10 @@
             .full_width {
                 width: 100%;
             }
+            .nice_width {
+                width: 95%;
+                margin: 0 auto;
+            }
             .left_column {
                 width: 50%;
                 text-align: left;
@@ -72,6 +76,12 @@
             .items td.no {
                 width: 5%;
             }
+            .items th.date,
+            .items td.date,
+            .items th.project,
+            .items td.project {
+                width: 18%;
+            }
             .items th.qty,
             .items td.qty,
             .items th.unit,
@@ -91,12 +101,11 @@
             .items td.right, .items th.right {
                 text-align: right;
             }
-            .disclaimer {
+            .signatures {
                 margin-top: 5em;
-                font-size: 11pt;
+                font-size: 14pt;
                 text-align: center;
                 line-height: 14pt;
-                color: darkgray;
             }
             footer {
                 margin-top: 8em;
@@ -152,79 +161,51 @@
             <table class="full_width" style="table-layout: fixed">
                 <thead class="underline bold-text">
                     {% if international %}
-                    <th class="no">No</th>
-                    <th class="desc">Description</th>
-                    <th class="qty">Qty</th>
-                    <th class="unit">Unit</th>
-                    <th>Price</th>
-                    <th>Amount</th>
-                    <th>VAT ({{ invoice_vat_perc }})</th>
+                    <th class="date">Date</th>
+                    <th class="project">Project</th>
+                    <th class="desc">Activity</th>
                     {% else %}
-                    <th class="no">Nr.</th>
-                    <th class="desc">Descriere</th>
-                    <th class="qty">Cant.</th>
-                    <th class="unit">U.M.</th>
-                    <th>Preț unitar</th>
-                    <th>Valoare</th>
-                    <th>TVA ({{ invoice_vat_perc }})</th>
+                    <th class="date">Data</th>
+                    <th class="project">Proiect</th>
+                    <th class="desc">Activitate</th>
                     {% endif %}
+                    <th>{{ invoice_unit }}</th>
                 </thead>
+                {% for task in tasks %}
                 <tr>
-                    <td class="no">1</td>
-                    <td class="desc">{{ invoice_description }}</td>
-                    <td class="qty">{{ invoice_quantity }}</td>
-                    <td class="unit">{{ invoice_unit }}</td>
-                    <td>{{ invoice_price }}</td>
-                    <td>{{ invoice_time_value }}</td>
-                    <td>{{ invoice_vat }}</td>
+                    <td class="date">{{ task.date }}</td>
+                    <td class="project">{{ task.project }}</td>
+                    <td class="desc">{{ task.name }}</td>
+                    <td class="">{{ task.duration }}</td>
                 </tr>
-                {% if invoice_attached_description %}
-                <tr>
-                    <td class="no">2</td>
-                    <td class="desc">{{ invoice_attached_description }}</td>
-                    <td class="qty"></td>
-                    <td class="unit"></td>
-                    <td></td>
-                    <td>{{ invoice_attached_cost }}</td>
-                    <td></td>
-                </tr>
-                {% endif %}
+                {% endfor %}
                 <tr class="overline bold-text">
-                    <td class="no"></td>
-                    <td class="desc"></td>
-                    <td class="qty"></td>
-                    <td class="right" colspan="2">
-                        Total {{ international|yesno:"due,de plata" }}
-                    </td>
-                    <td colspan="2">{{ invoice_value }}</td>
-                </tr>
-                <tr>
-                    <td class="no"></td>
-                    <td class="conversion_rate">
-                        {% if invoice_conversion_rate %} Curs BNR<br />
-                        1 Euro = {{ invoice_conversion_rate|floatformat:4 }}
-                        Lei<br />
-                        {% endif %}
-                    </td>
-                    <td class="qty"></td>
-                    <td class="unit"></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td class="date"></td>
+                    <td class="project"></td>
+                    <td class="desc right">Total</td>
+                    <td>{{ invoice_quantity }}</td>
                 </tr>
             </table>
         </div>
 
-        <div class="disclaimer full_width">
-            <p>
-                {% if international %} * VAT reverse charge (dir. 2008/8/EC)<br />
-                ** non-taxable in Romania art. 268 (1)<br />
-                and art. 278 (2) of Romanian Fiscal Code {% else %} * prezenta
-                factură circulă<br />
-                fără semnătură și ștampilă<br />
-                cf. art. 319 (29) din Codul Fiscal {% endif %}
-            </p>
+        <div class="signatures full_width">
+            <table class="nice_width">
+                <thead>
+                    <th>{{ head.left_first }}</td>
+                    <th>{{ head.right_first }}</td>
+                </thead>
+                <tr><td>&nbsp;</td></tr>
+                <tr>
+                    <td>{{ head.items.0.0 }}</td>
+                    <td>{{ head.items.0.1 }}</td>
+                </tr>
+                <tr>
+                    <td>{{ seller.owner_fullname }}</td>
+                    <td>{{ buyer.owner_fullname }}</td>
+                </tr>
+            </table>
         </div>
+
         <div class="filler"></div>
         <footer>..: micro-tools.fibonet.ro :..</footer>
     </body>
