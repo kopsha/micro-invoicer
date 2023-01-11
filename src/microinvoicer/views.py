@@ -328,7 +328,9 @@ class TimeInvoiceFakeTimesheetView(LoginRequiredMixin, DetailView):
             start_date = start_date.replace(day=1)
         else:
             start_date = invoice.issue_date.replace(day=1)
-        timesheet = micro_timesheet.fake_timesheet(invoice.quantity, "Meditatii", "Catalog Online", start_date)
+        timesheet = micro_timesheet.fake_timesheet(
+            invoice.quantity, "Meditatii", "Catalog Online", start_date
+        )
         content = pdf_rendering.render_timesheet(invoice, timesheet)
         response = FileResponse(
             content,
