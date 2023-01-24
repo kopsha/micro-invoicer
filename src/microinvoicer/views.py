@@ -55,6 +55,140 @@ class MicroHomeView(LoginRequiredMixin, TemplateView):
         return context
 
 
+class InvoicesReportView(LoginRequiredMixin, TemplateView):
+
+    template_name = "invoices_report.html"
+
+    def get_context_data(self, **kwargs):
+        """Attach all registry info."""
+        CURS_BNR_EUR_RON = 4.95
+        quartes = {
+            "January": "Q1",
+            "February": "Q1",
+            "March": "Q1",
+            "April": "Q2",
+            "May": "Q2",
+            "June": "Q2",
+            "July": "Q3",
+            "August": "Q3",
+            "September": "Q3",
+            "October": "Q4",
+            "November": "Q4",
+            "December": "Q4",
+        }
+        converion_rates = {"ron": CURS_BNR_EUR_RON, "eur": 1}
+        context = super().get_context_data(**kwargs)
+
+        if self.request.user.is_authenticated:
+            invoices_crt_usr = list()
+
+            grouped = dict()
+            grouped_by_year = dict()
+            quarter_total = 0
+            conversion_rate = 1
+            month_total = 0
+            monthly_invoices_count = 0
+
+            for obj in models.TimeInvoice.objects.all().order_by("-issue_date"):
+                if obj.registry.user == self.request.user:
+                    invoices_crt_usr.append(obj)
+
+            # Version 2
+            first_elm = True
+            for previous, current in zip(invoices_crt_usr, invoices_crt_usr[1:]):
+                crt_conversion_rate = converion_rates.get(current.currency)
+                prv_conversion_rate = converion_rates.get(previous.currency)
+                crt_invoice_month = current.issue_date.strftime("%B")
+                prv_invoice_month = previous.issue_date.strftime("%B")
+                year_quart = str(current.issue_date.year) + " " + quartes.get(crt_invoice_month)
+
+                if first_elm:
+                    quarter_total += float(previous.value) / prv_conversion_rate
+                    month_total += float(previous.value) / prv_conversion_rate
+                    monthly_invoices_count += 1
+                    first_elm = False
+
+                if previous.issue_date.year == current.issue_date.year:
+                    if quartes.get(prv_invoice_month) == quartes.get(crt_invoice_month):
+                        quarter_total += float(current.value) / crt_conversion_rate
+                        if prv_invoice_month == crt_invoice_month:
+                            month_total += float(current.value) / crt_conversion_rate
+                            monthly_invoices_count += 1
+                        else:
+                            month_total = float(current.value) / crt_conversion_rate
+                            monthly_invoices_count = 1
+                    else:
+                        quarter_total = float(current.value) / crt_conversion_rate
+                        month_total = float(current.value) / crt_conversion_rate
+                        monthly_invoices_count = 1
+                else:
+                    quarter_total = float(current.value) / crt_conversion_rate
+                    month_total = float(current.value) / crt_conversion_rate
+                    monthly_invoices_count = 1
+
+                if len(grouped) >= 1 and monthly_invoices_count > 1:
+                    grouped.setdefault(year_quart, []).pop()
+                grouped.setdefault(year_quart, []).append(
+                    (
+                        crt_invoice_month,
+                        monthly_invoices_count,
+                        month_total,
+                        quarter_total,
+                        "eur",
+                    )
+                )
+
+            # Version 1
+            quarter_total = 0
+            conversion_rate = 1
+            month_total = 0
+            monthly_invoices_count = 0
+            for idx, obj in enumerate(invoices_crt_usr):
+                conversion_rate = converion_rates.get(obj.currency)
+                invoice_month = obj.issue_date.strftime("%B")
+                year_quart = str(obj.issue_date.year) + " " + quartes.get(invoice_month)
+                year_month = str(obj.issue_date.year) + invoice_month
+
+                if idx > 0:
+                    # " Q" + str(int(1 + int(invoices_crt_usr[idx - 1].issue_date.month-1)/3))
+                    year_quart_previous = (
+                        str(invoices_crt_usr[idx - 1].issue_date.year)
+                        + " "
+                        + quartes.get(invoices_crt_usr[idx - 1].issue_date.strftime("%B"))
+                    )
+                    year_month_previous = str(
+                        invoices_crt_usr[idx - 1].issue_date.year
+                    ) + invoices_crt_usr[idx - 1].issue_date.strftime("%B")
+
+                    if year_quart_previous != year_quart:
+                        quarter_total = 0
+
+                    if year_month_previous != year_month:
+                        month_total = 0
+                        monthly_invoices_count = 0
+
+                quarter_total += float(obj.value) / conversion_rate
+                month_total += float(obj.value) / conversion_rate
+                monthly_invoices_count += 1
+
+                if len(grouped_by_year) >= 1 and monthly_invoices_count > 1:
+                    grouped_by_year.setdefault(year_quart, []).pop()
+
+                grouped_by_year.setdefault(year_quart, []).append(
+                    (
+                        invoice_month,
+                        monthly_invoices_count,
+                        month_total,
+                        quarter_total,
+                        "eur",
+                    )
+                )
+
+        context["registries"] = grouped_by_year
+
+        return context
+
+
 class MicroFormMixin(LoginRequiredMixin):
     """Common requirements for model views"""
 

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+
+<div class="row" id="dashboard">
+    <table>
+    <tr>
+        <td style="text-align:left"><strong>Year</strong></td>
+        <td style="text-align:center"><strong>Month</strong></td>
+        <td style="text-align:center"><strong>Invoices Count</strong></td>
+        <td style="text-align:center"><strong>Value (EUR)</strong></td>
+    </tr>
+    {% for year_quarter, invoices in registries.items %}
+            {% for invoice in invoices %}
+                <tr>
+                <td style="text-align:center"></td>
+                <td style="text-align:center">{{invoice.0}}</td>
+                <td style="text-align:center">{{invoice.1|intcomma}}</td>
+                <td style="text-align:center">{{invoice.2|intword|intcomma}} {{invoice.4}}</td>
+                </tr>
+                {% if forloop.last %}
+                <tr style="background-color:lightgray;">
+                    <td style="text-align:left">Total of {{ year_quarter }}</td>
+                    <td style="text-align:center"></td>
+                    <td style="text-align:center"></td>
+                    <td style="text-align:center"><strong>{{invoice.3|intword|intcomma}} {{invoice.4}}</strong></td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+
+    {% endfor %}
+    </table>
+    </div>
+{% endblock %}
