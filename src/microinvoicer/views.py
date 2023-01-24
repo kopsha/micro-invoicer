@@ -13,7 +13,7 @@ from django_registration.backends.one_step.views import RegistrationView
 
 from . import forms, models, pdf_rendering, micro_timesheet
 from .temporary_locale import TemporaryLocale
-
+from decimal import Decimal
 
 class IndexView(TemplateView):
     """Landing Page."""
@@ -51,6 +51,48 @@ class MicroHomeView(LoginRequiredMixin, TemplateView):
             context["registries"] = user.registries.prefetch_related(
                 "seller", "contracts", "invoices"
             ).all()
+
+        return context
+
+def quarter(issue_date):
+    return f"Q{1 + issue_date.month//3}"
+
+
+class InvoicesReportView(LoginRequiredMixin, TemplateView):
+
+    template_name = "invoices_report.html"
+
+    def get_context_data(self, **kwargs):
+        """Attach all registry info."""
+        CURS_BNR_EUR_RON = 4.95
+
+        converion_rates = {"ron": Decimal(1.0), "eur": Decimal(CURS_BNR_EUR_RON)}
+        context = super().get_context_data(**kwargs)
+
+        invoices = models.TimeInvoice.objects.filter(registry__user=self.request.user).order_by("-issue_date")
+        totals = dict()
+        for invoice in invoices:
+            year = invoice.issue_date.year
+            quarter = f"Q{1 + invoice.issue_date.month//3}"
+            month = invoice.issue_date.month
+            value = invoice.value * converion_rates[invoice.currency]
+
+            total_year = totals.get(year, dict(total=0))
+            total_year["total"] += value
+
+            total_quarter = total_year.get(quarter, dict(total=0))
+            total_quarter["total"] += value
+
+            total_month = total_quarter.get(month, dict(total=0, count=0))
+            total_month["total"] += value
+            total_month["count"] += 1
+            total_month["date"] = invoice.issue_date
+
+            total_quarter[month] = total_month
+            total_year[quarter] = total_quarter
+            totals[year] = total_year
+
+        context["totals"] = totals
 
         return context
 
