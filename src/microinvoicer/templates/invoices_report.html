@@ -6,29 +6,44 @@
 <div class="row" id="dashboard">
     <table>
     <tr>
-        <td style="text-align:left"><strong>Year</strong></td>
-        <td style="text-align:center"><strong>Month</strong></td>
-        <td style="text-align:center"><strong>Invoices Count</strong></td>
-        <td style="text-align:center"><strong>Value (EUR)</strong></td>
+        <th><strong>Year</strong></th>
+        <th><strong>Quarter</strong></th>
+        <th><strong>Month</strong></th>
+        <th><strong>Invoice Count</strong></th>
+        <th><strong>Value</strong></th>
     </tr>
-    {% for year_quarter, invoices in registries.items %}
-            {% for invoice in invoices %}
+    {% for year, total_year in totals.items %}
+        {% if year != "total" %}
+        {% for quarter, total_quarter in total_year.items %}
+            {% if quarter != "total" %}
+            {% for month, total_month in total_quarter.items %}
+                {% if month != "total" %}
                 <tr>
-                <td style="text-align:center"></td>
-                <td style="text-align:center">{{invoice.0}}</td>
-                <td style="text-align:center">{{invoice.1|intcomma}}</td>
-                <td style="text-align:center">{{invoice.2|intword|intcomma}} {{invoice.4}}</td>
-                </tr>
-                {% if forloop.last %}
-                <tr style="background-color:lightgray;">
-                    <td style="text-align:left">Total of {{ year_quarter }}</td>
-                    <td style="text-align:center"></td>
-                    <td style="text-align:center"></td>
-                    <td style="text-align:center"><strong>{{invoice.3|intword|intcomma}} {{invoice.4}}</strong></td>
+                    <td></td>
+                    <td></td>
+                    <td>{{ total_month.date|date:"F" }}</td>
+                    <td>{{ total_month.count }}</td>
+                    <td><strong>{{ total_month.total|floatformat:2|intcomma }}</strong></td>
                 </tr>
                 {% endif %}
             {% endfor %}
-
+            <tr>
+                <td></td>
+                <td>{{ quarter }}</td>
+                <td></td>
+                <td></td>
+                <td><strong>{{ total_quarter.total|floatformat:2|intcomma }}</strong></td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+        <tr>
+            <td>{{ year }}</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><strong>{{ total_year.total|floatformat:2|intcomma }}</strong></td>
+        </tr>
+        {% endif %}
     {% endfor %}
     </table>
     </div>
