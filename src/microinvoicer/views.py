@@ -1,5 +1,5 @@
 """How about now."""
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from django.http import FileResponse
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView
@@ -14,6 +14,7 @@ from django_registration.backends.one_step.views import RegistrationView
 from . import forms, models, pdf_rendering, micro_timesheet
 from .temporary_locale import TemporaryLocale
 from decimal import Decimal
+
 
 class IndexView(TemplateView):
     """Landing Page."""
@@ -54,6 +55,7 @@ class MicroHomeView(LoginRequiredMixin, TemplateView):
 
         return context
 
+
 def quarter(issue_date):
     return f"Q{1 + issue_date.month//3}"
 
@@ -70,10 +72,37 @@ class InvoicesReportView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
 
         invoices = models.TimeInvoice.objects.filter(registry__user=self.request.user).order_by("-issue_date")
+
+        template_months = (
+            1
+            + (invoices[0].issue_date.year - invoices.reverse()[0].issue_date.year) * 12
+            + (invoices[0].issue_date.month - invoices.reverse()[0].issue_date.month)
+        )
         totals = dict()
+        year = invoices[0].issue_date.year
+        month = invoices[0].issue_date.month
+        quarter = f"Q{1 + (month - 1)//3}"
+
+        for _ in range(template_months):
+            total_year = totals.get(year, dict(total=0))
+            total_quarter = total_year.get(quarter, dict(total=0))
+            total_month = total_quarter.get(month, dict(total=0, count=0))
+            total_month["date"] = datetime(year, month, 1).date()
+
+            total_quarter[month] = total_month
+            total_year[quarter] = total_quarter
+            totals[year] = total_year
+
+            if month > 1:
+                month -= 1
+            else:
+                month = 12
+                year -= 1
+            quarter = f"Q{1 + (month - 1)//3}"
+
         for invoice in invoices:
             year = invoice.issue_date.year
-            quarter = f"Q{1 + invoice.issue_date.month//3}"
+            quarter = f"Q{1 + (invoice.issue_date.month - 1)//3}"
             month = invoice.issue_date.month
             value = invoice.value * converion_rates[invoice.currency]
 
