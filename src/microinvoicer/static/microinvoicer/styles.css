@@ -1,0 +1,17 @@
+tr.yearly {
+    font-weight: bold;
+}
+
+tr.quarterly {
+    font-weight: 500;
+}
+
+table.centered thead tr {
+    border-bottom: solid 1px black;
+}
+
+
+table.centered tbody tr td.amount, table.centered thead tr th.amount {
+    text-align: right;
+    padding-right: 34pt;
+}

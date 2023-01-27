@@ -1,50 +1,49 @@
 {% extends "base.html" %}
 {% load humanize %}
-
 {% block content %}
 
 <div class="row">
-    <table>
-    <tr>
-        <th>Year</th>
-        <th>Quarter</th>
-        <th>Month</th>
-        <th>Invoice Count</th>
-        <th>Value (RON)</th>
-    </tr>
-    {% for year, total_year in totals.items %}
+    <table class="centered highlight">
+        <thead>
+            <th>Year</th>
+            <th>Quarter</th>
+            <th>Month</th>
+            <th>Invoice<br />count</th>
+            <th class="amount">Amount</th>
+        </thead>
+        {% for year, total_year in totals.items %}
         {% if year != "total" %}
-        <tr style="background-color: lightgray;">
-            <td>{{ year }}</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>{{ total_year.total|floatformat:2|intcomma }}</td>
-        </tr>
-        {% for quarter, total_quarter in total_year.items %}
-            {% if quarter != "total" %}
-            <tr>
-                <td></td>
-                <td>{{ quarter }}</td>
+            <tr class="yearly grey lighten-2">
+                <td>{{ year }}</td>
                 <td></td>
                 <td></td>
-                <td>{{ total_quarter.total|floatformat:2|intcomma }}</td>
+                <td></td>
+                <td class="amount">{{ total_year.total|floatformat:2|intcomma }} lei</td>
             </tr>
-            {% for month, total_month in total_quarter.items %}
+            {% for quarter, total_quarter in total_year.items %}
+            {% if quarter != "total" %}
+                <tr class="quarterly grey lighten-4">
+                    <td></td>
+                    <td>{{ quarter }}</td>
+                    <td></td>
+                    <td></td>
+                    <td class="amount">{{ total_quarter.total|floatformat:2|intcomma }} lei</td>
+                </tr>
+                {% for month, total_month in total_quarter.items %}
                 {% if month != "total" %}
                 <tr>
                     <td></td>
                     <td></td>
                     <td>{{ total_month.date|date:"F" }}</td>
                     <td>{{ total_month.count }}</td>
-                    <td>{{ total_month.total|floatformat:2|intcomma }}</td>
+                    <td class="amount">{{ total_month.total|floatformat:2|intcomma }} lei</td>
                 </tr>
                 {% endif %}
-            {% endfor %}
+                {% endfor %}
             {% endif %}
-        {% endfor %}
+            {% endfor %}
         {% endif %}
-    {% endfor %}
+        {% endfor %}
     </table>
-    </div>
+</div>
 {% endblock %}
