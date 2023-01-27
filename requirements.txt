@@ -6,3 +6,4 @@ django-material
 django-countries
 pdfkit
 python-dateutil
+requests

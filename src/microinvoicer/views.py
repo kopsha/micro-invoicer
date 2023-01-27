@@ -11,6 +11,7 @@ from django.forms.models import model_to_dict
 from django.template import Template, Context
 from django_registration.backends.one_step.views import RegistrationView
 from dateutil.rrule import rrule, MONTHLY
+from django.apps import apps
 
 from . import forms, models, pdf_rendering, micro_timesheet
 from .temporary_locale import TemporaryLocale
@@ -63,10 +64,11 @@ class ReportView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         """Computes quarterly reports"""
-        # TODO: replace with monthly averages
-        CURS_BNR_EUR_RON = 4.95
+        app_config = apps.get_app_config("microinvoicer")
+        daily_rates = app_config.daily_rates
+        daily_rates["ron"] = Decimal(1)
+        average_rates = app_config.average_rates
 
-        converion_rates = {"ron": Decimal(1.0), "eur": Decimal(CURS_BNR_EUR_RON)}
         context = super().get_context_data(**kwargs)
 
         invoices = models.TimeInvoice.objects.filter(registry__user=self.request.user).order_by(
@@ -79,11 +81,13 @@ class ReportView(LoginRequiredMixin, TemplateView):
             year = invoice.issue_date.year
             quarter = models.quarter_of(invoice.issue_date)
             month = invoice.issue_date.month
-            value = invoice.value * converion_rates[invoice.currency]
+            use_date = invoice.issue_date.replace(day=1)
+            conversion_rate = average_rates.get(use_date, daily_rates[invoice.currency])
+
+            value = invoice.value * conversion_rate
 
             total_year = totals.get(year, dict(total=0))
             total_year["total"] += value
-
             total_quarter = total_year.get(quarter, dict(total=0))
             total_quarter["total"] += value
 
