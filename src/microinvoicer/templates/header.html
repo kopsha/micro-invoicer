@@ -6,7 +6,7 @@
                 <a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
                 <ul id="nav-mobile" class="right hide-on-med-and-down">
                     {% if user.is_authenticated %}
-                    <li><a href="{% url 'invoices-report' %}">Invoices Report</a></li>
+                    <li><a href="{% url 'report' %}">Quarterly Reports</a></li>
                     <li><a href="{% url 'profile-update' %}">{{ user.get_full_name }}</a></li>
                     <li><a href="{% url 'microinvoicer_logout' %}">Logout</a></li>
                     {% else %}

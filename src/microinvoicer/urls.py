@@ -53,6 +53,6 @@ urlpatterns = [
         name="registry-invoice-timesheet",
     ),
     path("home/", views.MicroHomeView.as_view(), name="home"),
-    path("report/", views.InvoicesReportView.as_view(), name="invoices-report"),
+    path("report/", views.ReportView.as_view(), name="report"),
     path("", views.IndexView.as_view(), name="index"),
 ]
