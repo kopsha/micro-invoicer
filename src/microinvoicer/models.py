@@ -5,6 +5,7 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.utils import timezone
 from django_countries.fields import CountryField
+from datetime import date
 
 from .managers import MicroUserManager
 
@@ -12,6 +13,10 @@ from .managers import MicroUserManager
 LONG_TEXT = 255
 SHORT_TEXT = 40
 REALLY_SHORT = 16
+
+
+def quarter_of(a_date: date):
+    return f"Q{1 + (a_date.month - 1) // 3}"
 
 
 class AvailableCurrencies(models.TextChoices):

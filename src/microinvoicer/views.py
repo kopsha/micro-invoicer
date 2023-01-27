@@ -10,6 +10,7 @@ from django.contrib.auth.views import LoginView
 from django.forms.models import model_to_dict
 from django.template import Template, Context
 from django_registration.backends.one_step.views import RegistrationView
+from dateutil.rrule import rrule, MONTHLY
 
 from . import forms, models, pdf_rendering, micro_timesheet
 from .temporary_locale import TemporaryLocale
@@ -56,53 +57,27 @@ class MicroHomeView(LoginRequiredMixin, TemplateView):
         return context
 
 
-def quarter(issue_date):
-    return f"Q{1 + issue_date.month//3}"
+class ReportView(LoginRequiredMixin, TemplateView):
 
-
-class InvoicesReportView(LoginRequiredMixin, TemplateView):
-
-    template_name = "invoices_report.html"
+    template_name = "report.html"
 
     def get_context_data(self, **kwargs):
-        """Attach all registry info."""
+        """Computes quarterly reports"""
+        # TODO: replace with monthly averages
         CURS_BNR_EUR_RON = 4.95
 
         converion_rates = {"ron": Decimal(1.0), "eur": Decimal(CURS_BNR_EUR_RON)}
         context = super().get_context_data(**kwargs)
 
-        invoices = models.TimeInvoice.objects.filter(registry__user=self.request.user).order_by("-issue_date")
-
-        template_months = (
-            1
-            + (invoices[0].issue_date.year - invoices.reverse()[0].issue_date.year) * 12
-            + (invoices[0].issue_date.month - invoices.reverse()[0].issue_date.month)
+        invoices = models.TimeInvoice.objects.filter(registry__user=self.request.user).order_by(
+            "-issue_date"
         )
+
+        # build up the monthly / quartery / yearly total
         totals = dict()
-        year = invoices[0].issue_date.year
-        month = invoices[0].issue_date.month
-        quarter = f"Q{1 + (month - 1)//3}"
-
-        for _ in range(template_months):
-            total_year = totals.get(year, dict(total=0))
-            total_quarter = total_year.get(quarter, dict(total=0))
-            total_month = total_quarter.get(month, dict(total=0, count=0))
-            total_month["date"] = datetime(year, month, 1).date()
-
-            total_quarter[month] = total_month
-            total_year[quarter] = total_quarter
-            totals[year] = total_year
-
-            if month > 1:
-                month -= 1
-            else:
-                month = 12
-                year -= 1
-            quarter = f"Q{1 + (month - 1)//3}"
-
         for invoice in invoices:
             year = invoice.issue_date.year
-            quarter = f"Q{1 + (invoice.issue_date.month - 1)//3}"
+            quarter = models.quarter_of(invoice.issue_date)
             month = invoice.issue_date.month
             value = invoice.value * converion_rates[invoice.currency]
 
@@ -120,6 +95,22 @@ class InvoicesReportView(LoginRequiredMixin, TemplateView):
             total_quarter[month] = total_month
             total_year[quarter] = total_quarter
             totals[year] = total_year
+
+        if invoices:
+            # fill in missing spots between first and last invoice
+            since = invoices.last().issue_date.replace(day=1)
+            until = invoices.first().issue_date.replace(day=1)
+            for every_month in rrule(freq=MONTHLY, dtstart=since, until=until, bymonthday=1):
+                year = every_month.year
+                quarter = models.quarter_of(every_month)
+                month = every_month.month
+
+                if year not in totals:
+                    totals[year] = dict(total=0)
+                if quarter not in totals[year]:
+                    totals[year][quarter] = dict(total=0)
+                if month not in totals[year][quarter]:
+                    totals[year][quarter][month] = dict(total=0, count=0, date=every_month)
 
         context["totals"] = totals
 
