@@ -12,10 +12,10 @@ from django.template import Template, Context
 from django_registration.backends.one_step.views import RegistrationView
 from dateutil.rrule import rrule, MONTHLY
 from django.apps import apps
+from decimal import Decimal
 
 from . import forms, models, pdf_rendering, micro_timesheet
 from .temporary_locale import TemporaryLocale
-from decimal import Decimal
 
 
 class IndexView(TemplateView):
@@ -78,7 +78,7 @@ class ReportView(LoginRequiredMixin, TemplateView):
         # build up the monthly / quartery / yearly total
         totals = dict()
         if invoices:
-            # fill in missing spots between first and last invoice
+            # fill in all spots between first and last invoice in reverse order
             since = invoices.last().issue_date.replace(day=1)
             until = invoices.first().issue_date.replace(day=1)
             all_months = list(rrule(freq=MONTHLY, dtstart=since, until=until, bymonthday=1))
