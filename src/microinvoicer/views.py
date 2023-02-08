@@ -12,10 +12,10 @@ from django.template import Template, Context
 from django_registration.backends.one_step.views import RegistrationView
 from dateutil.rrule import rrule, MONTHLY
 from django.apps import apps
+from decimal import Decimal
 
 from . import forms, models, pdf_rendering, micro_timesheet
 from .temporary_locale import TemporaryLocale
-from decimal import Decimal
 
 
 class IndexView(TemplateView):
@@ -77,6 +77,23 @@ class ReportView(LoginRequiredMixin, TemplateView):
 
         # build up the monthly / quartery / yearly total
         totals = dict()
+        if invoices:
+            # fill in all spots between first and last invoice in reverse order
+            since = invoices.last().issue_date.replace(day=1)
+            until = invoices.first().issue_date.replace(day=1)
+            all_months = list(rrule(freq=MONTHLY, dtstart=since, until=until, bymonthday=1))
+            for every_month in reversed(all_months):
+                year = every_month.year
+                quarter = models.quarter_of(every_month)
+                month = every_month.month
+
+                if year not in totals:
+                    totals[year] = dict(total=0)
+                if quarter not in totals[year]:
+                    totals[year][quarter] = dict(total=0)
+                if month not in totals[year][quarter]:
+                    totals[year][quarter][month] = dict(total=0, count=0, date=every_month)
+
         for invoice in invoices:
             year = invoice.issue_date.year
             quarter = models.quarter_of(invoice.issue_date)
@@ -99,22 +116,6 @@ class ReportView(LoginRequiredMixin, TemplateView):
             total_quarter[month] = total_month
             total_year[quarter] = total_quarter
             totals[year] = total_year
-
-        if invoices:
-            # fill in missing spots between first and last invoice
-            since = invoices.last().issue_date.replace(day=1)
-            until = invoices.first().issue_date.replace(day=1)
-            for every_month in rrule(freq=MONTHLY, dtstart=since, until=until, bymonthday=1):
-                year = every_month.year
-                quarter = models.quarter_of(every_month)
-                month = every_month.month
-
-                if year not in totals:
-                    totals[year] = dict(total=0)
-                if quarter not in totals[year]:
-                    totals[year][quarter] = dict(total=0)
-                if month not in totals[year][quarter]:
-                    totals[year][quarter][month] = dict(total=0, count=0, date=every_month)
 
         context["totals"] = totals
 
