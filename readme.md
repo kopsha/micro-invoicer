@@ -37,6 +37,7 @@ Under each registry
 ### ToDO use cases
 
 Under each registry
+- Can *archive* a registry
 - New invoices are issued in *draft* state
 - Can publish a *draft* invoice (*published* invoices become read-only)
 - Can only remove *draft* invoices
