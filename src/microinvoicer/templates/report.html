@@ -2,6 +2,148 @@
 {% load humanize %}
 {% block content %}
 
+{{ totals|json_script:"totals-data" }}
+<div class="row">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" data-turbolinks="false"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <canvas id="yearChart"></canvas>
+  <canvas id="quarterChart"></canvas>
+  <canvas id="monthChart"></canvas>
+
+  <button id="backButton" style="display: none; float: left;">Back</button>
+  <button id="backButtonM" style="display: none; float: left;">Back</button>
+
+
+  <script>
+    // Function to create a chart
+    function createChart(canvasId, labels, data, label) {
+      return new Chart(canvasId, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: label,
+              data: data,
+              backgroundColor: 'rgba(200, 200, 200, 0.5)', // Set the background color for the bars
+              borderColor: 'rgba(200, 200, 200, 1)', // Set the border color for the bars
+              borderWidth: 1 // Set the border width for the bars
+            }
+          ]
+        },
+        options: {
+          responsive: true, // Make the chart responsive
+          scales: {
+            y: {
+              beginAtZero: true // Start the y-axis at zero
+            }
+          }
+        }
+      });
+    }
+
+    // Get the canvas elements
+    const chartCanvas = document.getElementById('yearChart');
+    const quarterChartCanvas = document.getElementById('quarterChart');
+    const monthChartCanvas = document.getElementById('monthChart');
+
+    // Get the back button element
+    const backButton = document.getElementById('backButton');
+    const backButtonM = document.getElementById('backButtonM');
+
+    // Data for the years chart
+    const totalsData = JSON.parse(document.getElementById('totals-data').textContent);
+    const years = Object.keys(totalsData);
+    const data = Object.values(totalsData).map(obj => obj.total);
+
+    // Create the chart
+    let chart = createChart(chartCanvas, years, data, 'Yearly Values');
+
+    // Add event listener to the chart
+    chartCanvas.addEventListener('click', function(e) {
+      const activePoints = chart.getElementsAtEventForMode(e, 'index', { intersect: true }, true);
+      if (activePoints.length > 0) {
+        const dataIndex = activePoints[0].index;
+        const selectedYear = years[dataIndex];
+        const selectedData = totalsData[selectedYear];
+
+        const { total, ...quartersData } = selectedData;
+        const quarters = Object.keys(quartersData);
+        const quarterData = Object.values(quartersData).map(obj => obj.total).filter(value => value !== undefined);
+
+        // Clear the previous chart
+        chart.destroy();
+
+        // Hide the yearly chart and show the quarter data container
+        chartCanvas.style.display = 'none';
+        quarterChartCanvas.style.display = 'block';
+
+        // Create the chart for the quarters
+        let qchart = createChart(quarterChartCanvas, quarters, quarterData, 'Quarter Values');
+
+        // Show the back button
+        backButton.style.display = 'inline-block';
+
+        // Add event listener to the back button
+        backButton.addEventListener('click', function() {
+          // Clear the quarter chart
+          qchart.destroy();
+          // Hide the quarter chart and show the year chart
+          quarterChartCanvas.style.display = 'none';
+          chartCanvas.style.display = 'block';
+          chart = createChart(chartCanvas, years, data, 'Yearly Values');
+
+          // Reset the back button
+          backButton.style.display = 'none';
+        });
+
+        // Add event listener to the quarter chart
+        quarterChartCanvas.addEventListener('click', function(e) {
+          const activePoints = qchart.getElementsAtEventForMode(e, 'index', { intersect: true }, true);
+          if (activePoints.length > 0) {
+            const dataIndex = activePoints[0].index;
+            const selectedQuarter = quarters[dataIndex];
+            const selectedQuarterData = quartersData[selectedQuarter];
+
+            const { total, ...monthsData } = selectedQuarterData;
+            const months = Object.keys(monthsData);
+            const monthData = Object.values(monthsData).map(obj => obj.total).filter(value => value !== undefined);
+
+            // Clear the previous chart
+            backButton.style.display = 'none';
+            qchart.destroy();
+
+            // Hide the quarter chart and show the month data container
+            quarterChartCanvas.style.display = 'none';
+            monthChartCanvas.style.display = 'block';
+
+            // Create the chart for the subset data
+            let mchart = createChart(monthChartCanvas, months, monthData, 'Month Values');
+
+            // Show the back button
+            backButtonM.style.display = 'inline-block';
+
+            // Add event listener to the back button
+            backButtonM.addEventListener('click', function() {
+              // Clear the month chart
+              mchart.destroy();
+              backButton.style.display = 'inline-block';
+              backButtonM.style.display = 'none';
+
+              // Hide the month chart and show the quarter chart
+              monthChartCanvas.style.display = 'none';
+              quarterChartCanvas.style.display = 'block';
+              qchart = createChart(quarterChartCanvas, quarters, quarterData, 'Quarter Values');
+            });
+          }
+        });
+      }
+    });
+  </script>
+</div>
+
+
+
 <div class="row">
     <table class="centered highlight">
         <thead>
