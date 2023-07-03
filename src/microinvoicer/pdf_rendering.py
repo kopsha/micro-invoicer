@@ -27,7 +27,7 @@ def render_timesheet(invoice: TimeInvoice, timesheet):
     if country == "RO":
         locale.setlocale(locale.LC_ALL, "ro_RO")
         international = False
-    elif country in {"CH", "IE"}:
+    elif country in {"CH", "IE", "NL"}:
         locale.setlocale(locale.LC_ALL, "en_IE")
     else:
         raise RuntimeError(f"Locale settings not defined for {country}")
@@ -53,7 +53,7 @@ def render_invoice(invoice: TimeInvoice):
     if country == "RO":
         locale.setlocale(locale.LC_ALL, "ro_RO")
         international = False
-    elif country in {"CH", "IE"}:
+    elif country in {"CH", "IE", "NL"}:
         locale.setlocale(locale.LC_ALL, "en_IE")
     else:
         raise RuntimeError(f"Locale settings not defined for {country}")
