@@ -3,7 +3,6 @@
 {% block content %}
 
 {{ totals|json_script:"totals-data" }}
-<!-- create a node to display dynamcaly a chart for all data in my_table  -->
 
 <div class="row">
   <canvas id="reportChart"></canvas>
@@ -12,8 +11,6 @@
   <script>
     (function () {
       'use strict';
-
-      // Create chart creation function
       function createChart(canvasId, labels, data, label) {
         return new Chart(canvasId, {
           type: 'bar',
@@ -23,33 +20,31 @@
               {
                 label: label,
                 data: data,
-                backgroundColor: 'rgba(200, 200, 200, 0.5)', // Set the background color for the bars
-                borderColor: 'rgba(200, 200, 200, 1)', // Set the border color for the bars
-                borderWidth: 1, // Set the border width for the bars
+                backgroundColor: 'rgba(200, 200, 200, 0.5)',
+                borderColor: 'rgba(200, 200, 200, 1)',
+                borderWidth: 1,
               },
             ],
           },
           options: {
-            responsive: true, // Make the chart responsive
+            responsive: true,
             scales: {
               y: {
-                beginAtZero: true, // Start the y-axis at zero
+                beginAtZero: true,
               },
             },
           },
         });
       }
 
-      // Delete chart
       function deleteChart(chart) {
         chart.destroy();
       }
 
-      // Get data for chart
       var totalsData = JSON.parse(document.getElementById('totals-data').textContent);
       var years = Object.keys(totalsData);
       var yearData = Object.values(totalsData).map(function (obj) { return obj.total; });
-      var selectedYear = years[0]; // Initialize with the first year
+      var selectedYear = years[0];
 
       function getQuarters(year) {
         var quarters = Object.keys(totalsData[year]).filter(function (key) { return key !== "total"; });
@@ -65,13 +60,11 @@
 
       var chartCanvas = document.getElementById('reportChart');
 
-      // create Yearly chart as default
       var x_axis = years;
       var y_axis = yearData;
       var label = 'Yearly Totals';
       var chart = createChart(chartCanvas, x_axis, y_axis, label);
 
-      // update chart based on event handler
       chartCanvas.addEventListener('click', function (e) {
         var activePoints = chart.getElementsAtEventForMode(e, 'index', { intersect: true }, true);
         if (activePoints.length > 0) {
@@ -92,7 +85,6 @@
         }
       });
 
-      // add back button
       var backButton = document.getElementById('backButton');
       backButton.addEventListener('click', function () {
         if (label.includes('Quarterly Totals')) {
