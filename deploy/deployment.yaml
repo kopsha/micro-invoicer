@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: micro-container
-        image: ghcr.io/kopsha/micro-invoicer:test-main
+        image: ghcr.io/kopsha/micro-invoicer:main
         ports:
         - containerPort: 8000
 
