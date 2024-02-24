@@ -15,6 +15,7 @@ spec:
       containers:
       - name: micro-container
         image: ghcr.io/kopsha/micro-invoicer:main
+        imagePullPolicy: Always
         ports:
         - containerPort: 8000
 
