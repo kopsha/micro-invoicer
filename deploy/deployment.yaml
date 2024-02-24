@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: micro-invoicer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: micro-invoicer
+  template:
+    metadata:
+      labels:
+        app: micro-invoicer
+    spec:
+      containers:
+      - name: micro-container
+        image: ghcr.io/kopsha/micro-invoicer:test-main
+        ports:
+        - containerPort: 8000
+
