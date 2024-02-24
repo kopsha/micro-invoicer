@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: micro-invoicer
+spec:
+  project: micro
+  source:
+    repoURL: 'https://github.com/kopsha/micro-invoicer.git'
+    path: deploy/
+    targetRevision: HEAD
+  destination:
+    namespace: micro
+    server: 'https://kubernetes.default.svc'
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+
