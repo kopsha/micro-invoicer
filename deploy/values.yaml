@@ -1,0 +1,9 @@
+image:
+  repository: ghcr.io/kopsha/micro-invoicer:main
+  pullPolicy: Always
+
+useDomain: fibonet.ro
+useEnvironment: develop
+
+replicaCount: 1
+

@@ -1,21 +1,69 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: micro-invoicer
+  name: "{{ .Release.Name }}-{{ .Values.useEnvironment }}"
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: micro-invoicer
+      app: "{{ .Release.Name }}-{{ .Values.useEnvironment }}"
   template:
     metadata:
       labels:
-        app: micro-invoicer
+        app: "{{ .Release.Name }}-{{ .Values.useEnvironment }}"
     spec:
       containers:
-      - name: micro-container
-        image: ghcr.io/kopsha/micro-invoicer:main
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 8000
-
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          env:
+            - name: MICRO_SERVER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Release.Name }}-{{ .Values.useEnvironment }}"
+                  key: djangoSecretKey
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Release.Name }}-{{ .Values.useEnvironment }}"
+                  key: dbHost
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Release.Name }}-{{ .Values.useEnvironment }}"
+                  key: dbPort
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Release.Name }}-{{ .Values.useEnvironment }}"
+                  key: dbName
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Release.Name }}-{{ .Values.useEnvironment }}"
+                  key: dbUser
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Release.Name }}-{{ .Values.useEnvironment }}"
+                  key: dbPassword
+          livenessProbe:
+            httpGet:
+              path: /healthy/
+              port: http
+            initialDelaySeconds: 13
+            timeoutSeconds: 2
+            periodSeconds: 13
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthy/
+              port: http
+            initialDelaySeconds: 5
+            timeoutSeconds: 2
+            periodSeconds: 8
+            successThreshold: 1
