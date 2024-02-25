@@ -10,5 +10,4 @@ services:
       - ./data/db.sqlite3:/app/data/db.sqlite3
     environment:
       - DEBUG=on
-      - VERSION=local
 

@@ -27,6 +27,10 @@ COPY ./src /app/src
 
 EXPOSE 8000
 ENV SERVICE_PORT=8000
+
+ARG VERSION=local  # override at build
+ENV VERSION=${VERSION}
+
 CMD ["start"]
 
 VOLUME [ "/app/src" ]
