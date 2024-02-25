@@ -51,6 +51,12 @@ spec:
                 secretKeyRef:
                   name: "{{ .Release.Name }}-{{ .Values.useEnvironment }}"
                   key: dbPassword
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: ALLOWED_HOSTS
+              value: "{{ .Release.Name }}-{{ .Values.useEnvironment }}.{{ .Values.useDomain }},$(POD_IP)"
           livenessProbe:
             httpGet:
               path: /healthy/

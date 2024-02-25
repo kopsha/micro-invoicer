@@ -7,10 +7,15 @@ metadata:
 
 spec:
   type: {{ .Values.service.type }}
+  externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
   ports:
     - name: http
       protocol: TCP
       port: 80
+      targetPort: 8000
+    - name: https
+      protocol: TCP
+      port: 443
       targetPort: 8000
   selector:
     app: "{{ .Release.Name }}-{{ .Values.useEnvironment }}"
