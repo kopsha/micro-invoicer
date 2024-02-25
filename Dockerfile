@@ -5,13 +5,11 @@ RUN apt update && apt install --yes \
     locales \
     locales-all \
     entr \
-    git \
     wkhtmltopdf \
     && rm -rf /var/lib/apt/lists/*
 
 # prepare application folder
-RUN mkdir -p /app/src \
-    && mkdir -p /app/shared
+RUN mkdir -p /app/src
 
 # install python dependencies
 WORKDIR /app
@@ -32,5 +30,5 @@ ENV SERVICE_PORT=8000
 CMD ["start"]
 
 VOLUME [ "/app/src" ]
-VOLUME [ "/app/shared" ]
-VOLUME [ "/app/htmlcov/" ]
+VOLUME [ "/app/data/db.sqlite3" ]
+
