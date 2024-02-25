@@ -5,7 +5,8 @@ import os
 
 
 DEBUG = False
-ALLOWED_HOSTS = ["micro.fibonet.ro"]
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost").split(",")
+VERSION = os.environ.get("VERSION", "develop")
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
