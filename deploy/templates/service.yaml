@@ -2,19 +2,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: micro-invoicer
-  {{/* annotations: */}}
-  {{/*   service.beta.kubernetes.io/do-loadbalancer-name: "{{ .Release.Name }}-{{ .Values.useEnvironment }}.{{ .Values.useDomain }}" */}}
-  {{/*   service.beta.kubernetes.io/do-loadbalancer-protocol: "http" */}}
-  {{/*   service.beta.kubernetes.io/do-loadbalancer-tls-ports: "443" */}}
-  {{/*   service.beta.kubernetes.io/do-loadbalancer-redirect-http-to-https: "true" */}}
-  {{/*   service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true" */}}
-
-  {{/*   service.beta.kubernetes.io/do-loadbalancer-certificate-id: {{ .Values.sslCertificateId }} */}}
-  {{/*   service.beta.kubernetes.io/do-loadbalancer-hostname: "{{ .Release.Name }}-{{ .Values.useEnvironment }}.{{ .Values.useDomain }}" */}}
-  {{/*   service.beta.kubernetes.io/do-loadbalancer-disable-lets-encrypt-dns-records: "false" */}}
+  annotations:
+    {{- toYaml .Values.service.annotations | nindent 4 }}
 
 spec:
-  type: ClusterIP
+  type: {{ .Values.service.type }}
   ports:
     - name: http
       protocol: TCP
