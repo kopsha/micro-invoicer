@@ -1,6 +1,6 @@
 pytest
 sqlparse
-psycopg
+psycopg2-binary
 django
 django-registration
 django-material
