@@ -4,6 +4,11 @@ image:
 
 replicaCount: 1
 
+secrets:
+  dbUser: "django"
+  dbHost: "store-postgres"
+  dbPort: "5432"
+
 service:
   type: LoadBalancer
   annotations:
