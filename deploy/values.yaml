@@ -1,0 +1,20 @@
+image:
+  repository: ghcr.io/kopsha/micro-invoicer:main
+  pullPolicy: Always
+
+replicaCount: 1
+
+secrets:
+  dbUser: "django"
+  dbHost: "store-postgres"
+  dbPort: "5432"
+
+service:
+  type: LoadBalancer
+  annotations:
+    service.beta.kubernetes.io/do-loadbalancer-protocol: "http"
+    service.beta.kubernetes.io/do-loadbalancer-tls-ports: "443"
+    service.beta.kubernetes.io/do-loadbalancer-redirect-http-to-https: "true"
+    service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
+    service.beta.kubernetes.io/do-loadbalancer-disable-lets-encrypt-dns-records: "false"
+
