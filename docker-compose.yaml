@@ -1,7 +1,11 @@
 services:
   micro-invoicer:
-    build: ./
+    build: .
     ports:
       - 8000:8000
     volumes:
       - ./src:/app/src
+      - ./data/db.sqlite3:/app/data/db.sqlite3
+    environment:
+      - DEBUG=on
+

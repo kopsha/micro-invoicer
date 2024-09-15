@@ -61,7 +61,6 @@ def previous_month():
 
 
 def create_random_tasks(activity, how_many, hours):
-
     names = pick_task_names(flavor=activity["flavor"], count=how_many)
     durations = split_duration(duration=hours, count=how_many)
     dates = compute_start_dates(activity["start_date"], durations)

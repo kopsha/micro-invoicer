@@ -1,0 +1,8 @@
+apiVersion: v2
+name: micro-invoicer
+description: Deployment chart for my Django application
+
+version: 0.1.0
+type: application
+
+appVersion: "1.2.3"

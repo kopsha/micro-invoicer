@@ -1,5 +1,6 @@
 pytest
 sqlparse
+psycopg2-binary
 django
 django-registration
 django-material
@@ -7,3 +8,4 @@ django-countries
 pdfkit
 python-dateutil
 requests
+
