@@ -1,5 +1,4 @@
-"""How about now."""
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta
 from django.http import FileResponse
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView
@@ -59,7 +58,6 @@ class MicroHomeView(LoginRequiredMixin, TemplateView):
 
 
 class ReportView(LoginRequiredMixin, TemplateView):
-
     template_name = "report.html"
 
     def get_context_data(self, **kwargs):

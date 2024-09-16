@@ -3,9 +3,11 @@ Django settings for microtools project.
 """
 import os
 
+TRUEISH = {"true", "True", "yes", "1", "on"}
+DEBUG = os.environ.get("DEBUG", "False") in TRUEISH
 
-DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost").split(",")
+VERSION = os.environ.get("VERSION", "develop")
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -52,9 +54,13 @@ TEMPLATES = [
 WSGI_APPLICATION = "microtools.wsgi.application"
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
-    }
+        "ENGINE": "django.db.backends.postgresql",
+        "HOST": os.environ.get("DB_HOST"),
+        "PORT": os.environ.get("DB_PORT"),
+        "NAME": os.environ.get("DB_NAME"),
+        "USER": os.environ.get("DB_USER"),
+        "PASSWORD": os.environ.get("DB_PASSWORD"),
+    },
 }
 
 AUTH_PASSWORD_VALIDATORS = [
