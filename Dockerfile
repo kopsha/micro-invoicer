@@ -1,17 +1,19 @@
-FROM python:3-slim
+FROM python:3-bookworm
 
+RUN bash -euo pipefail <<EOF
 # prepare base image
-RUN apt update && apt install --yes \
+apt update
+apt install --yes --no-install-recommends \
     locales \
     locales-all \
     entr \
     git \
-    wkhtmltopdf \
-    && rm -rf /var/lib/apt/lists/*
+    wkhtmltopdf
+rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
 
 # prepare application folder
-RUN mkdir -p /app/src \
-    && mkdir -p /app/shared
+mkdir -p /app/src /app/shared
+EOF
 
 # install python dependencies
 WORKDIR /app
@@ -33,4 +35,4 @@ CMD ["start"]
 
 VOLUME [ "/app/src" ]
 VOLUME [ "/app/shared" ]
-VOLUME [ "/app/htmlcov/" ]
+VOLUME [ "/app/htmlcov" ]
